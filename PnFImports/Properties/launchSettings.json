@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PnFImports": {
+      "commandName": "Project",
+      "commandLineArgs": "daily"
+    }
+  }
+}
