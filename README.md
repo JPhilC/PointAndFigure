@@ -20,3 +20,5 @@ You will need:
 
 You should enter you AlphaVantage API key in the file AlphaVantageService.cs. Look for the "demo" in that file.
 
+16/02/2022
+The main project is PnFImports which currently allows you to import either share information, 5 years of OLHCV for each share or a daily update of the OLHCV data to bring it up to the close on the previous working day. There are also a couple or T-SQL scripts to create stored procedures which generate market (LSE Full and AIM) priced weighed index data and equal weighted Sector index data.
