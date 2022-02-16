@@ -17,6 +17,7 @@ namespace PnFData.Model
 
         public double Volume { get; set; }
 
+        [Required]
         public Guid ShareId { get; set; }
 
         [ForeignKey(nameof(ShareId))]

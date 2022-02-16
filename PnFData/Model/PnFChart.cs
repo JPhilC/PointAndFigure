@@ -1,4 +1,6 @@
-﻿namespace PnFData.Model
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace PnFData.Model
 {
 
     public enum PnFChartSource
@@ -19,6 +21,9 @@
 
         public List<PnFColumn> Columns { get; set; }
 
+        public ShareChart ShareChart { get; set; }
+
+        //public IndexChart IndexChart { get; set; }
 
     }
 }

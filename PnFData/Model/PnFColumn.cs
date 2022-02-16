@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PnFData.Model
 {
     public class PnFColumn: EntityData
     {
+        [Required] 
         public Guid PnFChartId { get; set; }
 
         [ForeignKey("PnFChartId")]

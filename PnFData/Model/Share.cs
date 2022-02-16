@@ -39,14 +39,17 @@ namespace PnFData.Model
 
         public string ShareDataSourceId { get; set; }
 
-        public List<Eod> EodPrices { get; } = new List<Eod>();
-
         public DateTime? LastEodDate { get; set; }
 
         public bool EodError { get; set; }
 
         [MaxLength(4)]
         public string? ExchangeSubCode { get; set; }
+
+        public List<Eod> EodPrices { get; } = new List<Eod>();
+
+        public List<ShareChart> Charts { get; } = new List<ShareChart>();
+
     }
 
     public class ShareSummary

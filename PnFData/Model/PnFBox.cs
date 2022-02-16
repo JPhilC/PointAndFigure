@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PnFData.Model
 {
@@ -12,6 +13,7 @@ namespace PnFData.Model
 
     public class PnFBox: EntityData
     {
+        [Required]
         public Guid PnFColumnId { get; set; }
 
         [ForeignKey("PnFColumnId")]

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220215171736_Updating_Index_Schema_RAWSQL")]
+    partial class Updating_Index_Schema_RAWSQL
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,8 +28,7 @@ namespace PnFData.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("Close")
                         .HasColumnType("float");
@@ -78,8 +79,7 @@ namespace PnFData.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -94,10 +94,6 @@ namespace PnFData.Migrations
                     b.Property<string>("ExchangeSubCode")
                         .HasMaxLength(4)
                         .HasColumnType("nvarchar(4)");
-
-                    b.Property<string>("Sector")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
@@ -118,8 +114,7 @@ namespace PnFData.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Contributors")
                         .HasColumnType("int");
@@ -161,8 +156,7 @@ namespace PnFData.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("BoxType")
                         .HasColumnType("int");
@@ -208,8 +202,7 @@ namespace PnFData.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double?>("BoxSize")
                         .HasColumnType("float");
@@ -247,8 +240,7 @@ namespace PnFData.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -288,8 +280,7 @@ namespace PnFData.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -370,42 +361,6 @@ namespace PnFData.Migrations
                     b.ToTable("Shares");
                 });
 
-            modelBuilder.Entity("PnFData.Model.ShareChart", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
-
-                    b.Property<DateTimeOffset?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<Guid>("PnFChartId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ShareId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShareId")
-                        .IsUnique();
-
-                    b.ToTable("ShareCharts");
-                });
-
             modelBuilder.Entity("PnFData.Model.Eod", b =>
                 {
                     b.HasOne("PnFData.Model.Share", "Share")
@@ -420,7 +375,7 @@ namespace PnFData.Migrations
             modelBuilder.Entity("PnFData.Model.IndexValue", b =>
                 {
                     b.HasOne("PnFData.Model.Index", "Index")
-                        .WithMany("IndexValues")
+                        .WithMany("Dates")
                         .HasForeignKey("IndexId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -450,36 +405,14 @@ namespace PnFData.Migrations
                     b.Navigation("PnFChart");
                 });
 
-            modelBuilder.Entity("PnFData.Model.ShareChart", b =>
-                {
-                    b.HasOne("PnFData.Model.PnFChart", "Chart")
-                        .WithOne("ShareChart")
-                        .HasForeignKey("PnFData.Model.ShareChart", "ShareId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PnFData.Model.Share", "Share")
-                        .WithMany("Charts")
-                        .HasForeignKey("ShareId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Chart");
-
-                    b.Navigation("Share");
-                });
-
             modelBuilder.Entity("PnFData.Model.Index", b =>
                 {
-                    b.Navigation("IndexValues");
+                    b.Navigation("Dates");
                 });
 
             modelBuilder.Entity("PnFData.Model.PnFChart", b =>
                 {
                     b.Navigation("Columns");
-
-                    b.Navigation("ShareChart")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("PnFData.Model.PnFColumn", b =>
@@ -489,8 +422,6 @@ namespace PnFData.Migrations
 
             modelBuilder.Entity("PnFData.Model.Share", b =>
                 {
-                    b.Navigation("Charts");
-
                     b.Navigation("EodPrices");
                 });
 #pragma warning restore 612, 618
