@@ -10,7 +10,6 @@ namespace PnFData.Model
         X
     }
 
-
     public class PnFBox: EntityData
     {
         [Required]
@@ -21,6 +20,14 @@ namespace PnFData.Model
 
         public PnFBoxType BoxType { get; set; }
 
+        /// <summary>
+        /// The vertical position of this box in the column
+        /// </summary>
+        public int Index { get; set; }
+
+        /// <summary>
+        /// The box size.
+        /// </summary>
         public double Size { get; set; }
 
         public double Value { get; set; }

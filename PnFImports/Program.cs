@@ -4,6 +4,7 @@ using PnFData.Model;
 using PnFImports.Model;
 using PnFImports.Services;
 using System.Globalization;
+using PnFData.Services;
 
 namespace PnFImports
 {
@@ -27,6 +28,14 @@ namespace PnFImports
                     case "daily":
                         PnFImports.ImportEodDailyPrices();
                         break;
+
+                    case "hilochart":
+                        if (args.Length > 1)
+                        {
+                            PnFImports.GenerateHiLoChart(args[1].ToUpper());
+                        }
+                        break;
+
                 }
             }
 
@@ -248,6 +257,49 @@ namespace PnFImports
             }
 
         }
+
+        internal static void GenerateHiLoChart(string tidm)
+        {
+            List<Eod> tickData;
+            // Retrieve the data
+            try
+            {
+                Console.WriteLine($"Retrieving tick data for {tidm}.");
+                using (PnFDataContext db = new PnFDataContext())
+                {
+                    tickData = db.Shares.Where(s => s.Tidm == tidm)
+                        .Select(s => s.EodPrices).FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving tick data for {tidm}.");
+                Console.WriteLine(ex.Message);
+                return;
+            }
+
+            if (tickData != null && tickData.Any())
+            {
+                // Create the chart.
+                PnFChartBuilderService chartBuilder = new PnFChartBuilderService(tickData);
+                double boxSize = chartBuilder.ComputeBoxSize();
+                try
+                {
+                    PnFChart chart = chartBuilder.BuildHighLowChart(boxSize, 3);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error building chart for {tidm}.");
+                    Console.WriteLine(ex.Message);
+                    return;
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Tick data not available.");
+            }
+        }
+
 
         #region Helper methods ...
         private static DateTime PreviousWorkDay(DateTime date)

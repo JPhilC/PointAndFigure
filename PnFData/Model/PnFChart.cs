@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PnFData.Model
 {
@@ -19,7 +20,7 @@ namespace PnFData.Model
         public double? BoxSize { get; set; }
         public int Reversal { get; set; }
 
-        public List<PnFColumn> Columns { get; set; }
+        public List<PnFColumn> Columns { get; } = new List<PnFColumn>();
 
         public ShareChart ShareChart { get; set; }
 
