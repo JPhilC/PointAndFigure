@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Net.Sockets;
 using PnFData.Model;
 
 namespace PnFData.Services
@@ -25,9 +26,9 @@ namespace PnFData.Services
 
         private List<Eod> _eodList;
 
-        public bool DontResize { get; set; } = true;
+        public bool DontResize { get; set; } = false;
 
-        public double BoxSize { get; set; } = 2.0d;
+        public double BoxSize { get; private set; } = 2.0d;
 
         public PnFChartBuilderService(List<Eod> eodList)
         {
@@ -35,28 +36,36 @@ namespace PnFData.Services
         }
 
 
-        public PnFChart BuildHighLowChart(double boxSize, int reversal)
+        public PnFChart? BuildHighLowChart(double boxSize, int reversal, DateTime uptoDate)
         {
+            List<Eod> sortedList = this._eodList.Where(s=>s.Day <= uptoDate).OrderBy(s => s.Day).ToList();
+            if (sortedList.Count == 0)
+            {
+                return null;
+            }
+
+            this.BoxSize = boxSize;
+
             PnFChart chart = new PnFChart()
             {
                 BoxSize = boxSize,
                 Reversal = reversal
             };
-            List<Eod> sortedList = this._eodList.OrderBy(s => s.Day).ToList();
+            PnFColumn currentColumn = new PnFColumn();
+
             bool firstEod = true;
             int lastMonthRecorded = 0;
             int lastYearRecorded = 0;
-            PnFColumn currentColumn = new PnFColumn();
             foreach (Eod eod in sortedList)
             {
-                System.Diagnostics.Debug.WriteLine($"{eod.Open}\t{eod.High}\t{eod.Low}\t{eod.Close}");
+                // System.Diagnostics.Debug.WriteLine($"{eod.Open}\t{eod.High}\t{eod.Low}\t{eod.Close}");
                 if (firstEod)
                 {
                     if (eod.Open > eod.Close)
                     {
                         // Start with Os (down day)
                         int newStartIndex = GetIndex(eod.Low)+1;
-                        currentColumn = new PnFColumn() { ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, ContainsNewYear = true};
+                        currentColumn = new PnFColumn() { Index=0, ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, ContainsNewYear = true};
                         currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low), eod.Low, eod.Day);
                         chart.Columns.Add(currentColumn);
                     }
@@ -64,7 +73,7 @@ namespace PnFData.Services
                     {
                         // Start with Xs (up day)
                         int newStartIndex = GetIndex(eod.High)-1;
-                        currentColumn = new PnFColumn() { ColumnType = PnFColumnType.X, CurrentBoxIndex = newStartIndex, ContainsNewYear = true};
+                        currentColumn = new PnFColumn() { Index = 0, ColumnType = PnFColumnType.X, CurrentBoxIndex = newStartIndex, ContainsNewYear = true};
                         currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day);
                     }
                     firstEod = false;
@@ -87,7 +96,12 @@ namespace PnFData.Services
                             if (eod.High >= reversalBox)
                             {
                                 int newStartIndex = currentColumn.CurrentBoxIndex;
-                                currentColumn = new PnFColumn() { ColumnType = PnFColumnType.X, CurrentBoxIndex = newStartIndex};
+                                currentColumn = new PnFColumn()
+                                {
+                                    Index = currentColumn.Index+1,
+                                    ColumnType = PnFColumnType.X, 
+                                    CurrentBoxIndex = newStartIndex
+                                };
                                 currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
                                 chart.Columns.Add(currentColumn);
                             }
@@ -108,7 +122,12 @@ namespace PnFData.Services
                             if (eod.Low <= reversalBox)
                             {
                                 int newStartIndex = currentColumn.CurrentBoxIndex;
-                                currentColumn = new PnFColumn() { ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex};
+                                currentColumn = new PnFColumn()
+                                {
+                                    Index = currentColumn.Index+1,
+                                    ColumnType = PnFColumnType.O, 
+                                    CurrentBoxIndex = newStartIndex
+                                };
                                 currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low), eod.Low, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
                                 chart.Columns.Add(currentColumn);
                             }
@@ -125,7 +144,7 @@ namespace PnFData.Services
                 currentColumn.Volume += eod.Volume;
                 lastMonthRecorded = eod.Day.Month;
                 lastYearRecorded = eod.Day.Year;
-
+                chart.GeneratedDate = eod.Day;
             }
             return chart;
         }
@@ -135,18 +154,15 @@ namespace PnFData.Services
 
 #region Helper methods ...
 
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public double SetBoxSize(double value)
+        private double RangeBoxSize(double value)
         {
-            var boxSize = this.BoxSize;
-            if (this.DontResize)
-                return boxSize;
-
-            boxSize = value switch
+            var boxSize = value switch
             {
                 < 0.25 => .0625,
                 < 1.00 => .125,
@@ -161,7 +177,6 @@ namespace PnFData.Services
             };
 
             return boxSize;
-
         }
 
         /// <summary>
@@ -177,13 +192,13 @@ namespace PnFData.Services
                 select new
                 {
                     BestLow = g.Min(l => l.Low),
-                    BestHign = g.Max(h => h.High),
+                    BestHigh = g.Max(h => h.High),
                     SumHighLessLow = g.Sum(s => s.High - s.Low)
                 }).First();
 
 
 
-            boxSize = SetBoxSize((stats.BestLow + stats.BestHign) * 0.5);
+            boxSize = RangeBoxSize((stats.BestLow + stats.BestHigh) * 0.5);
             //int bs = (int)(boxSize + 0.5);
             //boxSize = bs * 0.01d;
             //boxSize = stats.SumHighLessLow / _eodList.Count;

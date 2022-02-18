@@ -2,7 +2,7 @@
   "profiles": {
     "PnFImports": {
       "commandName": "Project",
-      "commandLineArgs": "hilochart BP..LON"
+      "commandLineArgs": "hilochart LOGP.LON 2022-02-18"
     }
   }
 }

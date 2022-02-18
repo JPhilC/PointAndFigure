@@ -1,9 +1,13 @@
-﻿using CsvHelper;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using CsvHelper;
 using CsvHelper.Configuration;
 using PnFData.Model;
 using PnFImports.Model;
 using PnFImports.Services;
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using PnFData.Services;
 
 namespace PnFImports
@@ -28,11 +32,17 @@ namespace PnFImports
                     case "daily":
                         PnFImports.ImportEodDailyPrices();
                         break;
+                    
+                    case "hilocharts":
+                        GenerateAllHiLoCharts();
+                        break;
 
                     case "hilochart":
-                        if (args.Length > 1)
+                        if (args.Length > 2)
                         {
-                            PnFImports.GenerateHiLoChart(args[1].ToUpper());
+                            PnFImports.GenerateHiLoChart(args[1].ToUpper(),
+                                DateTime.ParseExact(args[2], "yyyy-MM-dd",
+                                    CultureInfo.InvariantCulture, DateTimeStyles.None));
                         }
                         break;
 
@@ -61,25 +71,26 @@ namespace PnFImports
             {
                 string tidm = data.Tidm + ".LON";
                 string shareScopeId = data.ShareScopeID.ToString();
-                var share = db.Shares.FirstOrDefault(b => b.ShareDataSource == "SS" & b.ShareDataSourceId == shareScopeId);
+                var share = db.Shares.FirstOrDefault(b =>
+                    b.ShareDataSource == "SS" & b.ShareDataSourceId == shareScopeId);
                 if (share == null)
                 {
                     Console.Write($"Inserting {tidm}: {data.Name} ...");
                     db.Add(new Share()
-                    {
-                        Tidm = tidm,
-                        Name = data.Name,
-                        ExchangeCode = data.ExchangeCode,
-                        ExchangeSubCode = data.ExchangeSubCode,
-                        SharesInIssueMillions = data.SharesInIssue,
-                        MarketCapMillions = data.MarketCap,
-                        SuperSector = data.Supersector,
-                        Sector = data.Sector,
-                        PricesCurrency = data.Currency,
-                        ShareDataSource = "SS", // Share Scope
-                        ShareDataSourceId = data.ShareScopeID.ToString() // Share Scope ID
+                        {
+                            Tidm = tidm,
+                            Name = data.Name,
+                            ExchangeCode = data.ExchangeCode,
+                            ExchangeSubCode = data.ExchangeSubCode,
+                            SharesInIssueMillions = data.SharesInIssue,
+                            MarketCapMillions = data.MarketCap,
+                            SuperSector = data.Supersector,
+                            Sector = data.Sector,
+                            PricesCurrency = data.Currency,
+                            ShareDataSource = "SS", // Share Scope
+                            ShareDataSourceId = data.ShareScopeID.ToString() // Share Scope ID
 
-                    }
+                        }
                     );
                 }
                 else
@@ -124,14 +135,16 @@ namespace PnFImports
                     EodErrors = s.EodError,
                     LastEodDate = s.LastEodDate,
                     HasPrices = s.EodPrices.Any()
-                }).OrderBy(s=>s.Tidm).ToList();
+                }).OrderBy(s => s.Tidm).ToList();
             }
+
             foreach (var shareData in shareIds)
             {
                 if (shareData.EodErrors)
                 {
-                    continue;   // Skip as were no eod prices last time
+                    continue; // Skip as were no eod prices last time
                 }
+
                 // Catch up code to update LastEodDate
                 if (shareData.HasPrices)
                 {
@@ -156,7 +169,8 @@ namespace PnFImports
                     Console.Write($"Processing {shareData.Tidm}: {shareData.Name} ...");
                     using (var db = new PnFDataContext())
                     {
-                        var prices = await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm, cutOffDate, true);
+                        var prices =
+                            await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm, cutOffDate, true);
                         Share share = db.Shares.First(s => s.Id == shareData.Id);
                         var dayPrices = prices as Eod[] ?? prices.ToArray();
                         if (dayPrices.Any())
@@ -206,26 +220,30 @@ namespace PnFImports
                     HasPrices = s.EodPrices.Any()
                 }).OrderBy(s => s.Tidm).ToList();
             }
+
             foreach (var shareData in shareIds)
             {
                 Console.Write($"Processing {shareData.Tidm}: {shareData.Name} ...");
                 if (shareData.EodErrors)
                 {
                     Console.WriteLine("Skipped, previously in error!");
-                    continue;   // Skip as were no eod prices last time
+                    continue; // Skip as were no eod prices last time
                 }
+
                 // Check if the current record is up to date.
                 if (shareData.LastEodDate >= lastClose)
                 {
                     Console.WriteLine("Skipped, up to date.");
                     continue;
                 }
+
                 // Get the prices
                 Task.Run((async () =>
                 {
                     using (var db = new PnFDataContext())
                     {
-                        var prices = await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm, (shareData.LastEodDate ?? cutOffDate));
+                        var prices = await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm,
+                            (shareData.LastEodDate ?? cutOffDate));
                         Share share = db.Shares.First(s => s.Id == shareData.Id);
                         var dayPrices = prices as Eod[] ?? prices.ToArray();
                         if (dayPrices.Any())
@@ -258,13 +276,29 @@ namespace PnFImports
 
         }
 
-        internal static void GenerateHiLoChart(string tidm)
+        internal static void GenerateAllHiLoCharts()
+        {
+            List<string> tidms = new();
+            using (PnFDataContext db = new PnFDataContext())
+            {
+                tidms = db.Shares.Where(s => s.EodPrices.Any()).Select(s => s.Tidm).ToList();
+            }
+            DateTime now = DateTime.Now.Date;
+            foreach(var tidm in  tidms)
+            {
+                GenerateHiLoChart(tidm, now);
+            };
+        }
+
+        internal static void GenerateHiLoChart(string tidm, DateTime uptoDate)
         {
             List<Eod> tickData;
+            PnFChart? newChart = null;
+            int reversal = 3;
             // Retrieve the data
             try
             {
-                Console.WriteLine($"Retrieving tick data for {tidm}.");
+                Console.WriteLine($@"Retrieving tick data for {tidm}.");
                 using (PnFDataContext db = new PnFDataContext())
                 {
                     tickData = db.Shares.Where(s => s.Tidm == tidm)
@@ -273,7 +307,7 @@ namespace PnFImports
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving tick data for {tidm}.");
+                Console.WriteLine($@"Error retrieving tick data for {tidm}.");
                 Console.WriteLine(ex.Message);
                 return;
             }
@@ -285,30 +319,86 @@ namespace PnFImports
                 double boxSize = chartBuilder.ComputeBoxSize();
                 try
                 {
-                    PnFChart chart = chartBuilder.BuildHighLowChart(boxSize, 3);
+                    Console.WriteLine($@"Building chart for {tidm}.");
+                    newChart = chartBuilder.BuildHighLowChart(boxSize, reversal, uptoDate);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error building chart for {tidm}.");
+                    Console.WriteLine($@"Error building chart for {tidm}.");
                     Console.WriteLine(ex.Message);
                     return;
                 }
             }
             else
             {
-                Console.WriteLine($"Tick data not available.");
+                Console.WriteLine($@"Tick data not available.");
+                return;
+            }
+
+            if (newChart != null)
+            {
+                try
+                {
+                    // Save the chart
+                    using (var db = new PnFDataContext())
+                    {
+                        // Get the share
+                        var share = db.Shares
+                            .Include(sc=>sc.Charts).ThenInclude(s=>s.Chart)
+                            .SingleOrDefault(s => s.Tidm == tidm);
+
+
+                        // Try retrieving the existing chart
+                        if (share != null)
+                        {
+                            if (share.Charts.Any())
+                            {
+                                var shareCharts = share.Charts.Where(c =>
+                                    c.Chart != null
+                                    && c.Chart.BoxSize == newChart.BoxSize
+                                    && c.Chart.Reversal == newChart.Reversal);
+                                foreach (var shareChart in shareCharts.ToList())
+                                {
+                                    db.Remove(shareChart.Chart);
+                                    share.Charts.Remove(shareChart);
+                                }
+                            }
+
+                            ShareChart newShareChart = new ShareChart()
+                            {
+                                Chart = newChart
+                            };
+                            share.Charts.Add(newShareChart);
+                            db.Update(share);
+
+
+                            int saveResult = db.SaveChanges();
+                            Console.WriteLine($"{saveResult} record saved.");
+                        }
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("There was a problem saving the chart.");
+                    Console.WriteLine(ex.Message);
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine(ex.InnerException.Message);
+                    }
+                }
             }
         }
 
 
         #region Helper methods ...
+
         private static DateTime PreviousWorkDay(DateTime date)
         {
             do
             {
                 date = date.AddDays(-1);
-            }
-            while (IsWeekend(date));
+            } while (IsWeekend(date));
 
             return date;
         }
@@ -318,7 +408,8 @@ namespace PnFImports
             return date.DayOfWeek == DayOfWeek.Saturday ||
                    date.DayOfWeek == DayOfWeek.Sunday;
         }
-        #endregion
 
+
+        #endregion  
     }
 }

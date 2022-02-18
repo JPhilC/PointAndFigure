@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220218110950_PnfCharting_Updates_2")]
+    partial class PnfCharting_Updates_2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -392,13 +394,13 @@ namespace PnFData.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newid()");
 
-                    b.Property<Guid>("ChartId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
                         .HasDefaultValueSql("getdate()");
+
+                    b.Property<Guid>("PnFChartId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ShareId")
                         .HasColumnType("uniqueidentifier");
@@ -415,10 +417,8 @@ namespace PnFData.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChartId")
+                    b.HasIndex("ShareId")
                         .IsUnique();
-
-                    b.HasIndex("ShareId");
 
                     b.ToTable("ShareCharts");
                 });
@@ -471,7 +471,7 @@ namespace PnFData.Migrations
                 {
                     b.HasOne("PnFData.Model.PnFChart", "Chart")
                         .WithOne("ShareChart")
-                        .HasForeignKey("PnFData.Model.ShareChart", "ChartId")
+                        .HasForeignKey("PnFData.Model.ShareChart", "ShareId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

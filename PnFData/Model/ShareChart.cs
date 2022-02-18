@@ -12,9 +12,9 @@ namespace PnFData.Model
         public Share Share { get; set; }
 
         [Required] 
-        public Guid PnFChartId { get; set; }
+        public Guid ChartId { get; set; }
 
-        [ForeignKey("PnFChartId")]
+        [ForeignKey("ChartId")]
         public PnFChart Chart { get; set; }
 
     }

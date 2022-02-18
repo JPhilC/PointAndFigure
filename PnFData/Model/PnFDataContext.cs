@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace PnFData.Model
 {
@@ -6,6 +7,14 @@ namespace PnFData.Model
     {
         private const string ConnectionString =
             @"Server=localhost\SQLEXPRESS;Database=PnFData;Trusted_Connection=True;";
+
+        public static readonly ILoggerFactory loggerFactory = LoggerFactory.Create(builder => {
+                builder.AddFilter("Database.Command", LogLevel.None)
+                    .AddDebug();
+            }
+        );
+
+
         public DbSet<Share> Shares { get; set; }
         public DbSet<Eod> EodPrices { get; set; }
         public DbSet<Index> Indices { get; set; }
@@ -23,7 +32,22 @@ namespace PnFData.Model
         // The following configures EF to create a Sqlite database file in the
         // special "local" folder for your platform.
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlServer(ConnectionString);
+        {
+            //options.UseLoggerFactory(loggerFactory)  //tie-up DbContext with LoggerFactory object
+            //    .EnableSensitiveDataLogging()
+            //    .UseSqlServer(ConnectionString);
+
+            options.UseSqlServer(ConnectionString, 
+                sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount:2,
+                        maxRetryDelay:TimeSpan.FromSeconds(5),
+                        errorNumbersToAdd:null
+                        );
+                    
+                });
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -108,7 +132,7 @@ namespace PnFData.Model
             modelBuilder.Entity<PnFChart>()
                 .HasOne(c => c.ShareChart)
                 .WithOne(sc => sc.Chart)
-                .HasForeignKey<ShareChart>(sc => sc.ShareId);
+                .HasForeignKey<ShareChart>(sc => sc.ChartId);
 
             base.OnModelCreating(modelBuilder);
         }

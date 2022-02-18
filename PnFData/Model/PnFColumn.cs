@@ -5,9 +5,10 @@ namespace PnFData.Model
 {
     public enum PnFColumnType
     {
-        O,
-        X,
-        XO  // Special case of 1 box reversal charts
+        O,      // Going down
+        X,      // Going up
+        XO,     // Special case of 1 box reversal charts (going down after one box reversal up)
+        OX      // Special case for 1 box reversal charts (going up after a one box reversal down)
     }
 
     public class PnFColumn : EntityData
@@ -20,6 +21,11 @@ namespace PnFData.Model
 
         public PnFColumnType ColumnType { get; set; }
 
+        /// <summary>
+        /// The horizontal position of this column in the chart
+        /// </summary>
+        public int Index { get; set; }
+
         public int CurrentBoxIndex { get; set; } = 0;
 
         public double Volume { get; set; }
@@ -31,6 +37,45 @@ namespace PnFData.Model
         public bool ContainsNewYear { get; set; }
 
         public List<PnFBox> Boxes { get; } = new List<PnFBox>();
+
+        [NotMapped]
+        public int StartAtIndex
+        {
+            get
+            {
+                if (ColumnType == PnFColumnType.O
+                    || ColumnType == PnFColumnType.XO)
+                {
+                    // Going down.
+                    return Boxes.Max(b => b.Index);
+                }
+                else
+                {
+                    // Going up.
+                    return Boxes.Min(b => b.Index);
+                }
+            }
+        }
+
+        [NotMapped]
+        public int EndAtIndex
+        {
+            get
+            {
+                if (ColumnType == PnFColumnType.O
+                    || ColumnType == PnFColumnType.XO)
+                {
+                    // Going down.
+                    return Boxes.Min(b => b.Index);
+                }
+                else
+                {
+                    // Going up.
+                    return Boxes.Max(b => b.Index);
+                }
+            }
+        }
+
 
         public void AddBox(PnFBoxType boxType, double boxSize, int index, double value, DateTime day, string? monthIndicator = null)
         {
