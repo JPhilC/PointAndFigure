@@ -16,7 +16,7 @@ namespace PnFData.Model
         public string? ExchangeSubCode { get; set; }
 
         [MaxLength(100)]
-        public string? Sector { get; set; }
+        public string? SuperSector { get; set; }
 
         public List<IndexValue> IndexValues { get; } = new List<IndexValue>();
     }

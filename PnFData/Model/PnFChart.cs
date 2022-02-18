@@ -8,7 +8,9 @@ namespace PnFData.Model
     {
         Share,
         Index,
-        RelativeStrength
+        RSStockVMarket,
+        RSStockVSector,
+        RSSectorVMarket
     }
 
     public class PnFChart: EntityData

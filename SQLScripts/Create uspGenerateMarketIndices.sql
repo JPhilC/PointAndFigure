@@ -28,19 +28,9 @@ SELECT s.[ExchangeCode], s.[ExchangeSubCode], p.[Day], SUM(p.[Close]) TotalClose
 	INTO #totals
 	FROM EodPrices p
 	LEFT JOIN Shares s ON s.Id = p.ShareId
-	WHERE p.[Day] <= @upToDate AND ISNULL(s.[Sector], '') <>''
+	WHERE p.[Day] <= @upToDate AND ISNULL(s.[SuperSector], '') <>''
 	GROUP BY s.[ExchangeCode], s.[ExchangeSubCode], p.[Day]
 	ORDER BY s.[ExchangeCode], s.[ExchangeSubCode], P.[Day] DESC;
-
--- Including sector
---SELECT s.[ExchangeCode], s.[ExchangeSubCode], s.[Sector], p.[Day], SUM(p.[Close]) TotalClose, COUNT(*) ShareCount 
---	INTO #totals
---	FROM EodPrices p
---	LEFT JOIN Shares s ON s.Id = p.ShareId
---	WHERE p.[ShareId] IN (SELECT s.[Id] FROM [Shares] s WHERE s.[ExchangeSubCode] = @subCode AND ISNULL(s.[Sector], '') <>'')
---		AND p.[Day] <= @upToDate
---	GROUP BY s.[ExchangeCode], s.[ExchangeSubCode], s.[Sector], p.[Day]
---	ORDER BY s.[ExchangeCode], s.[ExchangeSubCode], s.[Sector], P.[Day] DESC;
 
 -- Weights for full/AIM
 SELECT t.[ExchangeCode], t.[ExchangeSubCode], p.[ShareId], p.[Day], p.[Close]/t.[TotalClose] [Weight]
@@ -48,21 +38,7 @@ SELECT t.[ExchangeCode], t.[ExchangeSubCode], p.[ShareId], p.[Day], p.[Close]/t.
 	FROM [EodPrices] p
 	LEFT JOIN [Shares] s ON s.[Id] = p.[ShareId]
 	LEFT JOIN #totals t on t.[ExchangeCode] = s.[ExchangeCode] AND t.[ExchangeSubCode] = s.[ExchangeSubCode] AND t.[Day] = p.[Day]
-	WHERE p.[Day] <= @upToDate AND ISNULL(s.[Sector], '') <>''
-
----- Weights for full/AIM sectors
---SELECT p.[ShareId], p.[Day], p.[Close]/t.[TotalClose] [Weight]
---	INTO #weights
---	FROM [EodPrices] p
---	LEFT JOIN [Shares] s ON s.[Id] = p.[ShareId]
---	LEFT JOIN #totals t on t.[Day] = p.[Day]
---	WHERE p.[ShareId] IN (SELECT s.[Id] FROM [Shares] s WHERE s.[ExchangeSubCode] = @subCode AND ISNULL(s.[Sector], '') <>'')
---		AND p.[Day] <= @upToDate
-
--- Equal weighted index 
---SELECT CONCAT(@subCode, '-', [Sector]) [IndexName], [Day], ([TotalClose]/[ShareCount]) IndexValue, ShareCount
---	FROM #totals
---	ORDER BY [Sector], [Day] DESC
+	WHERE p.[Day] <= @upToDate AND ISNULL(s.[SuperSector], '') <>''
 
 SELECT w.[ExchangeCode], w.[ExchangeSubCode], w.[Day], SUM(w.[Weight] * p.[Close]) [Value], Count(*) [ShareCount]
 	INTO #newIndex
@@ -77,7 +53,7 @@ DELETE [Indices]
 WHERE [id] IN
 	(SELECT i.[Id] 
 		FROM [Indices] i
-		WHERE ISNULL(i.[Sector], '') = ''
+		WHERE ISNULL(i.[SuperSector], '') = ''
 			AND i.[ExchangeCode] IN (SELECT DISTINCT w.[ExchangeCode] FROM #weights w)
 			AND i.[ExchangeSubCode] IN (SELECT DISTINCT w.[ExchangeSubCode] FROM #weights w)
 			);
@@ -92,7 +68,7 @@ INSERT INTO [IndexValues] ([IndexId], [Day], [Value], [Contributors])
 		FROM #newIndex ni
 		LEFT JOIN [Indices] i ON i.[ExchangeCode] = ni.[ExchangeCode]
 			AND i.[ExchangeSubCode] = ni.[ExchangeSubCode]
-			AND i.[Sector] IS NULL
+			AND i.[SuperSector] IS NULL
 
 
 DROP TABLE #totals;
