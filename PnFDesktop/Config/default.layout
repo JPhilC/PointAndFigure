@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LayoutRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<RootPanel Orientation="Horizontal">
+		<LayoutPanel Orientation="Vertical" DockWidth="1.18927203065134*">
+			<LayoutAnchorablePane DockHeight="193.02">
+				<LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Messages" IsSelected="True" ContentId="Messages" LastActivationTimeStamp="06/19/2014 20:24:51" />
+			</LayoutAnchorablePane>
+		</LayoutPanel>
+	</RootPanel>
+	<TopSide />
+	<RightSide />
+	<LeftSide />
+	<BottomSide />
+	<FloatingWindows />
+	<Hidden />
+</LayoutRoot>

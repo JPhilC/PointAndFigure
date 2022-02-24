@@ -1,0 +1,66 @@
+﻿<Window x:Class="PnFDesktop.Controls.UserOptionsWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PnFDesktop.Controls"
+             xmlns:classes="clr-namespace:PnFDesktop.Classes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Window.Resources>
+        <ResourceDictionary>
+            <!--<classes:DoubleNaNConverter x:Key="NaNConverter" />-->
+        </ResourceDictionary>
+    </Window.Resources>
+    <DockPanel>
+        <Grid Margin="5,5,5,5"
+            DockPanel.Dock="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <!--OK button-->
+            </Grid.ColumnDefinitions>
+            <!-- OK Button -->
+            <Button
+                Command="{Binding SaveChangesAndCloseCommand}"
+                Grid.Column="1"
+                ToolTip="Close the dialogue and save your changes"
+                >
+                Done
+            </Button>
+        </Grid>
+        <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <!-- Label -->
+                <ColumnDefinition Width="5"/>
+                <!-- Spacer -->
+                <ColumnDefinition Width="Auto"/>
+                <!-- Value -->
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <!--Default sheet width-->
+                <RowDefinition Height="Auto" />
+                <!--Default sheet height-->
+                <RowDefinition Height="Auto" />
+                <!--Label height-->
+                <RowDefinition Height="Auto" />
+                <!--Node labels visible-->
+                <RowDefinition Height="Auto" />
+                <!--Tooltips visible-->
+                <RowDefinition Height="Auto" />
+                <!--Save forms position-->
+            </Grid.RowDefinitions>
+            <!--Default Sheet Width-->
+            <Label Grid.Row="0" Grid.Column="0">Default sheet width</Label>
+            <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding Options.DefaultSheetWidth}" Style="{StaticResource ResourceKey=ValueEntryTextBox}" />
+            <!-- Default Sheet Height-->
+            <Label Grid.Row="1" Grid.Column="0">Default sheet height</Label>
+            <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Options.DefaultSheetHeight}" Style="{StaticResource ResourceKey=ValueEntryTextBox}" />
+            <!-- Save forms position-->
+            <Label Grid.Row="2" Grid.Column="0">Save forms position</Label>
+            <CheckBox Grid.Row="2" Grid.Column="2" IsChecked="{Binding Options.SaveFormsPosition}" HorizontalAlignment="Right" Margin="0,7" Width="80" />
+        </Grid>
+    </DockPanel>
+</Window>

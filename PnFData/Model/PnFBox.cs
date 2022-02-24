@@ -16,7 +16,7 @@ namespace PnFData.Model
         public Guid PnFColumnId { get; set; }
 
         [ForeignKey("PnFColumnId")]
-        public PnFColumn PnFColumn { get; set; }
+        public PnFColumn Column { get; set; }
 
         public PnFBoxType BoxType { get; set; }
 

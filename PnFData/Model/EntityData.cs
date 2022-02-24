@@ -1,14 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace PnFData.Model
 {
-    public abstract class EntityData: ITableData
+    public abstract class EntityData: ObservableObject, ITableData
     {
-        protected EntityData()
-        {
-        }
-
         [Key]
         public Guid Id { get; set; }
 

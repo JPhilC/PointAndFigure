@@ -9,7 +9,7 @@ namespace PnFImports.Services
     public class AlphaVantageService
     {
         private static HttpClient _client;
-        private static readonly string ApiKey = "demo";
+        private static readonly string ApiKey = "9XSPQTI5MMVQE5OK";
         private static readonly string ApiBaseUrl = @"https://www.alphavantage.co/query?";
         private static readonly string ApiFunction = "TIME_SERIES_DAILY";
         private static HttpClient Client

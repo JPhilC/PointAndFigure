@@ -115,7 +115,7 @@ namespace PnFData.Model
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PnFBox>()
-                .HasOne(p => p.PnFColumn)
+                .HasOne(p => p.Column)
                 .WithMany(b => b.Boxes)
                 .OnDelete(DeleteBehavior.Cascade);
 
