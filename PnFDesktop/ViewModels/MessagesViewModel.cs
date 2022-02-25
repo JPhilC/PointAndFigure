@@ -14,21 +14,10 @@ namespace PnFDesktop.ViewModels
         private StringBuilder builder = new StringBuilder();
 
         /// <summary>
-        /// The <see cref="MessageString" /> property's name.
-        /// </summary>
-        public const string MessagesPropertyName = "Messages";
-
-        /// <summary>
         /// Sets and gets the MessageString property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string Messages
-        {
-            get
-            {
-                return builder.ToString();
-            }
-        }
+        public string Messages => builder.ToString();
 
 
         /// <summary>
@@ -64,14 +53,14 @@ namespace PnFDesktop.ViewModels
                 {
                     builder.AppendLine("Exception: " + message.Exception.Message);
                 }
-                OnPropertyChanged(MessagesPropertyName);
+                OnPropertyChanged("Messages");
 
             });
 
         }
 
         #region Relay commands ...
-        private RelayCommand _ClearMessagesCommand;
+        private RelayCommand _clearMessagesCommand;
 
         /// <summary>
         /// Gets the ClearMessagesCommand
@@ -80,12 +69,11 @@ namespace PnFDesktop.ViewModels
         {
             get
             {
-                return _ClearMessagesCommand
-                    ?? (_ClearMessagesCommand = new RelayCommand(
-                                          () => {
-                                              builder.Clear();
-                                              OnPropertyChanged(MessagesPropertyName);
-                                          }));
+                return _clearMessagesCommand ??= new RelayCommand(
+                    () => {
+                        builder.Clear();
+                        OnPropertyChanged("Messages");
+                    });
             }
         }
 

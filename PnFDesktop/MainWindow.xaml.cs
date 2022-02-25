@@ -92,7 +92,6 @@ namespace PnFDesktop
                     StringReader sr = new StringReader(message.Content);
 
                     var layoutSerializer = new XmlLayoutSerializer(this.dockingManager);
-                    layoutSerializer.LayoutSerializationCallback += LayoutSerializer_LayoutSerializationCallback;
                     layoutSerializer.LayoutSerializationCallback += UpdateLayout;
                     layoutSerializer.Deserialize(sr);
                 }
@@ -100,10 +99,6 @@ namespace PnFDesktop
 
         }
 
-        private void LayoutSerializer_LayoutSerializationCallback(object? sender, LayoutSerializationCallbackEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {

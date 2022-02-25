@@ -43,10 +43,10 @@ namespace PnFDesktop.ViewModels
                 if (message.Sender != this)
                 {
                     // Remove the ModelDesignerViewpnfChart from the list of open documents.
-                    PaneViewModel vm = PnFChartPanes.FirstOrDefault(m => m.ContentId == "PointAndFigureChart_" + message.ViewModel.Chart.Id.ToString());
+                    PaneViewModel vm = ChartPanes.FirstOrDefault(m => m.ContentId == "PointAndFigureChart_" + message.ViewModel.Chart.Id.ToString());
                     if (vm != null)
                     {
-                        PnFChartPanes.Remove(vm);
+                        ChartPanes.Remove(vm);
                     }
                 }
             });
@@ -56,7 +56,7 @@ namespace PnFDesktop.ViewModels
             {
                 if (message.Sender != this)
                 {
-                    PointAndFigureChartViewModel pnfChartVm = PnFChartPanes.FirstOrDefault(c => c is PointAndFigureChartViewModel && ((PointAndFigureChartViewModel)c).Chart.Id == message.Chart.Id) as PointAndFigureChartViewModel;
+                    PointAndFigureChartViewModel pnfChartVm = ChartPanes.FirstOrDefault(c => c is PointAndFigureChartViewModel && ((PointAndFigureChartViewModel)c).Chart.Id == message.Chart.Id) as PointAndFigureChartViewModel;
                     if (pnfChartVm != null)
                     {
                         ActiveDocument = (PaneViewModel)pnfChartVm;
@@ -139,17 +139,17 @@ namespace PnFDesktop.ViewModels
         public AvalonDockLayoutViewModel AdLayout => _adLayout;
 
         #region PnFChartPanes property ...
-        ObservableCollection<PaneViewModel> _pnfChartPanes;
-        public ObservableCollection<PaneViewModel> PnFChartPanes
+        ObservableCollection<PaneViewModel> _chartPanes;
+        public ObservableCollection<PaneViewModel> ChartPanes
         {
             get
             {
-                if (_pnfChartPanes == null)
+                if (_chartPanes == null)
                 {
-                    _pnfChartPanes = new ObservableCollection<PaneViewModel>();
+                    _chartPanes = new ObservableCollection<PaneViewModel>();
                 }
 
-                return _pnfChartPanes;
+                return _chartPanes;
             }
         }
         #endregion
@@ -236,9 +236,9 @@ namespace PnFDesktop.ViewModels
             // source for viewpnfCharts.
             PointAndFigureChartViewModel pnfChartDesignerViewModel = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart, forceRefresh);
             PaneViewModel paneViewModel = pnfChartDesignerViewModel as PaneViewModel;
-            if (!PnFChartPanes.Contains(paneViewModel))
+            if (!ChartPanes.Contains(paneViewModel))
             {
-                PnFChartPanes.Add(paneViewModel);
+                ChartPanes.Add(paneViewModel);
             }
             if (makeActive)
             {
@@ -251,7 +251,7 @@ namespace PnFDesktop.ViewModels
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
             // source for viewpnfCharts.
             PaneViewModel paneVm = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart) as PaneViewModel;
-            PnFChartPanes.Remove(paneVm);
+            ChartPanes.Remove(paneVm);
         }
 
         private RelayCommand _userOptionsCommand;
@@ -285,7 +285,7 @@ namespace PnFDesktop.ViewModels
             {
                 return _closePointAndFigureChartCommand
                        ?? (_closePointAndFigureChartCommand = new RelayCommand<PointAndFigureChartViewModel>(
-                           (c) => { PnFChartPanes.Remove((PaneViewModel)c); }));
+                           (c) => { ChartPanes.Remove((PaneViewModel)c); }));
             }
         }
 
@@ -339,7 +339,12 @@ namespace PnFDesktop.ViewModels
         ObservableObject IViewModelResolver.ContentViewModelFromID(string contentId)
         {
             System.Diagnostics.Debug.WriteLine($"Resolving for content id:\"{contentId}\"");
-            var pnfChartVM = this.PnFChartPanes.FirstOrDefault(d => d.ContentId == contentId);
+            var anchorable_vm = this.Tools.FirstOrDefault(d => d.ContentId == contentId);
+            if (anchorable_vm != null) {
+                return anchorable_vm;
+            }
+
+            var pnfChartVM = this.ChartPanes.FirstOrDefault(d => d.ContentId == contentId);
             if (pnfChartVM != null)
             {
                 return pnfChartVM;

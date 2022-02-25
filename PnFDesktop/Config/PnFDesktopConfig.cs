@@ -65,9 +65,9 @@ namespace PnFDesktop.Config
         }
 
 
-        public static string UserSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UnitySoftware",
+        public static string UserSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UnitySoftware",
            PnFDesktopConfig.ProductName, PnFDesktopConfig.VersionBuild);
-        public static string ErrorLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UnitySoftware",
+        public static string ErrorLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UnitySoftware",
            PnFDesktopConfig.ProductName, PnFDesktopConfig.VersionBuild, "Errors");
 
         static PnFDesktopConfig()

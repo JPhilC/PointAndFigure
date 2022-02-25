@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using PnFDesktop.Classes;
+using PnFDesktop.Config;
 using PnFDesktop.Interfaces;
 using PnFDesktop.Messaging;
 using Xceed.Wpf.AvalonDock;
@@ -190,12 +191,12 @@ namespace PnFDesktop.ViewModels
             {
                 _parent.IsBusy = true;
 
-                layoutFileName = System.IO.Path.Combine(Environment.SpecialFolder.ApplicationData.ToString(), "PnFDesktop", AvalonDockLayoutViewModel.LayoutFileName);
+                layoutFileName = System.IO.Path.Combine(PnFDesktopConfig.UserSettingsPath, AvalonDockLayoutViewModel.LayoutFileName);
 
                 if (!System.IO.File.Exists(layoutFileName))
                 {
                     // Check for default layout if no user layout at the moment.
-                    layoutFileName = System.IO.Path.Combine(Environment.SpecialFolder.ApplicationData.ToString(), "PnFDesktop", AvalonDockLayoutViewModel.DefaultLayoutFilename);
+                    layoutFileName = System.IO.Path.Combine(PnFDesktopConfig.UserSettingsPath, AvalonDockLayoutViewModel.LayoutFileName);
                     if (!System.IO.File.Exists(layoutFileName))
                     {
                         _parent.IsBusy = false;
@@ -269,7 +270,7 @@ namespace PnFDesktop.ViewModels
             if (xmlLayout == null)
                 return;
 
-            string fileName = System.IO.Path.Combine(Environment.SpecialFolder.ApplicationData.ToString(), "PnFDesktop", AvalonDockLayoutViewModel.LayoutFileName);
+            string fileName = System.IO.Path.Combine(PnFDesktopConfig.UserSettingsPath, AvalonDockLayoutViewModel.LayoutFileName);
 
             File.WriteAllText(fileName, xmlLayout);
         }

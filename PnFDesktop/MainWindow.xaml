@@ -7,52 +7,30 @@
         xmlns:classes="clr-namespace:PnFDesktop.Classes"
         mc:Ignorable="d"
         Title="Point and Figure Desktop"
-        Height="2100"
-        Width="3100"
+        d:DesignHeight="768"
+        d:DesignWidth="1024"
         DataContext="{Binding MainViewModel, Source={StaticResource Locator}}"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        LayoutUpdated="Window_LayoutUpdated"
+        Unloaded="Window_Unloaded">
     <Window.Resources>
         <classes:ActiveDocumentConverter x:Key="ActiveDocumentConverter"/>
     </Window.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-            <TextBlock Text="Theme:" Margin="0,0,10,0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="_themeCombo" SelectedIndex="0" Width="200">
-                <ComboBoxItem Content="Generic" />
-                <ComboBoxItem Content="Aero">
-                    <ComboBoxItem.Tag>
-                        <xcad:AeroTheme />
-                    </ComboBoxItem.Tag>
-                </ComboBoxItem>
-                <ComboBoxItem Content="VS2010">
-                    <ComboBoxItem.Tag>
-                        <xcad:VS2010Theme />
-                    </ComboBoxItem.Tag>
-                </ComboBoxItem>
-                <ComboBoxItem Content="Metro">
-                    <ComboBoxItem.Tag>
-                        <xcad:MetroTheme />
-                    </ComboBoxItem.Tag>
-                </ComboBoxItem>
-            </ComboBox>
-        </StackPanel>
-
-        <xcad:DockingManager Grid.Row="1"
+        <xcad:DockingManager
                              x:Name="dockingManager"
-                           AllowMixedOrientation="True"
-                           BorderBrush="Black"
-                           BorderThickness="1"
-                           Theme="{Binding ElementName=_themeCombo, Path=SelectedItem.Tag}"
-                           DocumentsSource="{Binding ChartPanes}"
-                           ActiveContent="{Binding ActiveChart, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
+                             AllowMixedOrientation="True"
+                             BorderBrush="Black"
+                             BorderThickness="1"
+                             AnchorablesSource="{Binding Tools}"
+                             DocumentsSource="{Binding ChartPanes}"
+                             ActiveContent="{Binding ActiveChart, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
                              DocumentClosed="dockingManager_DocumentClosed"
-                           classes:AvalonDockLayoutSerializer.LoadLayoutCommand="{Binding ADLayout.LoadLayoutCommand}"
-                           classes:AvalonDockLayoutSerializer.SaveLayoutCommand="{Binding ADLayout.SaveLayoutCommand}">
+                             classes:AvalonDockLayoutSerializer.LoadLayoutCommand="{Binding AdLayout.LoadLayoutCommand}"
+                             classes:AvalonDockLayoutSerializer.SaveLayoutCommand="{Binding AdLayout.SaveLayoutCommand}">
+            <xcad:DockingManager.Theme>
+                <xcad:AeroTheme />
+            </xcad:DockingManager.Theme>
             <xcad:DockingManager.LayoutItemTemplateSelector>
                 <classes:PanesTemplateSelector>
                     <classes:PanesTemplateSelector.PointAndFigureChartViewTemplate>
@@ -79,6 +57,16 @@
 
             <xcad:DockingManager.LayoutItemContainerStyleSelector>
                 <classes:PanesStyleSelector>
+                    <classes:PanesStyleSelector.ToolStyle>
+                        <Style TargetType="{x:Type xcad:LayoutAnchorableItem}">
+                            <Setter Property="Title" Value="{Binding Model.Title}"/>
+                            <!--<Setter Property="IconSource" Value="{Binding Model.IconSource}"/>-->
+                            <Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, Converter={StaticResource BoolToVis}, ConverterParameter={x:Static Visibility.Hidden}}"/>
+                            <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
+                            <Setter Property="IsSelected" Value="{Binding Model.IsSelected, Mode=TwoWay}"/>
+                            <Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>
+                        </Style>
+                    </classes:PanesStyleSelector.ToolStyle>
                     <classes:PanesStyleSelector.PointAndFigureChartStyle>
                         <Style TargetType="{x:Type xcad:LayoutItem}">
                             <Setter Property="Title" Value="{Binding Model.Title}"/>
@@ -89,6 +77,7 @@
                     </classes:PanesStyleSelector.PointAndFigureChartStyle>
                 </classes:PanesStyleSelector>
             </xcad:DockingManager.LayoutItemContainerStyleSelector>
+
             <xcad:DockingManager.LayoutUpdateStrategy>
                 <classes:LayoutInitializer/>
             </xcad:DockingManager.LayoutUpdateStrategy>
