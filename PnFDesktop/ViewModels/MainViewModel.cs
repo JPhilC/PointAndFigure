@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Threading;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using PnFData.Model;
@@ -18,10 +8,18 @@ using PnFDesktop.Controls;
 using PnFDesktop.Interfaces;
 using PnFDesktop.Messaging;
 using PnFDesktop.ViewCharts;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace PnFDesktop.ViewModels
 {
-    public class MainViewModel: ObservableObject, ILayoutViewModelParent, IViewModelResolver
+    public class MainViewModel : ObservableObject, ILayoutViewModelParent, IViewModelResolver
     {
         public Action ExitApplicationAction { get; set; }
 
@@ -35,7 +33,7 @@ namespace PnFDesktop.ViewModels
 
             if (!DesignerLibrary.IsInDesignMode)
             {
-                _adLayout = new AvalonDockLayoutViewModel(this);
+                AdLayout = new AvalonDockLayoutViewModel(this);
             }
 
             WeakReferenceMessenger.Default.Register<PointAndFigureChartClosedMessage>(this, (r, message) =>
@@ -43,10 +41,10 @@ namespace PnFDesktop.ViewModels
                 if (message.Sender != this)
                 {
                     // Remove the ModelDesignerViewpnfChart from the list of open documents.
-                    PaneViewModel vm = ChartPanes.FirstOrDefault(m => m.ContentId == "PointAndFigureChart_" + message.ViewModel.Chart.Id.ToString());
+                    PaneViewModel vm = Charts.FirstOrDefault(m => m.ContentId == "PointAndFigureChart_" + message.ViewModel.Chart.Id.ToString());
                     if (vm != null)
                     {
-                        ChartPanes.Remove(vm);
+                        Charts.Remove(vm);
                     }
                 }
             });
@@ -56,7 +54,7 @@ namespace PnFDesktop.ViewModels
             {
                 if (message.Sender != this)
                 {
-                    PointAndFigureChartViewModel pnfChartVm = ChartPanes.FirstOrDefault(c => c is PointAndFigureChartViewModel && ((PointAndFigureChartViewModel)c).Chart.Id == message.Chart.Id) as PointAndFigureChartViewModel;
+                    PointAndFigureChartViewModel pnfChartVm = Charts.FirstOrDefault(c => c is PointAndFigureChartViewModel && ((PointAndFigureChartViewModel)c).Chart.Id == message.Chart.Id) as PointAndFigureChartViewModel;
                     if (pnfChartVm != null)
                     {
                         ActiveDocument = (PaneViewModel)pnfChartVm;
@@ -134,24 +132,12 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        private AvalonDockLayoutViewModel _adLayout = null;
+        public AvalonDockLayoutViewModel AdLayout { get; } = null;
 
-        public AvalonDockLayoutViewModel AdLayout => _adLayout;
+        #region PointAndFigureCharts property ...
 
-        #region PnFChartPanes property ...
-        ObservableCollection<PaneViewModel> _chartPanes;
-        public ObservableCollection<PaneViewModel> ChartPanes
-        {
-            get
-            {
-                if (_chartPanes == null)
-                {
-                    _chartPanes = new ObservableCollection<PaneViewModel>();
-                }
+        public ObservableCollection<PaneViewModel> Charts { get; } = new ObservableCollection<PaneViewModel>();
 
-                return _chartPanes;
-            }
-        }
         #endregion
 
         private PaneViewModel _activeDocument = null;
@@ -162,28 +148,24 @@ namespace PnFDesktop.ViewModels
             get => _activeDocument;
             set
             {
-                if (_activeDocument == value)
+                if (SetProperty(ref _activeDocument, value))
                 {
-                    return;
+                    UpdateActiveModel(_activeDocument);
                 }
-                _activeDocument = value;
-                OnPropertyChanged();
-                UpdateActiveModel(_activeDocument);
             }
         }
 
 
         private void UpdateActiveModel(PaneViewModel paneVm)
         {
-            PointAndFigureChartViewModel designerVm = paneVm as PointAndFigureChartViewModel;
-            if (designerVm != null)
-            {
+            IPointAndFigureChartViewModel designerVm = paneVm as IPointAndFigureChartViewModel;
+            if (designerVm != null) {
                 ActiveChart = designerVm.Chart;
                 ActiveObject = ActiveChart;
             }
         }
 
-        private PnFChart _activeChart = null;
+        private PnFChart _activePnFChart = null;
 
         /// <summary>
         /// Sets and gets the ActiveModel property.
@@ -191,10 +173,10 @@ namespace PnFDesktop.ViewModels
         /// </summary>
         public PnFChart ActiveChart
         {
-            get => _activeChart;
+            get => _activePnFChart;
             set
             {
-                if (SetProperty(ref _activeChart, value))
+                if (SetProperty(ref _activePnFChart, value))
                 {
                     PrintPointAndFigureChartCommand.NotifyCanExecuteChanged();
                 }
@@ -211,17 +193,7 @@ namespace PnFDesktop.ViewModels
         public ObservableObject ActiveObject
         {
             get => _activeObject;
-
-            set
-            {
-                if (_activeObject == value)
-                {
-                    return;
-                }
-
-                _activeObject = value;
-                OnPropertyChanged();
-            }
+            set => SetProperty(ref _activeObject, value);
         }
 
         private void LoadTools()
@@ -235,14 +207,13 @@ namespace PnFDesktop.ViewModels
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
             // source for viewpnfCharts.
             PointAndFigureChartViewModel pnfChartDesignerViewModel = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart, forceRefresh);
-            PaneViewModel paneViewModel = pnfChartDesignerViewModel as PaneViewModel;
-            if (!ChartPanes.Contains(paneViewModel))
+            if (!Charts.Contains(pnfChartDesignerViewModel))
             {
-                ChartPanes.Add(paneViewModel);
+                Charts.Add(pnfChartDesignerViewModel);
             }
             if (makeActive)
             {
-                ActiveDocument = paneViewModel;
+                ActiveDocument = pnfChartDesignerViewModel;
             }
         }
 
@@ -251,7 +222,7 @@ namespace PnFDesktop.ViewModels
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
             // source for viewpnfCharts.
             PaneViewModel paneVm = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart) as PaneViewModel;
-            ChartPanes.Remove(paneVm);
+            Charts.Remove(paneVm);
         }
 
         private RelayCommand _userOptionsCommand;
@@ -274,6 +245,26 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        private RelayCommand _openTestChartCommand;
+
+        /// <summary>
+        /// Close the current pnfChart display window
+        /// </summary>
+        public RelayCommand OpenTestChartCommand
+        {
+            get
+            {
+                return _openTestChartCommand
+                       ?? (_openTestChartCommand = new RelayCommand(
+                           () =>
+                           {
+                               PnFChart testChart = _dataService.GetPointAndFigureChart("TEST", 5, 3);
+                               OpenPointAndFigureChart(testChart, true);
+                           }));
+            }
+        }
+
+
         private RelayCommand<PointAndFigureChartViewModel> _closePointAndFigureChartCommand;
 
         /// <summary>
@@ -285,7 +276,7 @@ namespace PnFDesktop.ViewModels
             {
                 return _closePointAndFigureChartCommand
                        ?? (_closePointAndFigureChartCommand = new RelayCommand<PointAndFigureChartViewModel>(
-                           (c) => { ChartPanes.Remove((PaneViewModel)c); }));
+                           (c) => { Charts.Remove((PaneViewModel)c); }));
             }
         }
 
@@ -304,11 +295,13 @@ namespace PnFDesktop.ViewModels
             {
                 return _printPointAndFigureChartCommand
                        ?? (_printPointAndFigureChartCommand = new RelayCommand(
-                           () => {
+                           () =>
+                           {
                                // Pass on the message to whoever is listening and ready to do the printing
                                // most probably the CaseDesigner control since this has a handle on the visual.
                                WeakReferenceMessenger.Default.Send<PrintPointAndFigureChartMessage>(new PrintPointAndFigureChartMessage(this, ActiveChart.Id));
-                           }, () => {
+                           }, () =>
+                           {
                                return (this.ActiveChart != null);
                            }));
             }
@@ -340,11 +333,12 @@ namespace PnFDesktop.ViewModels
         {
             System.Diagnostics.Debug.WriteLine($"Resolving for content id:\"{contentId}\"");
             var anchorable_vm = this.Tools.FirstOrDefault(d => d.ContentId == contentId);
-            if (anchorable_vm != null) {
+            if (anchorable_vm != null)
+            {
                 return anchorable_vm;
             }
 
-            var pnfChartVM = this.ChartPanes.FirstOrDefault(d => d.ContentId == contentId);
+            var pnfChartVM = this.Charts.FirstOrDefault(d => d.ContentId == contentId);
             if (pnfChartVM != null)
             {
                 return pnfChartVM;
@@ -356,7 +350,9 @@ namespace PnFDesktop.ViewModels
 
         public ObservableObject OpenContentViewModel(string contentId)
         {
+
             System.Diagnostics.Debug.WriteLine($"Opening for content id:\"{contentId}\"");
+            if (string.IsNullOrEmpty(contentId)) return null;
             /*
             Resolving for content id:"ModelDesigner_a84db061-1a2c-494f-945b-7a5abf7cd8ca"
             Opening for content id:"ModelDesigner_a84db061-1a2c-494f-945b-7a5abf7cd8ca"

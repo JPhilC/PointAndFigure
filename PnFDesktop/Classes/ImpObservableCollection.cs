@@ -145,12 +145,12 @@ namespace PnFDesktop.Classes
 
         protected virtual void OnItemsAdded(ICollection items)
         {
-            this.ItemsAdded(this, new CollectionItemsChangedEventArgs(items));
+            ItemsAdded?.Invoke(this, new CollectionItemsChangedEventArgs(items));
         }
 
         protected virtual void OnItemsRemoved(ICollection items)
         {
-            this.ItemsRemoved(this, new CollectionItemsChangedEventArgs(items));
+            ItemsRemoved?.Invoke(this, new CollectionItemsChangedEventArgs(items));
         }
 
         /// <summary>

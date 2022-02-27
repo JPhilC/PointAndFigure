@@ -8,8 +8,8 @@ namespace PnFDesktop.Classes
 {
     internal static class Constants
     {
-        public const float ChartMargin = 50f;
-        public const float DefaultChartWidth = 3000f;
-        public const float DefaultChartHeight = 2000f;
+        public const float ChartMargin = 10f;
+        public const float DefaultChartWidth = 400f;
+        public const float DefaultChartHeight = 300f;
     }
 }

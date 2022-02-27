@@ -36,12 +36,11 @@ namespace PnFDesktop.ViewModels
             if (DesignerLibrary.IsInDesignMode)
             {
                 SimpleIoc.Default.Register<IDataService, DesignDataService>();
-                // SimpleIoc.Default.Register<IImageDataService, DesignImageDataService>();
             }
             else
             {
-                SimpleIoc.Default.Register<IDataService, DataService>();
-                // SimpleIoc.Default.Register<IImageDataService, ImageDataService>();
+                SimpleIoc.Default.Register<IDataService, DesignDataService>();
+                //TODO: Reinstate SimpleIoc.Default.Register<IDataService, DataService>();
             }
 
             SimpleIoc.Default.Register<MainViewModel>();
@@ -83,7 +82,7 @@ namespace PnFDesktop.ViewModels
         /// <summary>
         /// This is just used to support design mode in the Procedure designer.
         /// </summary>
-        public PointAndFigureChartViewModel PointAndFigureChartView
+        public PointAndFigureChartViewModel PointAndFigureChartViewModel
         {
             get
             {
@@ -112,7 +111,8 @@ namespace PnFDesktop.ViewModels
             else
             {
                 // Otherwise create it and register it before returning
-                MessageLog.LogMessage(this, LogType.Error, "Unable to display the current case");
+                vm = new PointAndFigureChartViewModel(newChart);
+                SimpleIoc.Default.Register(() => vm, key, true);
             }
             return vm;
         }

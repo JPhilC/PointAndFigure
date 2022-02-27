@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Media;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using PnFData.Model;
+using PnFDesktop.Classes;
 
 namespace PnFDesktop.ViewModels
 {
@@ -78,7 +79,7 @@ namespace PnFDesktop.ViewModels
                 DrawingImage image = Application.Current.TryFindResource(ArtworkKey) as DrawingImage;
                 if (image == null)
                 {
-                    // TODO:  MessageLog.LogMessage(this, LogType.Error, string.Format("The artwork is missing for key '{0}'.", ArtworkKey));
+                    MessageLog.LogMessage(this, LogType.Error, $"The artwork is missing for key '{ArtworkKey}'.");
                     image = Application.Current.TryFindResource("UnknownPort") as DrawingImage;
                 }
                 return image;
@@ -93,10 +94,10 @@ namespace PnFDesktop.ViewModels
                 switch (Box.BoxType)
                 {
                     case PnFBoxType.O:
-                        key = "OBox5x5";
+                        key = "OBox5X5";
                         break;
                     case PnFBoxType.X:
-                        key = "XBox5x5";
+                        key = "XBox5X5";
                         break;
                     default:
                         break;
@@ -106,43 +107,11 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        /// <summary>
-        /// The X coordinate for the position of the node.
-        /// </summary>
-        public double OffsetX => (ActualSize.Width * -0.5);
-
-        /// <summary>
-        /// The Y coordinate for the position of the node.
-        /// </summary>
-        public double OffsetY => (ActualSize.Height * -0.5);
-
-
-        /// <summary>
-        /// The rendered width of the port
-        /// </summary>
-        private Size _ActualSize = new Size(20.0, 10.0);
-
-        /// <summary>
-        /// The rendered width of the port
-        /// </summary>
-        public Size ActualSize
-        {
-            get => _ActualSize;
-            set
-            {
-                if (SetProperty(ref _ActualSize, value))
-                {
-                    OnPropertyChanged("OffsetX");
-                    OnPropertyChanged("OffsetY");
-                }
-            }
-        }
-
-        public PointAndFigureBoxViewModel(PnFBox box, float chartGridSize)
+        public PointAndFigureBoxViewModel(PnFBox box, float chartGridSize, double reversingYfactor)
         {
             Box = box;
             _x = Box.Column.Index * chartGridSize;
-            _y = Box.Index * chartGridSize;
+            _y = reversingYfactor -(Box.Index * chartGridSize);
             OnPropertyChanged("X");
             OnPropertyChanged("Y");
         }

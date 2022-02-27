@@ -34,7 +34,7 @@ namespace PnFDesktop.Controls
 
 
         public static readonly DependencyProperty ParentPointAndFigureChartProperty =
-            DependencyProperty.Register("ParentPointAndFigureChart", typeof(PointAndFigureChart), typeof(PointAndFigureBoxItem),
+            DependencyProperty.Register("ParentPointAndFigureChart", typeof(PointAndFigureChartControl), typeof(PointAndFigureBoxItem),
                 new FrameworkPropertyMetadata(ParentPointAndFigureChart_PropertyChanged));
 
         public static readonly DependencyProperty ParentPointAndFigureColumnItemProperty =
@@ -47,9 +47,9 @@ namespace PnFDesktop.Controls
         /// <summary>
         /// Reference to the data-bound parent PointAndFigureChart.
         /// </summary>
-        public PointAndFigureChart ParentPointAndFigureChart
+        public PointAndFigureChartControl ParentPointAndFigureChart
         {
-            get => (PointAndFigureChart)GetValue(ParentPointAndFigureChartProperty);
+            get => (PointAndFigureChartControl)GetValue(ParentPointAndFigureChartProperty);
             set => SetValue(ParentPointAndFigureChartProperty, value);
         }
 

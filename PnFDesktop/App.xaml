@@ -9,7 +9,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Skins/MainSkin.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Skins/MainSkin.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Skins/PointAndFigureChartResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <viewModels:ViewModelLocator x:Key="Locator" />
             <BooleanToVisibilityConverter x:Key="BoolToVis" />

@@ -127,19 +127,19 @@ namespace PnFDesktop.ViewModels
         public ImpObservableCollection<PointAndFigureBoxViewModel> Boxes { get; }= new ImpObservableCollection<PointAndFigureBoxViewModel>();
         #endregion
 
-        public PointAndFigureColumnViewModel(PnFColumn column, float chartGridSize)
+        public PointAndFigureColumnViewModel(PnFColumn column, float chartGridSize, double reversingYFactor)
         {
             _column = column;
             _x = column.Index * chartGridSize;
             _y = 0f;
-            AddBoxes(chartGridSize);
+            AddBoxes(chartGridSize, reversingYFactor);
         }
 
-        private void AddBoxes(float chartGridSize)
+        private void AddBoxes(float chartGridSize, double reversingYfactor)
         {
             foreach (var box in Column.Boxes)
             {
-                this.Boxes.Add(new PointAndFigureBoxViewModel(box, chartGridSize));
+                this.Boxes.Add(new PointAndFigureBoxViewModel(box, chartGridSize, reversingYfactor));
             }
         }
 

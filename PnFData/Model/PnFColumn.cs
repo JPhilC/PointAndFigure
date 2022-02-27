@@ -84,6 +84,8 @@ namespace PnFData.Model
                 StartAt = day;
             }
 
+            string? mthIndicator = monthIndicator;  // Internal copy as we only want to use it once.
+
             // Subsequent boxes so may need to add more than one to get to the specified index.
             if (ColumnType == PnFColumnType.O)
             {
@@ -91,7 +93,8 @@ namespace PnFData.Model
                 while (CurrentBoxIndex > index)
                 {
                     CurrentBoxIndex--;
-                    AddBoxInternal(boxType, boxSize, CurrentBoxIndex, value, day, monthIndicator);
+                    AddBoxInternal(boxType, boxSize, CurrentBoxIndex, value, day, mthIndicator);
+                    mthIndicator = null;
                 }
             }
             else
@@ -100,7 +103,8 @@ namespace PnFData.Model
                 while (CurrentBoxIndex < index)
                 {
                     CurrentBoxIndex++;
-                    AddBoxInternal(boxType, boxSize, CurrentBoxIndex, value, day, monthIndicator);
+                    AddBoxInternal(boxType, boxSize, CurrentBoxIndex, value, day, mthIndicator);
+                    mthIndicator = null;    // Don't show month indicator multiple times
                 }
             }
 
@@ -116,7 +120,8 @@ namespace PnFData.Model
                 Size = boxSize,
                 Index = index,
                 Value = value,
-                Ticked = day
+                Ticked = day,
+                Column = this
             };
             Boxes.Add(currentBox);
 

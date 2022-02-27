@@ -393,7 +393,7 @@ namespace PnFDesktop.Views
         private void Refresh_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             // this.PointAndFigureChart.GetBindingExpression(NetworkView.ConnectionsSourceProperty).UpdateTarget();
-            this.PointAndFigureChartControl.GetBindingExpression(PointAndFigureChart.ColumnsSourceProperty).UpdateTarget();
+            this.PointAndFigureChartControl.GetBindingExpression(Controls.PointAndFigureChartControl.ColumnsSourceProperty).UpdateTarget();
         }
 
         /// <summary>

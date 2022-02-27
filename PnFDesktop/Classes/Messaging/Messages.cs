@@ -27,14 +27,32 @@ namespace PnFDesktop.Classes.Messaging
     public class PrintPointAndFigureChartMessage
     {
         public Object Sender { get; set; }
-        public Guid CaseId { get; set; }
+        public Guid ChartId { get; set; }
 
-        public PrintPointAndFigureChartMessage(object sender, Guid caseId)
+        public PrintPointAndFigureChartMessage(object sender, Guid chartId)
         {
             this.Sender = sender;
-            this.CaseId = caseId;
+            this.ChartId = chartId;
         }
     }
+
+    /// <summary>
+    /// A message envelope to signal that a P & F chart should be saved as an image
+    /// </summary>
+    public class SavePointAndFigureChartAsImageMessage
+    {
+        public Object Sender { get; set; }
+        public Guid ChartId { get; set; }
+
+        public string ImageFilename { get; set; }
+        public SavePointAndFigureChartAsImageMessage(object sender, Guid chartId, string imageFilename)
+        {
+            this.Sender = sender;
+            this.ChartId = chartId;
+            this.ImageFilename = imageFilename;
+        }
+    }
+
 
     public class PointAndFigureChartClosedMessage
     {

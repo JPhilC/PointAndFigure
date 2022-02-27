@@ -12,35 +12,35 @@ using PnFDesktop.Classes;
 
 namespace PnFDesktop.Controls
 {
-    public class PointAndFigureChart: Control
+    public class PointAndFigureChartControl: Control
     {
         #region Dependency Property/Event Definitions
 
         private static readonly DependencyPropertyKey ColumnsPropertyKey =
-            DependencyProperty.RegisterReadOnly("Columns", typeof(ImpObservableCollection<object>), typeof(PointAndFigureChart),
+            DependencyProperty.RegisterReadOnly("Columns", typeof(ImpObservableCollection<object>), typeof(PointAndFigureChartControl),
                 new FrameworkPropertyMetadata());
 
         public static readonly DependencyProperty ColumnsProperty = ColumnsPropertyKey.DependencyProperty;
 
         public static readonly DependencyProperty ColumnsSourceProperty =
-            DependencyProperty.Register("ColumnsSource", typeof(IEnumerable), typeof(PointAndFigureChart),
+            DependencyProperty.Register("ColumnsSource", typeof(IEnumerable), typeof(PointAndFigureChartControl),
                 new FrameworkPropertyMetadata(ColumnsSource_PropertyChanged));
 
         public static readonly DependencyProperty SelectedColumnProperty =
-            DependencyProperty.Register("SelectedColumn", typeof(object), typeof(PointAndFigureChart),
+            DependencyProperty.Register("SelectedColumn", typeof(object), typeof(PointAndFigureChartControl),
                 new FrameworkPropertyMetadata(null, new PropertyChangedCallback(OnSelectedColumnChanged), new CoerceValueCallback(CoerceSelectedColumnValue)));
 
         public static readonly DependencyProperty ColumnItemTemplateProperty =
-            DependencyProperty.Register("ColumnItemTemplate", typeof(DataTemplate), typeof(PointAndFigureChart));
+            DependencyProperty.Register("ColumnItemTemplate", typeof(DataTemplate), typeof(PointAndFigureChartControl));
 
         public static readonly DependencyProperty ColumnItemTemplateSelectorProperty =
-            DependencyProperty.Register("ColumnItemTemplateSelector", typeof(DataTemplateSelector), typeof(PointAndFigureChart));
+            DependencyProperty.Register("ColumnItemTemplateSelector", typeof(DataTemplateSelector), typeof(PointAndFigureChartControl));
 
         public static readonly DependencyProperty ColumnItemContainerStyleProperty =
-            DependencyProperty.Register("ColumnItemContainerStyle", typeof(Style), typeof(PointAndFigureChart));
+            DependencyProperty.Register("ColumnItemContainerStyle", typeof(Style), typeof(PointAndFigureChartControl));
 
         public static readonly DependencyProperty IsClearSelectionOnEmptySpaceClickEnabledProperty =
-            DependencyProperty.Register("IsClearSelectionOnEmptySpaceClickEnabled", typeof(bool), typeof(PointAndFigureChart),
+            DependencyProperty.Register("IsClearSelectionOnEmptySpaceClickEnabled", typeof(bool), typeof(PointAndFigureChartControl),
                 new FrameworkPropertyMetadata(true));
         #endregion
 
@@ -59,32 +59,28 @@ namespace PnFDesktop.Controls
 
         #endregion
 
-        public PointAndFigureChart()
+        public PointAndFigureChartControl()
         {
             //
             // Create a collection to contain columns.
             //
-            this.Columns = new ImpObservableCollection<object>();
+            SetValue(ColumnsPropertyKey, new ImpObservableCollection<object>()); 
         }
 
 
         /// <summary>
         /// Static constructor.
         /// </summary>
-        static PointAndFigureChart()
+        static PointAndFigureChartControl()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(PointAndFigureChart), new FrameworkPropertyMetadata(typeof(PointAndFigureChart)));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(PointAndFigureChartControl), new FrameworkPropertyMetadata(typeof(PointAndFigureChartControl)));
         }
 
 
         /// <summary>
         /// Collection of columns in the chart.
         /// </summary>
-        public ImpObservableCollection<object> Columns
-        {
-            get => (ImpObservableCollection<object>)GetValue(ColumnsProperty);
-            private set => SetValue(ColumnsProperty, value);
-        }
+        public ImpObservableCollection<object> Columns => (ImpObservableCollection<object>)GetValue(ColumnsProperty);
 
         /// <summary>
         /// The currently selected Column
@@ -139,7 +135,7 @@ namespace PnFDesktop.Controls
 
         private static void OnSelectedColumnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            PointAndFigureChart nv = d as PointAndFigureChart;
+            PointAndFigureChartControl nv = d as PointAndFigureChartControl;
             // Set the internal _SelectedColumn value before updating the ListBox selected Item
             // so that the SelectedItem changed event can check to see wether it should NOT set the value.
             try
@@ -175,7 +171,7 @@ namespace PnFDesktop.Controls
 
         private static object CoerceSelectedColumnValue(DependencyObject d, object value)
         {
-            PointAndFigureChart nv = d as PointAndFigureChart;
+            PointAndFigureChartControl nv = d as PointAndFigureChartControl;
             // return nv._SelectedColumn;
             // return nv.GetSelectedColumn();
             return nv.Columns.Where(n => n == value).FirstOrDefault();
@@ -204,7 +200,7 @@ namespace PnFDesktop.Controls
         /// </summary>
         private static void ColumnsSource_PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            PointAndFigureChart c = (PointAndFigureChart)d;
+            PointAndFigureChartControl c = (PointAndFigureChartControl)d;
 
             //
             // Clear 'Columns'.

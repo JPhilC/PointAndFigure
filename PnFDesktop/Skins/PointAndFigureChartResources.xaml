@@ -4,64 +4,132 @@
                     xmlns:system="clr-namespace:System;assembly=System.Runtime">
 
 
+    <SolidColorBrush
+        x:Key="selectionBorderColor"
+        Color="Blue"
+    />
 
-    <!-- 
-    Define a style for 'PointAndFigureColumnItem'.
-    
-    Binds 'X' and 'Y' in the view-model (the 'PointAndFigureColumnViewModel' class)
-    to 'X' and 'Y' in the NodeItem class.
-    
-    This sets the position of the column within the Canvas.
-    -->
-    <Style TargetType="{x:Type controls:PointAndFigureColumnItem}">
+    <SolidColorBrush
+        x:Key="selectionBorderBackgroundColor"
+        Color="Blue"
+        Opacity="0.25"
+    />
+
+    <!-- Default style and control-template for 'NodeItem'. -->
+    <Style TargetType="{x:Type controls:PointAndFigureColumnItem}" >
+
+        <!-- Data-bind the parent NetworkView. -->
         <Setter
-            Property="X"
-            Value="{Binding X}"
-        />
+            Property="ParentPointAndFigureChart"
+            Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}, Path=.}"
+            />
+
+        <!-- Set the position of the node within the canvas. -->
         <Setter
-            Property="Y"
-            Value="{Binding Y}"
-        />
+            Property="Canvas.Left"
+            Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+            />
         <Setter
-            Property="BoxOffsetX"
-            Value="{Binding BoxOffsetX}"
-        />
-        <Setter
-            Property="BoxOffsetY"
-            Value="{Binding BoxOffsetY}"
-        />
-        <Setter
-            Property="ZIndex"
-            Value="{Binding ZIndex}"
-        />
-        <Setter
-            Property="IsSelected"
-            Value="{Binding IsSelected}"
-        />
+            Property="Canvas.Top"
+            Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+            />
+
+        <!-- Set the z-order of the node within the canvas. -->
+        <Setter Property="Canvas.ZIndex" Value="{Binding ZIndex, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+
+        <!-- Set defaults for background and border. -->
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <!-- The control-template for the node. -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:PointAndFigureColumnItem}" >
+                    <Grid>
+                        <!-- 
+                        This border indicates that node is selected.
+                        Normally it is transparent, but when 'IsSelected' is set
+                        to 'true' the border brush becomes blue and its background
+                        becomds light blue.
+                        -->
+                        <Border
+                            x:Name="selectionBorder"
+                            Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Margin="{TemplateBinding Margin}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="2">
+
+                            <!-- 
+                            User-defined node content is presented here. 
+                            -->
+                            <ContentPresenter />
+                        </Border>
+
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected"  Value="True">
+
+                            <!-- When the node is selected, set the color of 'selectionBorder' to blue. -->
+                            <Setter
+                                TargetName="selectionBorder"
+                                Property="BorderBrush"
+                                Value="{StaticResource selectionBorderColor}"
+                                />
+                        </Trigger>
+
+                        <Trigger 
+                            Property="IsSelected"
+                            Value="True"
+                            >
+
+                            <!-- When the node is selected, set the background of 'selectionBorder' to light blue. -->
+                            <Setter
+                                TargetName="selectionBorder"
+                                Property="Background"
+                                Value="{StaticResource selectionBorderBackgroundColor}"
+                                />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- 
             Define the visual style for a 'PointAndFigureBoxItem'.
             -->
     <Style TargetType="{x:Type controls:PointAndFigureBoxItem}" >
+        <!-- Data-bind the parent NetworkView. -->
         <Setter
-            Property="X"
-            Value="{Binding X}"
-        />
-        <Setter
-            Property="Y"
-            Value="{Binding Y}"
-        />
-        <Setter
-            Property="ZIndex"
-            Value="{Binding ZIndex}"
+            Property="ParentPointAndFigureChart"
+            Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}, Path=.}"
         />
 
-        <!-- The visual template. -->
-        <Setter Property="Template" >
+        <!--Data-bind the parent NodeItem.-->
+        <Setter
+            Property="ParentPointAndFigureColumnItem"
+            Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureColumnItem}}, Path=.}"
+        />
+
+        <!-- Set the position of the node within the canvas. -->
+        <Setter
+            Property="Canvas.Left"
+            Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+        />
+        <Setter
+            Property="Canvas.Top"
+            Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+        />
+
+        <!-- The control-template for the connector. -->
+        <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type controls:PointAndFigureBoxItem}" >
-                    <!-- The visual for the boc. -->
+                <ControlTemplate 
+                    TargetType="{x:Type controls:PointAndFigureBoxItem}"
+                >
+                    <!-- The visual for the connector. -->
                     <Grid>
                         <!-- The names are added to the transforms below to prevent error appearing in the output window -->
                         <Grid.RenderTransform>
@@ -69,11 +137,44 @@
                                                 X="{Binding X}" 
                                                 Y="{Binding Y}"/>
                         </Grid.RenderTransform>
+                        <Image Source="{Binding Image}">
+                            <!--<Image.RenderTransform>
+                                <TransformGroup>
+                                    <TranslateTransform x:Name="innerTranslateTransform" X="0" Y="{Binding OffsetY}" />
+                                </TransformGroup>
+                            </Image.RenderTransform>-->
+                        </Image>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
+
+    <system:Double x:Key="BoxPenThickness">0.25</system:Double>
+    <SolidColorBrush x:Key="OColorBrush" Color="Red"/>
+    <SolidColorBrush x:Key="XColorBrush" Color="Black"/>
+
+    <!-- OBox -->
+    <DrawingImage x:Key="OBox5X5">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,2.5 A 2.5,2.5 0 0 1 5,2.5 A 2.5,2.5, 0 0 1 0,2.5">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource OColorBrush}" Thickness="{StaticResource BoxPenThickness}" />
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- XBox -->
+    <DrawingImage x:Key="XBox5X5">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,-5 L 5,0 M 0,0 L5,-5">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource XColorBrush}" Thickness="{StaticResource BoxPenThickness}"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
 
     <!-- 
     A data-template that defines the UI for boxes.
@@ -104,49 +205,136 @@
         </Setter>
     </Style>
 
-    <system:Double x:Key="BoxPenThickness">0.25</system:Double>
-    <SolidColorBrush x:Key="OColorBrush" Color="Red"/>
-    <SolidColorBrush x:Key="XColorBrush" Color="Black"/>
 
-    <!-- OBox -->
-    <DataTemplate x:Key="OBox5x5">
-        <Canvas>
-            <Image Canvas.Left="{Binding X}" 
-                   Canvas.Top="{Binding Y}" >
-                <Image.Source>
-                    <DrawingImage>
-                        <DrawingImage.Drawing>
-                            <GeometryDrawing Geometry="M 0,2.5 A 2.5,2.5 0 0 1 5,2.5 A 2.5,2.5, 0 0 1 0,2.5">
-                                <GeometryDrawing.Pen>
-                                    <Pen Brush="{StaticResource OColorBrush}" Thickness="{StaticResource BoxPenThickness}" />
-                                </GeometryDrawing.Pen>
-                            </GeometryDrawing>
-                        </DrawingImage.Drawing>
-                    </DrawingImage>
-                </Image.Source>
-            </Image>
-        </Canvas>
-    </DataTemplate>
 
-    <!-- OBox -->
-    <DataTemplate x:Key="XBox5x5">
-        <Canvas>
-            <Image Canvas.Left="{Binding X}" 
-                   Canvas.Top="{Binding Y}" >
-                <Image.Source>
-                    <DrawingImage>
-                        <DrawingImage.Drawing>
-                            <GeometryDrawing Geometry="M 0,-5 L 5,0 M 0,0 L5,-5">
-                                <GeometryDrawing.Pen>
-                                    <Pen Brush="{StaticResource XColorBrush}" Thickness="{StaticResource BoxPenThickness}"/>
-                                </GeometryDrawing.Pen>
-                            </GeometryDrawing>
-                        </DrawingImage.Drawing>
-                    </DrawingImage>
-                </Image.Source>
-            </Image>
-        </Canvas>
-    </DataTemplate>
+    <!-- 
+    Override the style of the ListBox to remove the ScrollViewer.
+    All we want is ListBox logic but based on a Canvas.
+    -->
+    <Style x:Key="noScrollViewerListBoxStyle" TargetType="ListBox">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+                    <!-- 
+                    The ListBoxItems are presented in a Canvas.
+                    'IsItemsHost' is set to 'True' so that the ListBox
+                    uses the Canvas as the container for its items.
+                    -->
+                    <Canvas 
+                        IsItemsHost="True" 
+                    />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Default style and visual template for 'NetworkView'. -->
+    <Style TargetType="{x:Type controls:PointAndFigureChartControl}" >
+
+        <!-- The visual template. -->
+        <Setter 
+            Property="Template"
+            >
+            <Setter.Value>
+                <ControlTemplate 
+                    TargetType="{x:Type controls:PointAndFigureChartControl}"
+                    >
+                    <Border 
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Background="{TemplateBinding Background}"
+                        >
+                        <Grid HorizontalAlignment="Left" VerticalAlignment="Top" >
+                            <!-- Control that presents the nodes. -->
+                            <controls:PointAndFigureColumnItemsControl
+                                x:Name="PART_ColumnItemsControl"
+                                ItemsSource="{TemplateBinding Columns}"
+                                SelectionMode="Extended"
+                                Style="{StaticResource noScrollViewerListBoxStyle}"
+                                ItemTemplate="{TemplateBinding ColumnItemTemplate}"
+                                ItemTemplateSelector="{TemplateBinding ColumnItemTemplateSelector}"
+                                ItemContainerStyle="{TemplateBinding ColumnItemContainerStyle}"
+                                />
+
+                            <!-- Control that presents the Annotations. -->
+                            <!--<local:AnnotationItemsControl
+                                x:Name="PART_AnnotationItemsControl"
+                                ItemsSource="{TemplateBinding Annotations}"
+                                SelectionMode="Extended"
+                                Style="{StaticResource noScrollViewerListBoxStyle}"
+                                ItemTemplate="{TemplateBinding AnnotationItemTemplate}"
+                                ItemTemplateSelector="{TemplateBinding AnnotationItemTemplateSelector}"
+                                ItemContainerStyle="{TemplateBinding AnnotationItemContainerStyle}"
+                                />-->
+
+                            <!--
+                            This Canvas and Border are used as a very simple way to render a drag selection rectangle.
+                            -->
+                            <Canvas
+                                x:Name="PART_DragSelectionCanvas"
+                                Visibility="Collapsed"
+                                >
+                                <Border 
+                                    x:Name="PART_DragSelectionBorder"
+                                    BorderBrush="Blue"
+                                    BorderThickness="1"
+                                    Background="LightBlue"
+                                    CornerRadius="1"
+                                    Opacity="0.5"
+                                    />
+                            </Canvas>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--
+    Default style and template for the ZoomAndPanControl.
+    -->
+    <Style TargetType="{x:Type controls:ZoomAndPanControl}" >
+
+        <Setter 
+            Property="Template"
+            >
+            <Setter.Value>
+
+                <ControlTemplate 
+                    TargetType="{x:Type controls:ZoomAndPanControl}"
+                    >
+
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        >
+
+                        <!-- 
+                        The ContentPresenter is used to scale and offset the content of ZoomAndPanControl.
+                    
+                        A transforms computed from 'ContentScale', 'ContentOffsetX' and 'ContentOffsetY' are assigned 
+                        to the 'RenderTransform' property in OnApplyTemplate in ZoomAndPanControl.cs.
+                        
+                        The alignment is set to top-left.  This allows the content offset to be used to place
+                        the content in the center of the viewport when the viewport is bigger than the content.
+                        -->
+                        <ContentPresenter 
+							x:Name="PART_Content"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            />
+
+                    </Border>
+
+                </ControlTemplate>
+
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+
 
 
 </ResourceDictionary>

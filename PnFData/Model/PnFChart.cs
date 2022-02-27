@@ -15,6 +15,8 @@ namespace PnFData.Model
 
     public class PnFChart: EntityData
     {
+        [MaxLength(50)]
+        public string? Name { get; set; }
         public PnFChartSource Source { get; set; }
 
         public DateTime GeneratedDate { get; set; }

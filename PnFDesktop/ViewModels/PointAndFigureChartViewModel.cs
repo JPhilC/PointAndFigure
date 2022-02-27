@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
-using PnFData.Model;
+﻿using PnFData.Model;
 using PnFDesktop.Classes;
+using PnFDesktop.Interfaces;
 using PnFDesktop.Services;
 using PnFDesktop.ViewModels;
+using PnFDesktop.Views;
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace PnFDesktop.ViewCharts
 {
-    public class PointAndFigureChartViewModel:PaneViewModel
+    public class PointAndFigureChartViewModel:PaneViewModel, IPointAndFigureChartViewModel
     {
         #region Internal data members ...
         ///
@@ -66,10 +63,18 @@ namespace PnFDesktop.ViewCharts
         public PnFChart Chart
         {
             get => _chart;
-            set => SetProperty(ref _chart, value);
+            set
+            {
+                if (SetProperty(ref _chart, value))
+                {
+                    OnPropertyChanged("ChartId");
+                }
+            }
         }
 
-        private float _gridSize = 10f;
+        public Guid ChartId => _chart.Id;
+
+        private float _gridSize = 5f;
 
         public float GridSize
         {
@@ -120,18 +125,6 @@ namespace PnFDesktop.ViewCharts
                 }
 
             }
-        }
-
-
-        private bool _magnifierVisible = false;
-        /// <summary>
-        /// Sets and gets the MagnifierPosition property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public bool MagnifierVisible
-        {
-            get => _magnifierVisible;
-            set => SetProperty(ref _magnifierVisible, value);
         }
 
 
@@ -232,6 +225,51 @@ namespace PnFDesktop.ViewCharts
         public ImpObservableCollection<PointAndFigureColumnViewModel> Columns { get; } =
             new ImpObservableCollection<PointAndFigureColumnViewModel>();
 
+        private PointAndFigureColumnViewModel _selectedColumn;
+        public PointAndFigureColumnViewModel SelectedColumn
+        {
+            get => _selectedColumn;
+            set => SetProperty(ref _selectedColumn, value);
+        }
+
+        public new string Title
+        {
+            get
+            {
+                if (Chart != null && !string.IsNullOrEmpty(Chart.Name)) {
+                    return Chart.Name;
+                }
+                else {
+                    return "A Chart";
+                }
+            }
+        }
+
+
+        private string _tooltip = null;
+
+        public string Tooltip
+        {
+            get => _tooltip;
+            set => SetProperty(ref _tooltip, value);
+        }
+
+
+        #region Control property ...
+
+        private UserControl _control = null;
+
+        /// <summary>
+        /// Sets and gets the Control property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public UserControl Control
+        {
+            get => _control;
+            set => SetProperty(ref _control, value);
+        }
+        #endregion
+
         [PreferredConstructor]
         public PointAndFigureChartViewModel()
         {
@@ -239,6 +277,7 @@ namespace PnFDesktop.ViewCharts
             {
                 this.Chart = new DesignDataService().GetPointAndFigureChart("Test", 5, 3);
                 CalculateLimits();
+                AddColumns();
             }
         }
 
@@ -246,53 +285,76 @@ namespace PnFDesktop.ViewCharts
         {
             Chart = chart;
 
-            AddColumns();
-
             CalculateLimits();
-
+            AddColumns();
             // At this stage the content is at least a margins width from the top and left
             // So the width and height are the right and bottom limit plus the margin.
             ContentHeight = _contentBottomLimit + Constants.ChartMargin;
             ContentWidth = _contentRightLimit + Constants.ChartMargin;
 
+            Control = new PointAndFigureChartView(this);
         }
 
         #region Helper methods ...
         private void AddColumns()
         {
+            double reversingYfactor =  _maxY ;
             Columns.Clear();
             foreach (PnFColumn column in Chart.Columns)
             {
-                PointAndFigureColumnViewModel columnVm = new PointAndFigureColumnViewModel(column, GridSize);
+                PointAndFigureColumnViewModel columnVm = new PointAndFigureColumnViewModel(column, GridSize, reversingYfactor);
                 Columns.Add(columnVm);
             }
         }
 
+        private double _minY;
+        private double _maxY;
         /// <summary>
         /// Calculates the drawing limits and if necessary shifts the columns and annotations
         /// to get them back on the sheet.
         /// </summary>
         private void CalculateLimits()
         {
-            double columnLeftLimit = 0.0;
-            double columnTopLimit = 0.0;
+            
+            double columnLeftLimit = 0d;
+            double columnTopLimit = 0d;
             double columnRightLimit;
             double columnBottomLimit;
             //double annLeftLimit = 0.0;
             //double annTopLimit = 0.0;
             //double annRightLimit;
             //double annBottomLimit;
+            int minColIndex = int.MaxValue;
+            int maxColIndex = int.MinValue;
+            int minBoxIndex = int.MaxValue;
+            int maxBoxIndex = int.MinValue;
+
             if (Chart.Columns.Count > 0)
             {
-                columnLeftLimit = Math.Min(Chart.Columns.Select(n => n.Index * GridSize).Min(), 0.0);
-                columnTopLimit = Math.Min(Chart.Columns.Select(n => n.Boxes.Select(b=>b.Index).Min() * GridSize).Min(), 0.0);
-                columnRightLimit = Math.Max(Chart.Columns.Select(n => n.Index * GridSize).Max(), Constants.DefaultChartWidth);
-                columnBottomLimit = Math.Max(Chart.Columns.Select(n => n.Boxes.Select(b=>b.Index).Max() * GridSize).Max(), Constants.DefaultChartHeight);
+                foreach (var column in Chart.Columns)
+                {
+                    minColIndex = Math.Min(minColIndex, column.Index);
+                    maxColIndex = Math.Max(maxColIndex, column.Index);
+                    foreach (var box in column.Boxes)
+                    {
+                        minBoxIndex = Math.Min(minBoxIndex, box.Index);
+                        maxBoxIndex = Math.Max(maxBoxIndex, box.Index);
+                    }
+                }
+                columnLeftLimit = Math.Min((minColIndex * GridSize), 0.0);
+                columnTopLimit = Math.Min((minBoxIndex * GridSize), 0.0);
+                columnRightLimit = Math.Max((maxColIndex * GridSize), Constants.DefaultChartWidth);
+                columnBottomLimit = Math.Max((maxBoxIndex * GridSize), Constants.DefaultChartHeight);
+
+                _minY = minBoxIndex * GridSize;
+                _maxY = maxBoxIndex * GridSize;
             }
             else
             {
                 columnRightLimit = Constants.DefaultChartWidth;
                 columnBottomLimit = Constants.DefaultChartHeight;
+                _minY = 0;
+                _maxY = Constants.DefaultChartHeight;
             }
 
             _contentLeftLimit = columnLeftLimit;

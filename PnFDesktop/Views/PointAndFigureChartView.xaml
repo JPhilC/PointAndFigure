@@ -8,14 +8,14 @@
              xmlns:vm="clr-namespace:PnFDesktop.ViewModels"
              xmlns:controls="clr-namespace:PnFDesktop.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="900" d:DesignWidth="1800"
+             Loaded="PointAndFigureChartView_OnLoaded"
+             FocusManager.FocusedElement="{Binding ElementName=PointAndFigureChartControl}">
+    <!--d:DataContext="{Binding PointAndFigureChartViewModel, Source={StaticResource Locator}}">-->
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Skins/PointAndFigureChartResources.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-            <classes:ColumnPropertyProvider x:Key="ColumnPropertyProvider"/>
-            <classes:BoxPropertyProvider x:Key="BoxPropertyProvider"/>
+            <classes:ColumnPropertyConverter x:Key="ColumnPropertyConverter"/>
+            <classes:BoxPropertyConverter x:Key="BoxPropertyConverter"/>
             <classes:ScaleToValueConverter x:Key="ScaleToValueConverter"/>
 
             <!-- UI commands. -->
@@ -28,20 +28,27 @@
 
             <DataTemplate DataType="{x:Type vm:PointAndFigureColumnViewModel}">
                 <Grid>
+                    <!--<Viewbox HorizontalAlignment="Left" VerticalAlignment="Top"
+                             Stretch="None">
+                        <Grid>-->
+                            <ItemsControl x:Name="PART_BoxItemsControl"
+                                      ItemsSource="{Binding Boxes}"
+                                      Style="{StaticResource BoxItemsList}"
+                                      Focusable="True"/>
+                        <!--</Grid>
+                    </Viewbox>-->
                     <Grid.ToolTip>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock>
-                                <TextBlock.Text>
-                                    <Binding Path="Column" Converter="{StaticResource ColumnPropertyConverter}"
-                                         ConverterParameter="{x:Static classes:ColumnPropertyEnum.Tooltip}" />
-                                </TextBlock.Text>
-                            </TextBlock>
-                        </StackPanel>
-
+                        <TextBlock Text="{Binding X}"/>
                     </Grid.ToolTip>
-                    <ItemsControl ItemsSource="{Binding Boxes}"
-                              Focusable="False"
-                              Style="{StaticResource BoxItemsList}"/>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:PointAndFigureBoxViewModel}">
+                <Grid>
+                    <controls:PointAndFigureBoxItem />
+                    <Grid.ToolTip>
+                        <TextBlock Text="{Binding Y}"/>
+                    </Grid.ToolTip>
                 </Grid>
             </DataTemplate>
         </ResourceDictionary>
@@ -285,7 +292,7 @@
                         Width="{Binding ContentWidth}"
                         Height="{Binding ContentHeight}"
                     >
-                        <controls:PointAndFigureChart  x:Name="PointAndFigureChartControl"
+                        <controls:PointAndFigureChartControl  x:Name="PointAndFigureChartControl"
                                          ColumnsSource="{Binding Columns}"
                                          SelectedColumn="{Binding SelectedColumn, Mode=TwoWay}"      
                             
@@ -294,10 +301,10 @@
                                          MouseMove="PointAndFigureChart_MouseMove"
                                          MouseWheel="PointAndFigureChart_MouseWheel"
                         >
-                            <controls:PointAndFigureChart.Background>
+                            <controls:PointAndFigureChartControl.Background>
                                 <SolidColorBrush Color="Azure"/>
-                            </controls:PointAndFigureChart.Background>
-                        </controls:PointAndFigureChart>
+                            </controls:PointAndFigureChartControl.Background>
+                        </controls:PointAndFigureChartControl>
                         <!--
                         This Canvas and Border are used as a very simple way to render a drag rectangle that the user
                         uses to specify an area to zoom in on.
@@ -315,7 +322,6 @@
                                 Opacity="0"
                             />
                         </Canvas>
-
                     </Grid>
                 </AdornerDecorator>
             </controls:ZoomAndPanControl>

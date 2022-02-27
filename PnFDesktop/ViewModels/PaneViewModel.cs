@@ -23,12 +23,8 @@ namespace PnFDesktop.ViewModels
         {
         }
 
-        /// <summary>
-        /// The <see cref="InitialPaneLocation" /> property's name.
-        /// </summary>
-        public const string InitialPaneLocationPropertyName = "InitialPaneLocation";
 
-        private InitialPaneLocation _InitialPaneLocation = InitialPaneLocation.Left;
+        private InitialPaneLocation _initialPaneLocation = InitialPaneLocation.Left;
 
         /// <summary>
         /// Sets and gets the InitialPaneLocation property.
@@ -36,30 +32,13 @@ namespace PnFDesktop.ViewModels
         /// </summary>
         public InitialPaneLocation InitialPaneLocation
         {
-            get
-            {
-                return _InitialPaneLocation;
-            }
-
-            set
-            {
-                if (_InitialPaneLocation == value)
-                {
-                    return;
-                }
-
-                _InitialPaneLocation = value;
-                OnPropertyChanged(InitialPaneLocationPropertyName);
-            }
+            get => _initialPaneLocation;
+            set => SetProperty(ref _initialPaneLocation, value);
         }
 
         #region Title property ...
-        /// <summary>
-        /// The <see cref="Title" /> property's name.
-        /// </summary>
-        public const string TitlePropertyName = "Title";
 
-        private string _Title = string.Empty;
+        private string _title = string.Empty;
 
         /// <summary>
         /// Sets and gets the Title property.
@@ -67,31 +46,14 @@ namespace PnFDesktop.ViewModels
         /// </summary>
         public string Title
         {
-            get
-            {
-                return _Title;
-            }
-
-            set
-            {
-                if (_Title == value)
-                {
-                    return;
-                }
-
-                _Title = value;
-                OnPropertyChanged(TitlePropertyName);
-            }
+            get => _title;
+            set => SetProperty(ref _title, value);
         }
         #endregion
 
         #region ContentId property ...
-        /// <summary>
-        /// The <see cref="ContentId" /> property's name.
-        /// </summary>
-        public const string ContentIdPropertyName = "ContentId";
 
-        private string _ContentId = string.Empty;
+        private string _contentId = string.Empty;
 
         /// <summary>
         /// Sets and gets the ContentId property.
@@ -99,32 +61,15 @@ namespace PnFDesktop.ViewModels
         /// </summary>
         public string ContentId
         {
-            get
-            {
-                return _ContentId;
-            }
-
-            set
-            {
-                if (_ContentId == value)
-                {
-                    return;
-                }
-
-                _ContentId = value;
-                OnPropertyChanged(ContentIdPropertyName);
-            }
+            get => _contentId;
+            set => SetProperty(ref _contentId, value);
         }
         #endregion
 
         #region IsSelected property ...
 
-        /// <summary>
-        /// The <see cref="IsSelected" /> property's name.
-        /// </summary>
-        public const string IsSelectedPropertyName = "IsSelected";
 
-        private bool _IsSelected = false;
+        private bool _isSelected = false;
 
         /// <summary>
         /// Sets and gets the IsSelected property.
@@ -132,31 +77,14 @@ namespace PnFDesktop.ViewModels
         /// </summary>
         public bool IsSelected
         {
-            get
-            {
-                return _IsSelected;
-            }
-
-            set
-            {
-                if (_IsSelected == value)
-                {
-                    return;
-                }
-
-                _IsSelected = value;
-                OnPropertyChanged(IsSelectedPropertyName);
-            }
+            get => _isSelected;
+            set => SetProperty(ref _isSelected, value);
         }
         #endregion
 
         #region IsActive property ...
-        /// <summary>
-        /// The <see cref="IsActive" /> property's name.
-        /// </summary>
-        public const string IsActivePropertyName = "IsActive";
 
-        private bool _IsActive = false;
+        private bool _isActive = false;
 
         /// <summary>
         /// Sets and gets the IsActive property.
@@ -164,21 +92,8 @@ namespace PnFDesktop.ViewModels
         /// </summary>
         public bool IsActive
         {
-            get
-            {
-                return _IsActive;
-            }
-
-            set
-            {
-                if (_IsActive == value)
-                {
-                    return;
-                }
-
-                _IsActive = value;
-                OnPropertyChanged(IsActivePropertyName);
-            }
+            get => _isActive;
+            set => SetProperty(ref _isActive, value);
         }
 
         #endregion

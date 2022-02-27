@@ -1,9 +1,15 @@
-﻿using PnFDesktop.ViewCharts;
+﻿using System;
+using PnFDesktop.ViewCharts;
 using System.IO;
+using System.Printing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using Microsoft.Toolkit.Mvvm.Messaging;
+using PnFDesktop.Classes.Messaging;
+using PnFDesktop.Services;
 
 namespace PnFDesktop.Views
 {
@@ -23,9 +29,131 @@ namespace PnFDesktop.Views
 
 
             InitializeComponent();
+            // Register to save model images and print models
+            WeakReferenceMessenger.Default.Register<SavePointAndFigureChartAsImageMessage>(this, HandleSaveChartAsImageMessage);
+            WeakReferenceMessenger.Default.Register<PrintPointAndFigureChartMessage>(this, HandlePrintChartMessage);
+
         }
 
+        /// <summary>
+        ///  Look for the Node sent in the message in the nodes list 
+        /// </summary>
+        private void HandleSaveChartAsImageMessage(object r, SavePointAndFigureChartAsImageMessage message)
+        {
+            if (message.Sender != this)
+            {
+                if (_viewModel.ChartId == message.ChartId)
+                {
+                    FrameworkElement displayControl = FindElement(this, "ZoomAndPanControl");
+                    if (displayControl != null)
+                    {
+                        ImageDataService imageService = new ImageDataService();
+                        imageService.SaveAsImage(displayControl, message.ImageFilename);
+                    }
+                }
+            }
+        }
 
+        /// <summary>
+        ///  Look for the Node sent in the message in the nodes list 
+        /// </summary>
+        private void HandlePrintChartMessage(object r, PrintPointAndFigureChartMessage message)
+        {
+            if (message.Sender != this)
+            {
+                if (_viewModel.ChartId == message.ChartId)
+                {
+                    FrameworkElement displayControl = FindElement(this, "ZoomAndPanControl");
+
+                    PrintDialog dialog = new PrintDialog();
+                    dialog.PrintQueue = LocalPrintServer.GetDefaultPrintQueue();
+                    dialog.PrintTicket = dialog.PrintQueue.DefaultPrintTicket;
+                    dialog.PrintTicket.PageOrientation = PageOrientation.Landscape;
+
+                    if (dialog.ShowDialog() == true)
+                    {
+                        ImageDataService imageService = new ImageDataService();
+
+                        Grid grid = new Grid();
+                        grid.Margin = new Thickness(10);
+
+                        //do this for each column
+                        ColumnDefinition coldef;
+                        coldef = new ColumnDefinition();
+                        coldef.Width = new GridLength(dialog.PrintableAreaWidth, GridUnitType.Pixel);
+                        grid.ColumnDefinitions.Add(coldef);
+
+                        //do this for each row
+                        RowDefinition rowdef;
+                        rowdef = new RowDefinition();
+                        rowdef.Height = new GridLength(1, GridUnitType.Auto);
+                        grid.RowDefinitions.Add(rowdef);
+                        //
+                        rowdef = new RowDefinition();
+                        rowdef.Height = new GridLength(1, GridUnitType.Auto);
+                        grid.RowDefinitions.Add(rowdef);
+
+                        TextBlock myTitle = new TextBlock();
+                        myTitle.FontSize = 12;
+                        myTitle.FontFamily = new FontFamily("Arial");
+                        myTitle.TextAlignment = TextAlignment.Center;
+                        myTitle.Text = _viewModel.Chart.Name;
+
+                        grid.Children.Add(myTitle);
+                        //put it in column 0, row 0
+                        Grid.SetColumn(myTitle, 0);
+                        Grid.SetRow(myTitle, 0);
+
+                        Image pageImage = imageService.GetElementImage(displayControl);
+                        pageImage.Stretch = Stretch.Uniform;
+                        RenderOptions.SetBitmapScalingMode(pageImage, BitmapScalingMode.Fant);
+                        grid.Children.Add(pageImage);
+                        //put it in column 0, row 1
+                        Grid.SetColumn(pageImage, 0);
+                        Grid.SetRow(pageImage, 1);
+
+
+                        grid.Measure(new Size(dialog.PrintableAreaWidth, dialog.PrintableAreaHeight));
+                        grid.Arrange(new Rect(new Point(0, 0), grid.DesiredSize));
+
+                        dialog.PrintVisual(grid, "Model design " + _viewModel.Chart.Name);
+                    }
+                }
+            }
+        }
+
+        // Enumerate all the descendants of the visual object. 
+        private FrameworkElement FindElement(FrameworkElement myVisual, string visualName)
+        {
+            if (myVisual == null)
+            {
+                return null;
+            }
+            FrameworkElement requiredVisual = null;
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(myVisual); i++)
+            {
+                // Retrieve child visual at specified index value.
+                DependencyObject childVisual = VisualTreeHelper.GetChild(myVisual, i);
+
+                // Do processing of the child visual object. 
+                FrameworkElement fe = childVisual as FrameworkElement;
+                if (fe != null && fe.Name == visualName)
+                {
+                    requiredVisual = fe;
+                }
+                if (requiredVisual == null)
+                {
+                    // Enumerate children of the child visual object.
+                    requiredVisual = FindElement(fe, visualName);
+                }
+
+                if (requiredVisual != null)
+                {
+                    break;
+                }
+            }
+            return requiredVisual;
+        }
 
         public static T FindChild<T>(DependencyObject parent, string childName)
             where T : DependencyObject
@@ -88,7 +216,7 @@ namespace PnFDesktop.Views
         }
 
         #region Helper methods ...
-        public RenderTargetBitmap RenderVisaulToBitmap(Visual vsual, int width, int height)
+        public RenderTargetBitmap RenderVisualToBitmap(Visual vsual, int width, int height)
         {
             RenderTargetBitmap rtb = new RenderTargetBitmap
                 (width, height, 300, 300, PixelFormats.Default);
@@ -124,7 +252,7 @@ namespace PnFDesktop.Views
             if (encoder == null)
                 return null;
 
-            RenderTargetBitmap rtb = this.RenderVisaulToBitmap(vsual, widhth, height);
+            RenderTargetBitmap rtb = this.RenderVisualToBitmap(vsual, widhth, height);
             MemoryStream file = new MemoryStream();
             encoder.Frames.Add(BitmapFrame.Create(rtb));
             encoder.Save(file);
@@ -134,5 +262,16 @@ namespace PnFDesktop.Views
 
         #endregion
 
+        private void PointAndFigureChartView_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel != null)
+            {
+                WeakReferenceMessenger.Default.Send<ActivePointAndFigureChartChangedMessage>(new ActivePointAndFigureChartChangedMessage(this, _viewModel.Chart));
+            }
+            else
+            {
+                WeakReferenceMessenger.Default.Send<ActivePointAndFigureChartChangedMessage>(new ActivePointAndFigureChartChangedMessage(this, null));
+            }
+        }
     }
 }

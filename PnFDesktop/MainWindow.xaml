@@ -17,13 +17,43 @@
         <classes:ActiveDocumentConverter x:Key="ActiveDocumentConverter"/>
     </Window.Resources>
     <Grid>
-        <xcad:DockingManager
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+                <Menu>
+            <MenuItem Header="File">
+                <MenuItem Header="New">
+                    <MenuItem Header="Point &amp; Figure Chart Test" Command="{Binding OpenTestChartCommand}" ToolTip="Open a test chart"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="User options" Command="{Binding UserOptionsCommand}" ToolTip="Displays the user options dialogue box allowing the user to configure various default settings."/>
+                <Separator/>
+                <MenuItem Header="Exit" Command="{Binding ExitCommand}" ToolTip="Closes the application."/>
+
+            </MenuItem>
+            <MenuItem Header="Tools">
+                <MenuItem Header="Messages" IsChecked="{Binding MessagePaneVm.IsVisible, Mode=TwoWay}" IsCheckable="True" ToolTip="Show or hide the messages pane."/>
+            </MenuItem>
+            <!--<MenuItem Header="Layout">
+                <MenuItem Header="Load" Command="{Binding LoadLayoutCommand, ElementName=mainWindow}"/>
+                <MenuItem Header="Save" Command="{Binding SaveLayoutCommand, ElementName=mainWindow}"/>
+                <MenuItem Header="Dump to Console" Click="OnDumpToConsole"/>
+            </MenuItem>-->
+            <!--<MenuItem Header ="Help">
+                <MenuItem Header="Frequently Asked Questions..." Command="{Binding HelpFAQCommand}"/>
+                <MenuItem Header="About PnFDesktop..." Command="{Binding HelpAboutCommand}"/>
+            </MenuItem>-->
+        </Menu>
+
+        <xcad:DockingManager Grid.Row="1"
                              x:Name="dockingManager"
                              AllowMixedOrientation="True"
                              BorderBrush="Black"
                              BorderThickness="1"
                              AnchorablesSource="{Binding Tools}"
-                             DocumentsSource="{Binding ChartPanes}"
+                             DocumentsSource="{Binding Charts}"
                              ActiveContent="{Binding ActiveChart, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
                              DocumentClosed="dockingManager_DocumentClosed"
                              classes:AvalonDockLayoutSerializer.LoadLayoutCommand="{Binding AdLayout.LoadLayoutCommand}"
@@ -70,8 +100,8 @@
                     <classes:PanesStyleSelector.PointAndFigureChartStyle>
                         <Style TargetType="{x:Type xcad:LayoutItem}">
                             <Setter Property="Title" Value="{Binding Model.Title}"/>
-                            <Setter Property="ToolTip" Value="{Binding Model.FilePath}"/>
-                            <Setter Property="IconSource" Value="{Binding Model.IconSource}"/>
+                            <!--<Setter Property="ToolTip" Value="{Binding Model.Tooltip}"/>-->
+                            <!--<Setter Property="IconSource" Value="{Binding Model.IconSource}"/>-->
                             <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
                         </Style>
                     </classes:PanesStyleSelector.PointAndFigureChartStyle>
