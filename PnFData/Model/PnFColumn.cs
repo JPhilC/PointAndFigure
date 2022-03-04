@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Transactions;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace PnFData.Model
 {
@@ -130,6 +132,34 @@ namespace PnFData.Model
                 currentBox.MonthIndicator = monthIndicator;
             }
 
+        }
+
+        public string GetTooltip()
+        {
+            if (this.PnFChart.BoxSize == null) return "";
+            int boxCount = Boxes.Count;
+            double boxSize = this.PnFChart.BoxSize.Value;
+            string columnType = "";
+            switch (ColumnType)
+            {
+                case PnFColumnType.O:
+                case PnFColumnType.XO:
+                    columnType = "O";
+                    break;
+                case PnFColumnType.X:
+                case PnFColumnType.OX:
+                    columnType = "X";
+                    break;
+            }
+            if (EndAt != null && boxCount > 0)
+            {
+                return
+                    $"{boxCount} {columnType}'s\nFrom {Boxes[0].Index*boxSize} on {StartAt.Date:d}\nTo {Boxes[boxCount - 1].Index * boxSize} on {EndAt.Value.Date:d}";
+            }
+            else
+            {
+                return $"From {Boxes[0].Index*boxSize} on {StartAt.Date:d}";
+            }
         }
 
     }

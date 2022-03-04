@@ -6,12 +6,15 @@ using PnFDesktop.ViewModels;
 using PnFDesktop.Views;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Toolkit.Mvvm.Messaging;
+using PnFDesktop.Classes.Messaging;
 
 namespace PnFDesktop.ViewCharts
 {
-    public class PointAndFigureChartViewModel:PaneViewModel, IPointAndFigureChartViewModel
+    public class PointAndFigureChartViewModel : PaneViewModel, IPointAndFigureChartViewModel
     {
         #region Internal data members ...
         ///
@@ -74,12 +77,28 @@ namespace PnFDesktop.ViewCharts
 
         public Guid ChartId => _chart.Id;
 
-        private float _gridSize = 5f;
+        private double _gridSize = 5d;
 
-        public float GridSize
+        public double GridSize
         {
             get => _gridSize;
             set => SetProperty(ref _gridSize, value);
+        }
+
+        private double _leftPadding = 30d;
+
+        public double LeftPadding
+        {
+            get => _leftPadding;
+            set => SetProperty(ref _leftPadding, value);
+        }
+
+        private double _topPadding = 30d;
+
+        public double TopPadding
+        {
+            get => _topPadding;
+            set => SetProperty(ref _topPadding, value);
         }
 
         #region Layout and zoom control properties and methods...
@@ -229,17 +248,28 @@ namespace PnFDesktop.ViewCharts
         public PointAndFigureColumnViewModel SelectedColumn
         {
             get => _selectedColumn;
-            set => SetProperty(ref _selectedColumn, value);
+            set
+            {
+                if (SetProperty(ref _selectedColumn, value))
+                {
+                    if (_selectedColumn != null)
+                    {
+                        WeakReferenceMessenger.Default.Send(new ActivePointAndFigureColumnChangedMessage(this, _selectedColumn.Column));
+                    }
+                }
+            }
         }
 
         public new string Title
         {
             get
             {
-                if (Chart != null && !string.IsNullOrEmpty(Chart.Name)) {
+                if (Chart != null && !string.IsNullOrEmpty(Chart.Name))
+                {
                     return Chart.Name;
                 }
-                else {
+                else
+                {
                     return "A Chart";
                 }
             }
@@ -289,33 +319,46 @@ namespace PnFDesktop.ViewCharts
             AddColumns();
             // At this stage the content is at least a margins width from the top and left
             // So the width and height are the right and bottom limit plus the margin.
-            ContentHeight = _contentBottomLimit + Constants.ChartMargin;
-            ContentWidth = _contentRightLimit + Constants.ChartMargin;
+            ContentHeight = _contentBottomLimit + TopPadding + Constants.ChartMargin;
+            ContentWidth = _contentRightLimit + LeftPadding + Constants.ChartMargin;
 
             Control = new PointAndFigureChartView(this);
+        }
+
+        /// <summary>
+        ///  Look for the Node sent in the message in the nodes list 
+        /// </summary>
+        /// <param name="selectedNode"></param>
+        private void HandleColumnMessage(ActivePointAndFigureColumnChangedMessage message)
+        {
+            if (message.Sender != this)
+            {
+                PointAndFigureColumnViewModel columnVm = this.Columns.FirstOrDefault(n => n.Column.Id == message.Column.Id);
+                SelectedColumn = columnVm;
+            }
         }
 
         #region Helper methods ...
         private void AddColumns()
         {
-            double reversingYfactor =  _maxY ;
             Columns.Clear();
             foreach (PnFColumn column in Chart.Columns)
             {
-                PointAndFigureColumnViewModel columnVm = new PointAndFigureColumnViewModel(column, GridSize, reversingYfactor);
+                PointAndFigureColumnViewModel columnVm = new PointAndFigureColumnViewModel(column, GridSize, _maxIndex);
                 Columns.Add(columnVm);
             }
         }
 
-        private double _minY;
-        private double _maxY;
+
+        private int _maxIndex;
+
         /// <summary>
         /// Calculates the drawing limits and if necessary shifts the columns and annotations
         /// to get them back on the sheet.
         /// </summary>
         private void CalculateLimits()
         {
-            
+
             double columnLeftLimit = 0d;
             double columnTopLimit = 0d;
             double columnRightLimit;
@@ -328,6 +371,7 @@ namespace PnFDesktop.ViewCharts
             int maxColIndex = int.MinValue;
             int minBoxIndex = int.MaxValue;
             int maxBoxIndex = int.MinValue;
+            _maxIndex = 0;
 
             if (Chart.Columns.Count > 0)
             {
@@ -339,6 +383,7 @@ namespace PnFDesktop.ViewCharts
                     {
                         minBoxIndex = Math.Min(minBoxIndex, box.Index);
                         maxBoxIndex = Math.Max(maxBoxIndex, box.Index);
+                        if (box.Index > _maxIndex) _maxIndex = box.Index;
                     }
                 }
                 columnLeftLimit = Math.Min((minColIndex * GridSize), 0.0);
@@ -346,15 +391,11 @@ namespace PnFDesktop.ViewCharts
                 columnRightLimit = Math.Max((maxColIndex * GridSize), Constants.DefaultChartWidth);
                 columnBottomLimit = Math.Max((maxBoxIndex * GridSize), Constants.DefaultChartHeight);
 
-                _minY = minBoxIndex * GridSize;
-                _maxY = maxBoxIndex * GridSize;
             }
             else
             {
                 columnRightLimit = Constants.DefaultChartWidth;
                 columnBottomLimit = Constants.DefaultChartHeight;
-                _minY = 0;
-                _maxY = Constants.DefaultChartHeight;
             }
 
             _contentLeftLimit = columnLeftLimit;

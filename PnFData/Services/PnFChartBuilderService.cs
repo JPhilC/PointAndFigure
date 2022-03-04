@@ -21,134 +21,14 @@ using PnFData.Model;
 
 namespace PnFData.Services
 {
-    public class PnFChartBuilderService
+    public abstract class PnFChartBuilderService
     {
-
-        private List<Eod> _eodList;
 
         public bool DontResize { get; set; } = false;
 
-        public double BoxSize { get; private set; } = 2.0d;
+        public double BoxSize { get; protected set; } = 2.0d;
 
-        public PnFChartBuilderService(List<Eod> eodList)
-        {
-            this._eodList = eodList;
-        }
-
-
-        public PnFChart? BuildHighLowChart(double boxSize, int reversal, DateTime uptoDate)
-        {
-            List<Eod> sortedList = this._eodList.Where(s=>s.Day <= uptoDate).OrderBy(s => s.Day).ToList();
-            if (sortedList.Count == 0)
-            {
-                return null;
-            }
-
-            this.BoxSize = boxSize;
-
-            PnFChart chart = new PnFChart()
-            {
-                BoxSize = boxSize,
-                Reversal = reversal
-            };
-            PnFColumn currentColumn = new PnFColumn();
-
-            bool firstEod = true;
-            int lastMonthRecorded = 0;
-            int lastYearRecorded = 0;
-            foreach (Eod eod in sortedList)
-            {
-                // System.Diagnostics.Debug.WriteLine($"{eod.Open}\t{eod.High}\t{eod.Low}\t{eod.Close}");
-                if (firstEod)
-                {
-                    if (eod.Open > eod.Close)
-                    {
-                        // Start with Os (down day)
-                        int newStartIndex = GetIndex(eod.Low)+1;
-                        currentColumn = new PnFColumn() { Index=0, ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, ContainsNewYear = true};
-                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low), eod.Low, eod.Day);
-                        chart.Columns.Add(currentColumn);
-                    }
-                    else
-                    {
-                        // Start with Xs (up day)
-                        int newStartIndex = GetIndex(eod.High)-1;
-                        currentColumn = new PnFColumn() { Index = 0, ColumnType = PnFColumnType.X, CurrentBoxIndex = newStartIndex, ContainsNewYear = true};
-                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day);
-                    }
-                    firstEod = false;
-                }
-                else
-                {
-                    if (currentColumn.ColumnType == PnFColumnType.O)
-                    {
-                        // Chart is falling.
-                        double nextBox = GetValue(currentColumn.CurrentBoxIndex - 1);
-                        if (eod.Low <= nextBox)
-                        {
-                            // Add the box range.
-                            currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low), eod.Low, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day): null));
-                        }
-                        else
-                        {
-                            // Have we reversed!
-                            double reversalBox = GetValue(currentColumn.CurrentBoxIndex + reversal);
-                            if (eod.High >= reversalBox)
-                            {
-                                int newStartIndex = currentColumn.CurrentBoxIndex;
-                                currentColumn = new PnFColumn()
-                                {
-                                    Index = currentColumn.Index+1,
-                                    ColumnType = PnFColumnType.X, 
-                                    CurrentBoxIndex = newStartIndex
-                                };
-                                currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
-                                chart.Columns.Add(currentColumn);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Chart is rising.
-                        double nextBox = GetValue(currentColumn.CurrentBoxIndex + 1);
-                        if (eod.High >= nextBox)
-                        {
-                            currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
-                        }
-                        else
-                        {
-                            // Have we reversed.
-                            double reversalBox = GetValue(currentColumn.CurrentBoxIndex - reversal);
-                            if (eod.Low <= reversalBox)
-                            {
-                                int newStartIndex = currentColumn.CurrentBoxIndex;
-                                currentColumn = new PnFColumn()
-                                {
-                                    Index = currentColumn.Index+1,
-                                    ColumnType = PnFColumnType.O, 
-                                    CurrentBoxIndex = newStartIndex
-                                };
-                                currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low), eod.Low, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
-                                chart.Columns.Add(currentColumn);
-                            }
-
-                        }
-                    }
-
-                    // See if we had a year change in the current column.
-                    if (eod.Day.Year != lastYearRecorded)
-                    {
-                        currentColumn.ContainsNewYear = true;
-                    }
-                }
-                currentColumn.Volume += eod.Volume;
-                lastMonthRecorded = eod.Day.Month;
-                lastYearRecorded = eod.Day.Year;
-                chart.GeneratedDate = eod.Day;
-            }
-            return chart;
-        }
-
+        public abstract PnFChart? BuildChart(double boxSize, int reversal, DateTime uptoDate);
 
 
 
@@ -160,7 +40,7 @@ namespace PnFData.Services
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        private double RangeBoxSize(double value)
+        protected double RangeBoxSize(double value)
         {
             var boxSize = value switch
             {
@@ -183,39 +63,24 @@ namespace PnFData.Services
         /// Compute the box size based on prices
         /// </summary>
         /// <returns></returns>
-        public double ComputeBoxSize()
+        public abstract double ComputeBoxSize();
+
+        protected int GetIndex(double value, bool falling = false)
         {
-            double boxSize;
-            var stats = (from d in _eodList
-                group d by 1
-                into g
-                select new
-                {
-                    BestLow = g.Min(l => l.Low),
-                    BestHigh = g.Max(h => h.High),
-                    SumHighLessLow = g.Sum(s => s.High - s.Low)
-                }).First();
-
-
-
-            boxSize = RangeBoxSize((stats.BestLow + stats.BestHigh) * 0.5);
-            //int bs = (int)(boxSize + 0.5);
-            //boxSize = bs * 0.01d;
-            //boxSize = stats.SumHighLessLow / _eodList.Count;
-            return boxSize;
+            int index = (int)(value / BoxSize);
+            if (falling && (value > (index * BoxSize)))
+            {
+                index++;
+            }
+            return index;
         }
 
-        private int GetIndex(double value)
-        {
-            return (int)(value / BoxSize);
-        }
-
-        private double GetValue(int index)
+        protected double GetValue(int index)
         {
             return index * BoxSize;
         }
 
-        private string GetMonthIndicator(DateTime date)
+        protected string GetMonthIndicator(DateTime date)
         {
             return " 123456789ABC".Substring(date.Month, 1);
         }

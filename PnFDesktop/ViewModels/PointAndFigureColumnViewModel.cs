@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
+using System.Linq;
 using System.Windows;
+using Accessibility;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using PnFData.Model;
 using PnFDesktop.Classes;
@@ -66,6 +68,8 @@ namespace PnFDesktop.ViewModels
 
         private Size _size = new Size(0, 0);
 
+        public string Tooltip => Column.GetTooltip();
+
         /// <summary>
         /// The size of the node.
         /// 
@@ -78,38 +82,9 @@ namespace PnFDesktop.ViewModels
         public Size Size
         {
             get => _size;
-            set
-            {
-                if (_size == value)
-                {
-                    return;
-                }
-                if (SizeChanging != null)
-                {
-                    SizeChanging(this, EventArgs.Empty);
-                }
-
-                _size = value;
-
-                if (SizeChanged != null)
-                {
-                    SizeChanged(this, EventArgs.Empty);
-                }
-            }
+            set => SetProperty(ref _size, value);
         }
 
-        /// <summary>
-        /// Event raised when the size of the node is about to change.
-        /// </summary>
-        public event EventHandler<EventArgs> SizeChanging;
-
-        /// <summary>
-        /// Event raised when the size of the node is changed.
-        /// The size will change when the UI has determined its size based on the contents
-        /// of the nodes data-template.  It then pushes the size through to the view-model
-        /// and this 'SizeChanged' event occurs.
-        /// </summary>
-        public event EventHandler<EventArgs> SizeChanged;
 
         private bool _isSelected = false;
         /// <summary>
@@ -127,20 +102,34 @@ namespace PnFDesktop.ViewModels
         public ImpObservableCollection<PointAndFigureBoxViewModel> Boxes { get; }= new ImpObservableCollection<PointAndFigureBoxViewModel>();
         #endregion
 
-        public PointAndFigureColumnViewModel(PnFColumn column, float chartGridSize, double reversingYFactor)
+        public PointAndFigureColumnViewModel(PnFColumn column, double chartGridSize, int maxChartBoxIndex)
         {
             _column = column;
             _x = column.Index * chartGridSize;
-            _y = 0f;
-            AddBoxes(chartGridSize, reversingYFactor);
+            if (column.Boxes.Any())
+            {
+                Size = AddBoxes(chartGridSize, out int maxIndex);
+                _y = (maxChartBoxIndex - maxIndex) * chartGridSize;
+            }
+            else
+            {
+                _y = 0d;
+            }
+            OnPropertyChanged("X");
+            OnPropertyChanged("Y");
         }
 
-        private void AddBoxes(float chartGridSize, double reversingYfactor)
+        private Size AddBoxes(double chartGridSize, out int maxIndex)
         {
-            foreach (var box in Column.Boxes)
+            int i = 0;
+            foreach (var box in Column.Boxes.OrderByDescending(b=>b.Index))
             {
-                this.Boxes.Add(new PointAndFigureBoxViewModel(box, chartGridSize, reversingYfactor));
+                this.Boxes.Add(new PointAndFigureBoxViewModel(box, i * chartGridSize));
+                i++;
             }
+
+            maxIndex = Boxes.Max(b => b.Box.Index);
+            return new Size(chartGridSize, Boxes.Count * chartGridSize);
         }
 
     }

@@ -1,0 +1,71 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+
+    <system:Double x:Key="BoxPenThickness">0.25</system:Double>
+    <SolidColorBrush x:Key="OColorBrush" Color="Red"/>
+    <SolidColorBrush x:Key="XColorBrush" Color="Black"/>
+
+    <!-- OBox -->
+    <DrawingImage x:Key="OBox5X5">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,2.5 A 2.5,2.5 0 0 1 5,2.5 A 2.5,2.5, 0 0 1 0,2.5">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource OColorBrush}" Thickness="{StaticResource BoxPenThickness}" />
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="OBox4X4">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,2 A 2,2 0 0 1 4,2 A 2,2, 0 0 1 0,2">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource OColorBrush}" Thickness="{StaticResource BoxPenThickness}" />
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="OBox2X2">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,1 A 1,1 0 0 1 2,1 A 1,1, 0 0 1 0,1">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource OColorBrush}" Thickness="{StaticResource BoxPenThickness}" />
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- XBox -->
+    <DrawingImage x:Key="XBox5X5">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,-5 L 5,0 M 0,0 L5,-5">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource XColorBrush}" Thickness="{StaticResource BoxPenThickness}"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="XBox4X4">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,-4 L 4,0 M 0,0 L4,-4">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource XColorBrush}" Thickness="{StaticResource BoxPenThickness}"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="XBox2X2">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,-2 L 2,0 M 0,0 L2,-2">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource XColorBrush}" Thickness="{StaticResource BoxPenThickness}"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+    
+</ResourceDictionary>

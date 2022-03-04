@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using PnFData.Model;
 using PnFDesktop.Controls;
 using PnFDesktop.ViewCharts;
+using PnFDesktop.ViewModels;
 
 namespace PnFDesktop.Classes.Messaging
 {
@@ -65,4 +66,17 @@ namespace PnFDesktop.Classes.Messaging
             this.ViewModel = viewModel;
         }
     }
+
+    public class ActivePointAndFigureColumnChangedMessage
+    {
+        public Object Sender { get; set; }
+        public PnFColumn Column { get; set; }
+
+        public ActivePointAndFigureColumnChangedMessage(object sender, PnFColumn activeColumn)
+        {
+            this.Sender = sender;
+            this.Column = activeColumn;
+        }
+    }
+
 }

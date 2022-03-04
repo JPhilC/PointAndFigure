@@ -42,6 +42,18 @@ namespace PnFDesktop.Controls
         public static readonly DependencyProperty IsClearSelectionOnEmptySpaceClickEnabledProperty =
             DependencyProperty.Register("IsClearSelectionOnEmptySpaceClickEnabled", typeof(bool), typeof(PointAndFigureChartControl),
                 new FrameworkPropertyMetadata(true));
+
+        private static readonly DependencyProperty GridSizeProperty =
+            DependencyProperty.Register("GridSize", typeof(double), typeof(PointAndFigureChartControl),
+                new FrameworkPropertyMetadata(5d));
+
+        private static readonly DependencyProperty LeftPaddingProperty =
+            DependencyProperty.Register("LeftPadding", typeof(double), typeof(PointAndFigureChartControl),
+                new FrameworkPropertyMetadata(10d));
+
+        private static readonly DependencyProperty TopPaddingProperty =
+            DependencyProperty.Register("TopPadding", typeof(double), typeof(PointAndFigureChartControl),
+                new FrameworkPropertyMetadata(10d));
         #endregion
 
         #region Private Data Members
@@ -54,7 +66,7 @@ namespace PnFDesktop.Controls
         /// <summary>
         /// Cached the currently selected column.
         /// </summary>
-        private object _initialSelectedColumn;
+        private List<object> _initialSelectedColumns;
 
 
         #endregion
@@ -164,7 +176,12 @@ namespace PnFDesktop.Controls
                 }
                 else
                 {
-                    _initialSelectedColumn = value;
+                    if (_initialSelectedColumns == null) {
+                        _initialSelectedColumns = new List<object>();
+                    }
+
+                    _initialSelectedColumns.Clear();
+                    _initialSelectedColumns.Add(value);
                 }
             }
         }
@@ -175,6 +192,34 @@ namespace PnFDesktop.Controls
             // return nv._SelectedColumn;
             // return nv.GetSelectedColumn();
             return nv.Columns.Where(n => n == value).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// A list of selected nodes.
+        /// </summary>
+        public IList SelectedColumns
+        {
+            get
+            {
+                if (_columnItemsControl != null) {
+                    return _columnItemsControl.SelectedItems;
+                }
+                else {
+                    if (_initialSelectedColumns == null) {
+                        _initialSelectedColumns = new List<object>();
+                    }
+
+                    return _initialSelectedColumns;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clear the selection.
+        /// </summary>
+        public void SelectNone()
+        {
+            this.SelectedColumns.Clear();
         }
 
         /// <summary>
@@ -192,6 +237,33 @@ namespace PnFDesktop.Controls
             set => SetValue(IsClearSelectionOnEmptySpaceClickEnabledProperty, value);
         }
 
+        /// <summary>
+        /// The chart grid size.
+        /// This is set to '5' by default.
+        /// </summary>
+        public double GridSize
+        {
+            get => (double)GetValue(GridSizeProperty);
+            set => SetValue(GridSizeProperty, value);
+        }
+
+        /// <summary>
+        /// The left padding for the chart
+        /// </summary>
+        public double LeftPadding
+        {
+            get => (double)GetValue(LeftPaddingProperty);
+            set => SetValue(LeftPaddingProperty, value);
+        }
+
+        /// <summary>
+        /// The top padding for the chart
+        /// </summary>
+        public double TopPadding
+        {
+            get => (double)GetValue(TopPaddingProperty);
+            set => SetValue(TopPaddingProperty, value);
+        }
 
 
         #region Private methods ...
@@ -301,16 +373,15 @@ namespace PnFDesktop.Controls
             }
 
             //
-            // Synchronize initial selected columns to the ColumnItemsControl.
+            // Synchronize initial selected nodes to the NodeItemsControl.
             //
-            if (this._initialSelectedColumn != null)
-            {
-                
-                    this._columnItemsControl.SelectedItem = this._initialSelectedColumn;
-                
+            if (this._initialSelectedColumns != null && this._initialSelectedColumns.Count > 0) {
+                foreach (var node in this._initialSelectedColumns) {
+                    this._columnItemsControl.SelectedItems.Add(node);
+                }
             }
 
-            this._initialSelectedColumn = null; // Don't need this any more.
+            this._initialSelectedColumns = null; // Don't need this any more.
 
             this._columnItemsControl.SelectionChanged += new SelectionChangedEventHandler(columnItemsControl_SelectionChanged);
 
@@ -386,5 +457,27 @@ namespace PnFDesktop.Controls
 
         #endregion
 
+        #region Mouse handling ...
+        /// <summary>
+        /// Called when the user releases the mouse.
+        /// </summary>
+        protected override void OnMouseUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseUp(e);
+
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                if (IsClearSelectionOnEmptySpaceClickEnabled)
+                {
+                    //
+                    // A click and release in empty space clears the selection.
+                    //
+                    this.SelectedColumns.Clear();
+                }
+            }
+        }
+
+
+        #endregion
     }
 }

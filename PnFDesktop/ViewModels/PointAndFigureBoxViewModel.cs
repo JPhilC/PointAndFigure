@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using Accessibility;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using PnFData.Model;
 using PnFDesktop.Classes;
@@ -94,10 +95,10 @@ namespace PnFDesktop.ViewModels
                 switch (Box.BoxType)
                 {
                     case PnFBoxType.O:
-                        key = "OBox5X5";
+                        key = "OBox4X4";
                         break;
                     case PnFBoxType.X:
-                        key = "XBox5X5";
+                        key = "XBox4X4";
                         break;
                     default:
                         break;
@@ -107,11 +108,11 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        public PointAndFigureBoxViewModel(PnFBox box, float chartGridSize, double reversingYfactor)
+        public PointAndFigureBoxViewModel(PnFBox box, double y)
         {
             Box = box;
-            _x = Box.Column.Index * chartGridSize;
-            _y = reversingYfactor -(Box.Index * chartGridSize);
+            _x = 0d; // Box.Column.Index * chartGridSize;
+            _y = y;
             OnPropertyChanged("X");
             OnPropertyChanged("Y");
         }

@@ -40,8 +40,8 @@ namespace PnFDesktop.ViewModels
             {
                 if (message.Sender != this)
                 {
-                    // Remove the ModelDesignerViewpnfChart from the list of open documents.
-                    PaneViewModel vm = Charts.FirstOrDefault(m => m.ContentId == "PointAndFigureChart_" + message.ViewModel.Chart.Id.ToString());
+                    // Remove the chart from the list of open documents.
+                    PaneViewModel vm = Charts.FirstOrDefault(m => m.ContentId == "PointAndFigureChart_" + message.ViewModel.Chart.Name);
                     if (vm != null)
                     {
                         Charts.Remove(vm);
@@ -258,7 +258,7 @@ namespace PnFDesktop.ViewModels
                        ?? (_openTestChartCommand = new RelayCommand(
                            () =>
                            {
-                               PnFChart testChart = _dataService.GetPointAndFigureChart("TEST", 5, 3);
+                               PnFChart testChart = _dataService.GetPointAndFigureChart("3IN.LON",3);
                                OpenPointAndFigureChart(testChart, true);
                            }));
             }

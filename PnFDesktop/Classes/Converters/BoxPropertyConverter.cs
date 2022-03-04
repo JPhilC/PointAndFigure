@@ -10,8 +10,8 @@ namespace PnFDesktop.Classes
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            PnFBox column = value as PnFBox;
-            return BoxPropertyProvider.GetProperty(column, (BoxPropertyEnum)parameter);
+            PnFBox box = value as PnFBox;
+            return BoxPropertyProvider.GetProperty(box, (BoxPropertyEnum)parameter);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -10,17 +10,18 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Skins/MainSkin.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Skins/BoxArtwortk.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Skins/PointAndFigureChartResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <viewModels:ViewModelLocator x:Key="Locator" />
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
             <classes:BooleanInverterConverter x:Key="ReversedBoolean" />
-             
+            <classes:StringToVisibilityConverter x:Key="StringToVisibility" />
             <!--This converts from a scale value to a percentage value.
             It is used to convert the value of 'ContentScale' to the percentage zoom level that is displayed in the UI.-->
-            
+
             <classes:ScaleToValueConverter x:Key="ScaleToPercentConverter" />
         </ResourceDictionary>
 
-</Application.Resources>
+    </Application.Resources>
 </Application>

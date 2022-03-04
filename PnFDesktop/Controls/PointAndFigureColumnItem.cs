@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using PnFDesktop.ViewModels;
 
 namespace PnFDesktop.Controls
 {
@@ -257,7 +258,7 @@ namespace PnFDesktop.Controls
                     // Item is not selected.
                     // Deselect all, and select the item.
                     //
-                    this.ParentPointAndFigureChart.SelectedColumn = null;
+                    ((PointAndFigureColumnViewModel)this.ParentPointAndFigureChart.SelectedColumn).IsSelected = false;
                     this.IsSelected = true;
                 }
             }
@@ -337,8 +338,9 @@ namespace PnFDesktop.Controls
                 //
                 // Control key was not held down.
                 //
-                if (this.ParentPointAndFigureChart.SelectedColumn.Equals(this) ||
-                     this.ParentPointAndFigureChart.SelectedColumn.Equals(this.DataContext))
+                PointAndFigureChartControl pointAndFigureChartControl = this.ParentPointAndFigureChart;
+                if (pointAndFigureChartControl != null && pointAndFigureChartControl.SelectedColumn != null && (pointAndFigureChartControl.SelectedColumn.Equals(this) ||
+                                                                                                                pointAndFigureChartControl.SelectedColumn.Equals(this.DataContext)))
                 {
                     //
                     // The item that was clicked is already the only selected item.

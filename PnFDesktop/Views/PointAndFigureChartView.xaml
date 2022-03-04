@@ -28,28 +28,23 @@
 
             <DataTemplate DataType="{x:Type vm:PointAndFigureColumnViewModel}">
                 <Grid>
-                    <!--<Viewbox HorizontalAlignment="Left" VerticalAlignment="Top"
+                    <Viewbox HorizontalAlignment="Left" VerticalAlignment="Top"
                              Stretch="None">
-                        <Grid>-->
+                        <Grid>
                             <ItemsControl x:Name="PART_BoxItemsControl"
                                       ItemsSource="{Binding Boxes}"
                                       Style="{StaticResource BoxItemsList}"
                                       Focusable="True"/>
-                        <!--</Grid>
-                    </Viewbox>-->
+                        </Grid>
+                    </Viewbox>
                     <Grid.ToolTip>
-                        <TextBlock Text="{Binding X}"/>
+                        <TextBlock Text="{Binding Tooltip}"/>
                     </Grid.ToolTip>
                 </Grid>
             </DataTemplate>
 
             <DataTemplate DataType="{x:Type vm:PointAndFigureBoxViewModel}">
-                <Grid>
-                    <controls:PointAndFigureBoxItem />
-                    <Grid.ToolTip>
-                        <TextBlock Text="{Binding Y}"/>
-                    </Grid.ToolTip>
-                </Grid>
+                <controls:PointAndFigureBoxItem />
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -300,6 +295,10 @@
                                          MouseUp="PointAndFigureChart_MouseUp"
                                          MouseMove="PointAndFigureChart_MouseMove"
                                          MouseWheel="PointAndFigureChart_MouseWheel"
+                                         GridSize="{Binding GridSize}"
+                                         TopPadding="{Binding TopPadding}"
+                                         LeftPadding="{Binding LeftPadding}"
+                                         IsClearSelectionOnEmptySpaceClickEnabled="True"
                         >
                             <controls:PointAndFigureChartControl.Background>
                                 <SolidColorBrush Color="Azure"/>

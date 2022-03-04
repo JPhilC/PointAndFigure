@@ -42,11 +42,11 @@ namespace PnFDesktop.Classes
             switch (box.BoxType)
             {
                 case PnFBoxType.O:
-                    drawingKey = "OBox5x5";
+                    drawingKey = "OBox2x2";
                     sb.AppendLine("Going down");
                     break;
                 case PnFBoxType.X:
-                    drawingKey = "XBox5x5";
+                    drawingKey = "XBox2x2";
                     sb.AppendLine("Going up");
                     break;
 

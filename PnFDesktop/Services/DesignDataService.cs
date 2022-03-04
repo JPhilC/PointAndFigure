@@ -11,6 +11,11 @@ namespace PnFDesktop.Services
 {
     public class DesignDataService : IDataService
     {
+        public PnFChart GetPointAndFigureChart(string tidm, int reversal)
+        {
+            throw new NotImplementedException();
+        }
+
         public PnFChart GetPointAndFigureChart(string tidm, float boxSize, int reversal)
         {
             PnFChart chart = new PnFChart()

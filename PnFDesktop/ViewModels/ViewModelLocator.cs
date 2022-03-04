@@ -39,8 +39,7 @@ namespace PnFDesktop.ViewModels
             }
             else
             {
-                SimpleIoc.Default.Register<IDataService, DesignDataService>();
-                //TODO: Reinstate SimpleIoc.Default.Register<IDataService, DataService>();
+                SimpleIoc.Default.Register<IDataService, DataService>();
             }
 
             SimpleIoc.Default.Register<MainViewModel>();
@@ -95,7 +94,7 @@ namespace PnFDesktop.ViewModels
         /// </summary>
         public PointAndFigureChartViewModel GetPointAndFigureChartViewModel(PnFChart newChart, bool forceRefresh = false)
         {
-            string key = newChart.Id.ToString();
+            string key = "PointAndFigureChart_" + newChart.Name;
             PointAndFigureChartViewModel vm = null;
             if (forceRefresh && SimpleIoc.Default.IsRegistered<PointAndFigureChartViewModel>(key))
             {

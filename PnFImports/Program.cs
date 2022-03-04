@@ -315,12 +315,12 @@ namespace PnFImports
             if (tickData != null && tickData.Any())
             {
                 // Create the chart.
-                PnFChartBuilderService chartBuilder = new PnFChartBuilderService(tickData);
+                PnFChartBuilderService chartBuilder = new PnFHiLoChartBuilderService(tickData);
                 double boxSize = chartBuilder.ComputeBoxSize();
                 try
                 {
                     Console.WriteLine($@"Building chart for {tidm}.");
-                    newChart = chartBuilder.BuildHighLowChart(boxSize, reversal, uptoDate);
+                    newChart = chartBuilder.BuildChart(boxSize, reversal, uptoDate);
                 }
                 catch (Exception ex)
                 {
