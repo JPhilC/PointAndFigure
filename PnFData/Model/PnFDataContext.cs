@@ -21,6 +21,10 @@ namespace PnFData.Model
 
         public DbSet<IndexValue> IndexValues { get; set; }
 
+        public DbSet<ShareRSI> ShareRSIValues {get;set;}
+
+        public DbSet<IndexRSI> IndexRSIValues{get;set;}
+
         public DbSet<PnFChart> PnFCharts { get; set; }
 
         public DbSet<PnFColumn> PnFColumns { get; set; }
@@ -28,6 +32,7 @@ namespace PnFData.Model
         public DbSet<PnFBox> PnFBoxes { get; set; }
 
         public DbSet<ShareChart> ShareCharts { get; set; }
+
 
         // The following configures EF to create a Sqlite database file in the
         // special "local" folder for your platform.
@@ -64,6 +69,12 @@ namespace PnFData.Model
             modelBuilder.Entity<IndexValue>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("newid()");
+            modelBuilder.Entity<ShareRSI>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("newid()");
+            modelBuilder.Entity<IndexRSI>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("newid()");
             modelBuilder.Entity<PnFChart>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("newid()");
@@ -90,6 +101,12 @@ namespace PnFData.Model
             modelBuilder.Entity<IndexValue>()
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<ShareRSI>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<IndexRSI>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("getdate()");
             modelBuilder.Entity<PnFChart>()
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("getdate()");
@@ -112,6 +129,16 @@ namespace PnFData.Model
             modelBuilder.Entity<IndexValue>()
                 .HasOne(p => p.Index)
                 .WithMany(b => b.IndexValues)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ShareRSI>()
+                .HasOne(p => p.Share)
+                .WithMany(b => b.RSIValues)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<IndexRSI>()
+                .HasOne(p => p.Index)
+                .WithMany(b => b.RSIValues)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PnFBox>()

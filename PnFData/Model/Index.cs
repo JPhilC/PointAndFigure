@@ -19,5 +19,8 @@ namespace PnFData.Model
         public string? SuperSector { get; set; }
 
         public List<IndexValue> IndexValues { get; } = new List<IndexValue>();
+        
+        public List<IndexRSI> RSIValues { get; } = new List<IndexRSI>();
+
     }
 }

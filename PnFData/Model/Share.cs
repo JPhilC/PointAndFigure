@@ -12,14 +12,14 @@ namespace PnFData.Model
 {
     [Index(nameof(Tidm), IsUnique = true)]
     [Index(nameof(ShareDataSource), nameof(ShareDataSourceId), IsUnique = true)]
-    public class Share:EntityData
+    public class Share : EntityData
     {
         [MaxLength(10)]
         public string Tidm { get; set; }
 
         [MaxLength(128)]
         public string Name { get; set; }
-        
+
         [MaxLength(10)]
         public string ExchangeCode { get; set; }
 
@@ -27,6 +27,7 @@ namespace PnFData.Model
 
         public double MarketCapMillions { get; set; }
 
+        [MaxLength(50)]
         public string SuperSector { get; set; }
 
         public string Sector { get; set; }
@@ -48,6 +49,8 @@ namespace PnFData.Model
 
         public List<Eod> EodPrices { get; } = new List<Eod>();
 
+        public List<ShareRSI> RSIValues { get; } = new List<ShareRSI>();
+
         public List<ShareChart> Charts { get; } = new List<ShareChart>();
 
     }
@@ -56,9 +59,9 @@ namespace PnFData.Model
     {
         public Guid Id { get; set; }
         public string Tidm { get; set; }
-        public string Name { get; set; }   
+        public string Name { get; set; }
 
-        public DateTime? LastEodDate { get; set;}
+        public DateTime? LastEodDate { get; set; }
         public bool EodErrors { get; set; }
 
         public bool HasPrices { get; set; }

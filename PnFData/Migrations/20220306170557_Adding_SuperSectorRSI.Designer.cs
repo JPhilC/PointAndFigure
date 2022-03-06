@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220306170557_Adding_SuperSectorRSI")]
+    partial class Adding_SuperSectorRSI
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,44 +114,6 @@ namespace PnFData.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Indices");
-                });
-
-            modelBuilder.Entity("PnFData.Model.IndexRSI", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
-
-                    b.Property<DateTimeOffset?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<DateTime>("Day")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("IndexId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<double>("Value")
-                        .HasColumnType("float");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IndexId");
-
-                    b.ToTable("IndexRSIValues");
                 });
 
             modelBuilder.Entity("PnFData.Model.IndexValue", b =>
@@ -507,6 +471,85 @@ namespace PnFData.Migrations
                     b.ToTable("ShareRSIValues");
                 });
 
+            modelBuilder.Entity("PnFData.Model.SuperSector", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newid()");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<string>("ExchangeCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ExchangeSubCode")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SuperSectors");
+                });
+
+            modelBuilder.Entity("PnFData.Model.SuperSectorRSI", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newid()");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<DateTime>("Day")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("SuperSectorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<double>("Value")
+                        .HasColumnType("float");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SuperSectorId");
+
+                    b.ToTable("SuperSectorRSIValues");
+                });
+
             modelBuilder.Entity("PnFData.Model.Eod", b =>
                 {
                     b.HasOne("PnFData.Model.Share", "Share")
@@ -516,17 +559,6 @@ namespace PnFData.Migrations
                         .IsRequired();
 
                     b.Navigation("Share");
-                });
-
-            modelBuilder.Entity("PnFData.Model.IndexRSI", b =>
-                {
-                    b.HasOne("PnFData.Model.Index", "Index")
-                        .WithMany("RSIValues")
-                        .HasForeignKey("IndexId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Index");
                 });
 
             modelBuilder.Entity("PnFData.Model.IndexValue", b =>
@@ -592,11 +624,20 @@ namespace PnFData.Migrations
                     b.Navigation("Share");
                 });
 
+            modelBuilder.Entity("PnFData.Model.SuperSectorRSI", b =>
+                {
+                    b.HasOne("PnFData.Model.SuperSector", "SuperSector")
+                        .WithMany("RSIValues")
+                        .HasForeignKey("SuperSectorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SuperSector");
+                });
+
             modelBuilder.Entity("PnFData.Model.Index", b =>
                 {
                     b.Navigation("IndexValues");
-
-                    b.Navigation("RSIValues");
                 });
 
             modelBuilder.Entity("PnFData.Model.PnFChart", b =>
@@ -618,6 +659,11 @@ namespace PnFData.Migrations
 
                     b.Navigation("EodPrices");
 
+                    b.Navigation("RSIValues");
+                });
+
+            modelBuilder.Entity("PnFData.Model.SuperSector", b =>
+                {
                     b.Navigation("RSIValues");
                 });
 #pragma warning restore 612, 618
