@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PnFData.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,7 +14,7 @@ namespace PnFData.Model
         Market,     // RSI relative to Market
         Sector      // RSI relative to Sector
     }
-    public class ShareRSI : EntityData
+    public class ShareRSI : EntityData, IDayValue
     {
 
         public RelativeToEnum RelativeTo { get; set; }

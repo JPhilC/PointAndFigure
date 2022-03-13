@@ -19,9 +19,12 @@ namespace PnFData.Model
         public DbSet<Eod> EodPrices { get; set; }
         public DbSet<Index> Indices { get; set; }
 
+
         public DbSet<IndexValue> IndexValues { get; set; }
 
         public DbSet<ShareRSI> ShareRSIValues {get;set;}
+
+        public DbSet<ShareIndicator> ShareIndicators {get;set;}
 
         public DbSet<IndexRSI> IndexRSIValues{get;set;}
 
@@ -33,6 +36,7 @@ namespace PnFData.Model
 
         public DbSet<ShareChart> ShareCharts { get; set; }
 
+        public DbSet<IndexChart> IndexCharts { get; set; }
 
         // The following configures EF to create a Sqlite database file in the
         // special "local" folder for your platform.
@@ -87,6 +91,12 @@ namespace PnFData.Model
             modelBuilder.Entity<ShareChart>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("newid()");
+            modelBuilder.Entity<ShareIndicator>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("newid()");
+            modelBuilder.Entity<IndexChart>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("newid()");
 
             // Define Db generated default values for CreatedAt
             modelBuilder.Entity<Share>()
@@ -119,11 +129,22 @@ namespace PnFData.Model
             modelBuilder.Entity<ShareChart>()
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<IndexChart>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<ShareIndicator>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("getdate()");
 
             // Define relationships to trigger creation or cascading deletes
             modelBuilder.Entity<Eod>()
                 .HasOne(p => p.Share)
                 .WithMany(b => b.EodPrices)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ShareIndicator>()
+                .HasOne(p => p.Share)
+                .WithMany(b => b.Indicators)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<IndexValue>()
@@ -156,10 +177,20 @@ namespace PnFData.Model
                 .WithMany(b => b.Charts)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<IndexChart>()
+                .HasOne(p => p.Index)
+                .WithMany(b => b.Charts)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<PnFChart>()
                 .HasOne(c => c.ShareChart)
                 .WithOne(sc => sc.Chart)
                 .HasForeignKey<ShareChart>(sc => sc.ChartId);
+
+            modelBuilder.Entity<PnFChart>()
+                .HasOne(c => c.IndexChart)
+                .WithOne(sc => sc.Chart)
+                .HasForeignKey<IndexChart>(sc => sc.ChartId);
 
             base.OnModelCreating(modelBuilder);
         }

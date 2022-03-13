@@ -17,23 +17,17 @@
  */
 
 using System.Net.Sockets;
+using PnFData.Interfaces;
 using PnFData.Model;
 
 namespace PnFData.Services
 {
     public class PnFSingleValueChartBuilderService : PnFChartBuilderService
     {
-        public class PnFValueData
-        {
-            public DateTime Day { get; set; }
 
-            public double Value { get; set; }
+        private List<IDayValue> _valueList;
 
-        }
-
-        private List<PnFValueData> _valueList;
-
-        public PnFSingleValueChartBuilderService(List<PnFValueData> valueList)
+        public PnFSingleValueChartBuilderService(List<IDayValue> valueList)
         {
             this._valueList = valueList;
         }
@@ -41,7 +35,7 @@ namespace PnFData.Services
 
         public override PnFChart? BuildChart(double boxSize, int reversal, DateTime uptoDate)
         {
-            List<PnFValueData> sortedList = this._valueList.Where(s => s.Day <= uptoDate).OrderBy(s => s.Day).ToList();
+            List<IDayValue> sortedList = this._valueList.Where(s => s.Day <= uptoDate).OrderBy(s => s.Day).ToList();
             if (sortedList.Count == 0)
             {
                 return null;
@@ -59,18 +53,19 @@ namespace PnFData.Services
             bool firstDayValue = true;
             int lastMonthRecorded = 0;
             int lastYearRecorded = 0;
-            foreach (PnFValueData dayValue in sortedList)
+            foreach (IDayValue dayValue in sortedList)
             {
                 // System.Diagnostics.Debug.WriteLine($"{eod.Open}\t{eod.High}\t{eod.Low}\t{eod.Close}");
                 if (firstDayValue)
                 {
-                    PnFValueData nextValue = sortedList[1];
+                    IDayValue nextValue = sortedList[1];
                     if (nextValue.Value < dayValue.Value)
                     {
                         // Start with Os (down day)
                         int newStartIndex = GetIndex(dayValue.Value) + 1;
                         currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, ContainsNewYear = true };
-                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day);
+                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                        lastMonthRecorded = dayValue.Day.Month;
                         chart.Columns.Add(currentColumn);
                     }
                     else
@@ -78,7 +73,9 @@ namespace PnFData.Services
                         // Start with Xs (up day)
                         int newStartIndex = GetIndex(dayValue.Value) - 1;
                         currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.X, CurrentBoxIndex = newStartIndex, ContainsNewYear = true };
-                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day);
+                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                        lastMonthRecorded = dayValue.Day.Month;
+                        chart.Columns.Add(currentColumn);
                     }
                     firstDayValue = false;
                 }
@@ -92,6 +89,7 @@ namespace PnFData.Services
                         {
                             // Add the box range.
                             currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                            lastMonthRecorded = dayValue.Day.Month;
                         }
                         else
                         {
@@ -108,6 +106,7 @@ namespace PnFData.Services
                                     CurrentBoxIndex = newStartIndex
                                 };
                                 currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                                lastMonthRecorded = dayValue.Day.Month;
                                 chart.Columns.Add(currentColumn);
                             }
                         }
@@ -119,6 +118,7 @@ namespace PnFData.Services
                         if (dayValue.Value >= nextBox)
                         {
                             currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                            lastMonthRecorded = dayValue.Day.Month;
                         }
                         else
                         {
@@ -135,6 +135,7 @@ namespace PnFData.Services
                                     CurrentBoxIndex = newStartIndex
                                 };
                                 currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                                lastMonthRecorded = dayValue.Day.Month;
                                 chart.Columns.Add(currentColumn);
                             }
 
@@ -147,14 +148,13 @@ namespace PnFData.Services
                         currentColumn.ContainsNewYear = true;
                     }
                 }
-                lastMonthRecorded = dayValue.Day.Month;
                 lastYearRecorded = dayValue.Day.Year;
                 chart.GeneratedDate = dayValue.Day;
             }
             return chart;
         }
-    
-                /// <summary>
+
+        /// <summary>
         /// Compute the box size based on prices
         /// </summary>
         /// <returns></returns>
@@ -178,5 +178,5 @@ namespace PnFData.Services
             return boxSize;
         }
 
-        }
+    }
 }

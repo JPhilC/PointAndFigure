@@ -53,6 +53,7 @@ namespace PnFData.Model
 
         public List<ShareChart> Charts { get; } = new List<ShareChart>();
 
+        public List<ShareIndicator> Indicators {get; } = new List<ShareIndicator>();
     }
 
     public class ShareSummary

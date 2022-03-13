@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PnFData.Model;
-using PnFDesktop.Controls;
+﻿using PnFData.Model;
 using PnFDesktop.Interfaces;
+using System;
+using System.Threading.Tasks;
 
 namespace PnFDesktop.Services
 {
@@ -76,5 +72,11 @@ namespace PnFDesktop.Services
 
             return chart;
         }
+
+        public async Task<PnFChart?> GetPointAndFigureChartAsync(Guid itemId, PnFChartSource chartSource)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

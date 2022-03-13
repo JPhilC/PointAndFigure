@@ -86,8 +86,6 @@ namespace PnFData.Model
                 StartAt = day;
             }
 
-            string? mthIndicator = monthIndicator;  // Internal copy as we only want to use it once.
-
             // Subsequent boxes so may need to add more than one to get to the specified index.
             if (ColumnType == PnFColumnType.O)
             {
@@ -95,8 +93,7 @@ namespace PnFData.Model
                 while (CurrentBoxIndex > index)
                 {
                     CurrentBoxIndex--;
-                    AddBoxInternal(boxType, boxSize, CurrentBoxIndex, value, day, mthIndicator);
-                    mthIndicator = null;
+                    AddBoxInternal(boxType, boxSize, CurrentBoxIndex, value, day);
                 }
             }
             else
@@ -105,16 +102,15 @@ namespace PnFData.Model
                 while (CurrentBoxIndex < index)
                 {
                     CurrentBoxIndex++;
-                    AddBoxInternal(boxType, boxSize, CurrentBoxIndex, value, day, mthIndicator);
-                    mthIndicator = null;    // Don't show month indicator multiple times
+                    AddBoxInternal(boxType, boxSize, CurrentBoxIndex, value, day);
                 }
             }
-
+            Boxes[Boxes.Count - 1].MonthIndicator = monthIndicator;
             EndAt = day;
 
         }
 
-        private void AddBoxInternal(PnFBoxType boxType, double boxSize, int index, double value, DateTime day, string? monthIndicator = null)
+        private void AddBoxInternal(PnFBoxType boxType, double boxSize, int index, double value, DateTime day)
         {
             PnFBox currentBox = new PnFBox()
             {
@@ -126,12 +122,7 @@ namespace PnFData.Model
                 Column = this
             };
             Boxes.Add(currentBox);
-
-            if (monthIndicator != null)
-            {
-                currentBox.MonthIndicator = monthIndicator;
-            }
-
+            //System.Diagnostics.Debug.Write(boxType.ToString());
         }
 
         public string GetTooltip()
@@ -154,11 +145,11 @@ namespace PnFData.Model
             if (EndAt != null && boxCount > 0)
             {
                 return
-                    $"{boxCount} {columnType}'s\nFrom {Boxes[0].Index*boxSize} on {StartAt.Date:d}\nTo {Boxes[boxCount - 1].Index * boxSize} on {EndAt.Value.Date:d}";
+                    $"{boxCount} {columnType}'s\nFrom {StartAtIndex * boxSize} on {StartAt.Date:d}\nTo {EndAtIndex * boxSize} on {EndAt.Value.Date:d}";
             }
             else
             {
-                return $"From {Boxes[0].Index*boxSize} on {StartAt.Date:d}";
+                return $"From {Boxes[0].Index * boxSize} on {StartAt.Date:d}";
             }
         }
 

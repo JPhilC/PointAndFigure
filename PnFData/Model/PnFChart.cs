@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PnFData.Model
@@ -6,16 +7,21 @@ namespace PnFData.Model
 
     public enum PnFChartSource
     {
+        [Description("Share")]
         Share,
+        [Description("Index")]
         Index,
+        [Description("Market RS")]
         RSStockVMarket,
+        [Description("Peer RS")]
         RSStockVSector,
+        [Description("Sector RS")]
         RSSectorVMarket
     }
 
     public class PnFChart: EntityData
     {
-        [MaxLength(50)]
+        [MaxLength(100)]
         public string? Name { get; set; }
         public PnFChartSource Source { get; set; }
 
@@ -26,9 +32,9 @@ namespace PnFData.Model
 
         public List<PnFColumn> Columns { get; } = new List<PnFColumn>();
 
-        public ShareChart ShareChart { get; set; }
+        public ShareChart? ShareChart { get; set; }
 
-        //public IndexChart IndexChart { get; set; }
+        public IndexChart? IndexChart { get; set; }
 
     }
 }

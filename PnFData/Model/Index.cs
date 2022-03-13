@@ -22,5 +22,6 @@ namespace PnFData.Model
         
         public List<IndexRSI> RSIValues { get; } = new List<IndexRSI>();
 
+        public List<IndexChart> Charts { get; } = new List<IndexChart>();
     }
 }

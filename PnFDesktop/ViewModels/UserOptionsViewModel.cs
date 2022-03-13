@@ -78,11 +78,7 @@ namespace PnFDesktop.ViewModels
                                               }
                                           }, () =>
                                           {
-#if DEBUG
                                               return (!IsBusy);
-#else
-                                            return (!IsBusy && (_Data == null || (_Data != null) && !_Data.HasErrors));
-#endif
                                           }));
             }
         }

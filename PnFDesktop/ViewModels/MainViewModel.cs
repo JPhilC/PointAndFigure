@@ -159,7 +159,8 @@ namespace PnFDesktop.ViewModels
         private void UpdateActiveModel(PaneViewModel paneVm)
         {
             IPointAndFigureChartViewModel designerVm = paneVm as IPointAndFigureChartViewModel;
-            if (designerVm != null) {
+            if (designerVm != null)
+            {
                 ActiveChart = designerVm.Chart;
                 ActiveObject = ActiveChart;
             }
@@ -256,10 +257,20 @@ namespace PnFDesktop.ViewModels
             {
                 return _openTestChartCommand
                        ?? (_openTestChartCommand = new RelayCommand(
-                           () =>
+                           async () =>
                            {
-                               PnFChart testChart = _dataService.GetPointAndFigureChart("3IN.LON",3);
-                               OpenPointAndFigureChart(testChart, true);
+                               MessageLog.LogMessage(this, LogType.Information, "Retrieving P & F chart data ...");
+                               //PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(new Guid("B9B46E45-2258-496D-9F6D-8D681A19926B"), PnFChartSource.RSSectorVMarket);
+                               PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(new Guid("B2B716E0-B3F2-4C34-DB2C-08D9EFDF465C"), PnFChartSource.Share);
+                               if (testChart != null)
+                               {
+                                   MessageLog.LogMessage(this, LogType.Information, "Generating P & F chart ...");
+                                   OpenPointAndFigureChart(testChart, true);
+                               }
+                               else
+                               {
+                                   MessageLog.LogMessage(this, LogType.Information, "Chart does not exist.");
+                               }
                            }));
             }
         }

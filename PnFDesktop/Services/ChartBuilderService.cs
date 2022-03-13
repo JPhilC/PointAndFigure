@@ -44,6 +44,7 @@ namespace PnFDesktop.Services
                     newChart = chartBuilder.BuildChart(boxSize, reversal, uptoDate);
                     if (newChart != null)
                     {
+                        newChart.Source = PnFChartSource.Share;
                         newChart.Name = $"{tidm.Replace(".LON", "")} Daily (H/L) ({newChart.BoxSize}, {reversal} rev)";
                     }
                     MessageLog.LogMessage(null, LogType.Information, $@"Box size is {newChart.BoxSize}.");

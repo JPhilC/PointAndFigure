@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220309205408_Adding_IndexCharts")]
+    partial class Adding_IndexCharts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -302,8 +304,8 @@ namespace PnFData.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("Reversal")
                         .HasColumnType("int");
@@ -504,49 +506,6 @@ namespace PnFData.Migrations
                     b.ToTable("ShareCharts");
                 });
 
-            modelBuilder.Entity("PnFData.Model.ShareIndicator", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
-
-                    b.Property<DateTimeOffset?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<DateTime>("Day")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double?>("Ema10")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("Ema30")
-                        .HasColumnType("float");
-
-                    b.Property<Guid>("ShareId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Day");
-
-                    b.HasIndex("ShareId");
-
-                    b.ToTable("ShareIndicators");
-                });
-
             modelBuilder.Entity("PnFData.Model.ShareRSI", b =>
                 {
                     b.Property<Guid>("Id")
@@ -681,17 +640,6 @@ namespace PnFData.Migrations
                     b.Navigation("Share");
                 });
 
-            modelBuilder.Entity("PnFData.Model.ShareIndicator", b =>
-                {
-                    b.HasOne("PnFData.Model.Share", "Share")
-                        .WithMany("Indicators")
-                        .HasForeignKey("ShareId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Share");
-                });
-
             modelBuilder.Entity("PnFData.Model.ShareRSI", b =>
                 {
                     b.HasOne("PnFData.Model.Share", "Share")
@@ -731,8 +679,6 @@ namespace PnFData.Migrations
                     b.Navigation("Charts");
 
                     b.Navigation("EodPrices");
-
-                    b.Navigation("Indicators");
 
                     b.Navigation("RSIValues");
                 });

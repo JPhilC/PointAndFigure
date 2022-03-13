@@ -9,6 +9,7 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using PnFData.Services;
+using PnFData.Interfaces;
 
 namespace PnFImports
 {
@@ -30,11 +31,26 @@ namespace PnFImports
                         break;
 
                     case "daily":
-                        PnFImports.ImportEodDailyPrices();
+                        if (args.Length > 1)
+                        {
+                            PnFImports.ImportEodDailyPrices(args[1].ToUpper());
+                        }
+                        else
+                        {
+                            PnFImports.ImportEodDailyPrices(null);
+                        }
                         break;
-                    
+
                     case "hilocharts":
                         GenerateAllHiLoCharts();
+                        break;
+
+                    case "sharerscharts":
+                        GenerateShareRSCharts();
+                        break;
+
+                    case "indexrscharts":
+                        GenerateIndexRSCharts();
                         break;
 
                     case "hilochart":
@@ -77,20 +93,20 @@ namespace PnFImports
                 {
                     Console.Write($"Inserting {tidm}: {data.Name} ...");
                     db.Add(new Share()
-                        {
-                            Tidm = tidm,
-                            Name = data.Name,
-                            ExchangeCode = data.ExchangeCode,
-                            ExchangeSubCode = data.ExchangeSubCode,
-                            SharesInIssueMillions = data.SharesInIssue,
-                            MarketCapMillions = data.MarketCap,
-                            SuperSector = data.Supersector,
-                            Sector = data.Sector,
-                            PricesCurrency = data.Currency,
-                            ShareDataSource = "SS", // Share Scope
-                            ShareDataSourceId = data.ShareScopeID.ToString() // Share Scope ID
+                    {
+                        Tidm = tidm,
+                        Name = data.Name,
+                        ExchangeCode = data.ExchangeCode,
+                        ExchangeSubCode = data.ExchangeSubCode,
+                        SharesInIssueMillions = data.SharesInIssue,
+                        MarketCapMillions = data.MarketCap,
+                        SuperSector = data.Supersector,
+                        Sector = data.Sector,
+                        PricesCurrency = data.Currency,
+                        ShareDataSource = "SS", // Share Scope
+                        ShareDataSourceId = data.ShareScopeID.ToString() // Share Scope ID
 
-                        }
+                    }
                     );
                 }
                 else
@@ -203,7 +219,7 @@ namespace PnFImports
 
         }
 
-        internal static void ImportEodDailyPrices()
+        internal static void ImportEodDailyPrices(string tidm)
         {
             DateTime cutOffDate = new(2016, 12, 31);
             DateTime lastClose = PreviousWorkDay(DateTime.Now.Date);
@@ -223,6 +239,10 @@ namespace PnFImports
 
             foreach (var shareData in shareIds)
             {
+                if (tidm != null && shareData.Tidm != tidm)
+                {
+                    continue;
+                }
                 Console.Write($"Processing {shareData.Tidm}: {shareData.Name} ...");
                 if (shareData.EodErrors)
                 {
@@ -284,7 +304,7 @@ namespace PnFImports
                 tidms = db.Shares.Where(s => s.EodPrices.Any()).Select(s => s.Tidm).ToList();
             }
             DateTime now = DateTime.Now.Date;
-            foreach(var tidm in  tidms)
+            foreach (var tidm in tidms)
             {
                 GenerateHiLoChart(tidm, now);
             };
@@ -337,6 +357,8 @@ namespace PnFImports
 
             if (newChart != null)
             {
+                newChart.Source = PnFChartSource.Share;
+                newChart.Name = $"{tidm.Replace(".LON", "")} Daily (H/L) ({newChart.BoxSize}, {reversal} rev)";
                 try
                 {
                     // Save the chart
@@ -344,7 +366,7 @@ namespace PnFImports
                     {
                         // Get the share
                         var share = db.Shares
-                            .Include(sc=>sc.Charts).ThenInclude(s=>s.Chart)
+                            .Include(sc => sc.Charts).ThenInclude(s => s.Chart)
                             .SingleOrDefault(s => s.Tidm == tidm);
 
 
@@ -356,7 +378,9 @@ namespace PnFImports
                                 var shareCharts = share.Charts.Where(c =>
                                     c.Chart != null
                                     && c.Chart.BoxSize == newChart.BoxSize
-                                    && c.Chart.Reversal == newChart.Reversal);
+                                    && c.Chart.Reversal == newChart.Reversal
+                                    && c.Chart.Source == PnFChartSource.Share
+                                    && c.Chart.GeneratedDate < newChart.GeneratedDate.AddDays(-5));
                                 foreach (var shareChart in shareCharts.ToList())
                                 {
                                     db.Remove(shareChart.Chart);
@@ -385,6 +409,249 @@ namespace PnFImports
                     if (ex.InnerException != null)
                     {
                         Console.WriteLine(ex.InnerException.Message);
+                    }
+                }
+            }
+        }
+
+        internal static void GenerateShareRSCharts()
+        {
+            List<Share> shares = new();
+            using (PnFDataContext db = new PnFDataContext())
+            {
+                shares = db.Shares.Where(s => s.EodPrices.Any()).ToList();
+            }
+            DateTime now = DateTime.Now.Date;
+            foreach (var s in shares)
+            {
+                GenerateShareRSChartPair(s.Id, s.Tidm, now);
+            };
+        }
+
+        internal static void GenerateShareRSChartPair(Guid shareId, string tidm, DateTime uptoDate)
+        {
+            List<ShareRSI> tickData;
+            // Retrieve the data
+            try
+            {
+                Console.WriteLine($@"Retrieving RS tick data for {tidm}.");
+                using (PnFDataContext db = new PnFDataContext())
+                {
+                    tickData = db.Shares.Where(s => s.Tidm == tidm)
+                        .Select(s => s.RSIValues).FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($@"Error retrieving tick data for {tidm}.");
+                Console.WriteLine(ex.Message);
+                return;
+            }
+
+            if (tickData != null)
+            {
+                List<IDayValue> chartData = tickData.Where(d => d.RelativeTo == RelativeToEnum.Market).ToList<IDayValue>();
+                GenerateRSChart(shareId, tidm, uptoDate, chartData, PnFChartSource.RSStockVMarket);
+
+                chartData = tickData.Where(d => d.RelativeTo == RelativeToEnum.Sector).ToList<IDayValue>();
+                GenerateRSChart(shareId, tidm, uptoDate, chartData, PnFChartSource.RSStockVSector);
+            }
+        }
+
+        internal static void GenerateIndexRSCharts()
+        {
+            List<PnFData.Model.Index> indices;
+            using (PnFDataContext db = new PnFDataContext())
+            {
+                indices = db.Indices.Where(s => s.SuperSector != null && s.IndexValues.Any()).ToList();
+            }
+            DateTime now = DateTime.Now.Date;
+            foreach (var i in indices)
+            {
+                GenerateIndexRSChart(i.Id, $"{i.ExchangeCode}, {i.ExchangeSubCode}, {i.SuperSector}", now);
+            };
+        }
+
+        internal static void GenerateIndexRSChart(Guid indexId, string indexName, DateTime uptoDate)
+        {
+            List<IDayValue> tickData = null; ;
+            // Retrieve the data
+            try
+            {
+                Console.WriteLine($@"Retrieving RS tick data for {indexName}.");
+                using (PnFDataContext db = new PnFDataContext())
+                {
+                    var rawTickData = db.Indices.Where(i => i.Id == indexId)
+                        .Select(s => s.RSIValues).FirstOrDefault();
+                    if (rawTickData != null)
+                    {
+                        tickData = rawTickData.ToList<IDayValue>();
+                    }
+                }
+                if (tickData != null)
+                {
+                    GenerateRSChart(indexId, indexName, uptoDate, tickData, PnFChartSource.RSSectorVMarket);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($@"Error retrieving tick data for {indexName}.");
+                Console.WriteLine(ex.Message);
+                return;
+            }
+        }
+
+        internal static void GenerateRSChart(Guid shareId, string tidm, DateTime uptoDate, List<IDayValue> tickData, PnFChartSource chartSource)
+        {
+            PnFChart? newChart = null;
+            int reversal = 3;
+            if (tickData != null && tickData.Any())
+            {
+                // Create the chart.
+                PnFChartBuilderService chartBuilder = new PnFSingleValueChartBuilderService(tickData);
+                double boxSize = chartBuilder.ComputeBoxSize();
+                try
+                {
+                    Console.WriteLine($@"Building {chartSource} chart for {tidm}.");
+                    newChart = chartBuilder.BuildChart(boxSize, reversal, uptoDate);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($@"Error building chart for {tidm}.");
+                    Console.WriteLine(ex.Message);
+                    return;
+                }
+            }
+            else
+            {
+                Console.WriteLine($@"Tick data not available.");
+                return;
+            }
+
+            if (newChart != null)
+            {
+                newChart.Source = chartSource;
+                if (chartSource == PnFChartSource.RSSectorVMarket)
+                {
+                    // Sector RS charts
+                    newChart.Name = $"{tidm} Sector RS ({newChart.BoxSize}, {reversal} rev)";
+                    try
+                    {
+                        // Save the chart
+                        using (var db = new PnFDataContext())
+                        {
+                            // Get the index
+                            var ndx = db.Indices
+                                .Include(sc => sc.Charts).ThenInclude(s => s.Chart)
+                                .SingleOrDefault(s => s.Id == shareId);
+
+
+                            // Try retrieving the existing chart
+                            if (ndx != null)
+                            {
+                                if (ndx.Charts.Any())
+                                {
+                                    var indexCharts = ndx.Charts.Where(c =>
+                                        c.Chart != null
+                                        && c.Chart.BoxSize == newChart.BoxSize
+                                        && c.Chart.Reversal == newChart.Reversal
+                                        && c.Chart.Source == chartSource
+                                        && c.Chart.GeneratedDate < newChart.GeneratedDate.AddDays(-5));
+                                    foreach (var indexChart in indexCharts.ToList())
+                                    {
+                                        db.Remove(indexChart.Chart);
+                                        ndx.Charts.Remove(indexChart);
+                                    }
+                                }
+
+                                IndexChart newIndexChart = new IndexChart()
+                                {
+                                    Chart = newChart,
+
+                                };
+                                ndx.Charts.Add(newIndexChart);
+                                db.Update(ndx);
+
+
+                                int saveResult = db.SaveChanges();
+                                Console.WriteLine($"{saveResult} record saved.");
+                            }
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("There was a problem saving the chart.");
+                        Console.WriteLine(ex.Message);
+                        if (ex.InnerException != null)
+                        {
+                            Console.WriteLine(ex.InnerException.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    // Stock RS charts
+                    if (chartSource == PnFChartSource.RSStockVMarket)
+                    {
+                        newChart.Name = $"{tidm.Replace(".LON", "")} Market RS ({newChart.BoxSize}, {reversal} rev)";
+                    }
+                    else if (chartSource == PnFChartSource.RSStockVSector)
+                    {
+                        newChart.Name = $"{tidm.Replace(".LON", "")} Peer RS ({newChart.BoxSize}, {reversal} rev)";
+                    }
+                    try
+                    {
+                        // Save the chart
+                        using (var db = new PnFDataContext())
+                        {
+                            // Get the share
+                            var share = db.Shares
+                                .Include(sc => sc.Charts).ThenInclude(s => s.Chart)
+                                .SingleOrDefault(s => s.Id == shareId);
+
+
+                            // Try retrieving the existing chart
+                            if (share != null)
+                            {
+                                if (share.Charts.Any())
+                                {
+                                    var shareCharts = share.Charts.Where(c =>
+                                        c.Chart != null
+                                        && c.Chart.BoxSize == newChart.BoxSize
+                                        && c.Chart.Reversal == newChart.Reversal
+                                        && c.Chart.Source == chartSource
+                                        && c.Chart.GeneratedDate < newChart.GeneratedDate.AddDays(-5));
+                                    foreach (var shareChart in shareCharts.ToList())
+                                    {
+                                        db.Remove(shareChart.Chart);
+                                        share.Charts.Remove(shareChart);
+                                    }
+                                }
+
+                                ShareChart newShareChart = new ShareChart()
+                                {
+                                    Chart = newChart,
+
+                                };
+                                share.Charts.Add(newShareChart);
+                                db.Update(share);
+
+
+                                int saveResult = db.SaveChanges();
+                                Console.WriteLine($"{saveResult} record saved.");
+                            }
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("There was a problem saving the chart.");
+                        Console.WriteLine(ex.Message);
+                        if (ex.InnerException != null)
+                        {
+                            Console.WriteLine(ex.InnerException.Message);
+                        }
                     }
                 }
             }

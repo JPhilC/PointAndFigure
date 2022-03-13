@@ -49,7 +49,13 @@ namespace PnFData.Services
             };
             PnFColumn currentColumn = new PnFColumn();
 
+            DateTime firstDay = DateTime.MinValue;
             bool firstEod = true;
+            bool firstBox = true;
+            double firstHigh = 0;
+            double firstHighTarget = 0;
+            double firstLow = 0;
+            double firstLowTarget = 0;
             int lastMonthRecorded = 0;
             int lastYearRecorded = 0;
             foreach (Eod eod in sortedList)
@@ -57,22 +63,44 @@ namespace PnFData.Services
                 // System.Diagnostics.Debug.WriteLine($"{eod.Open}\t{eod.High}\t{eod.Low}\t{eod.Close}");
                 if (firstEod)
                 {
-                    if (eod.Open > eod.Close)
+                    //System.Diagnostics.Debug.WriteLine($"First Day {eod.Day} - {eod.High}\t{eod.Low}");
+                    firstDay = eod.Day;
+                    firstHigh = eod.High;
+                    firstHighTarget = (GetIndex(eod.High) + 1) * boxSize;
+                    firstLow = eod.Low;
+                    firstLowTarget = (GetIndex(eod.Low, true) - 1) * boxSize;
+                    //System.Diagnostics.Debug.WriteLine($"First targets {firstHighTarget}\t{firstLowTarget}");
+                    firstEod = false;
+                }
+                else if (firstBox)
+                {
+                    // Looking to determine if start in Os or Xs'
+                    if (eod.Low <= firstLowTarget)
                     {
                         // Start with Os (down day)
-                        int newStartIndex = GetIndex(eod.Low) + 1;
+                        int newStartIndex = GetIndex(firstLow, true) + 1;
                         currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, ContainsNewYear = true };
-                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low, true), eod.Low, eod.Day);
                         chart.Columns.Add(currentColumn);
+                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(firstLow, true), firstLow, firstDay, (firstDay.Month != lastMonthRecorded ? GetMonthIndicator(firstDay) : null));
+                        lastMonthRecorded = firstDay.Month;
+                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low, true), eod.Low, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
+                        lastMonthRecorded = eod.Day.Month;
+                        firstBox = false;
+                        //System.Diagnostics.Debug.WriteLine($"First box O {eod.Day} - {eod.High}\t{eod.Low}, Col Index = {currentColumn.Index}");
                     }
-                    else
+                    else if (eod.High >= firstHighTarget)
                     {
                         // Start with Xs (up day)
-                        int newStartIndex = GetIndex(eod.High) - 1;
+                        int newStartIndex = GetIndex(firstHigh) - 1;
                         currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.X, CurrentBoxIndex = newStartIndex, ContainsNewYear = true };
-                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day);
+                        chart.Columns.Add(currentColumn);
+                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(firstHigh), firstHigh, firstDay, (firstDay.Month != lastMonthRecorded ? GetMonthIndicator(firstDay) : null));
+                        lastMonthRecorded = firstDay.Month;
+                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
+                        lastMonthRecorded = eod.Day.Month;
+                        firstBox = false;
+                        //System.Diagnostics.Debug.WriteLine($"First box X {eod.Day} - {eod.High}\t{eod.Low}, Col Index = {currentColumn.Index}");
                     }
-                    firstEod = false;
                 }
                 else
                 {
@@ -84,6 +112,8 @@ namespace PnFData.Services
                         {
                             // Add the box range.
                             currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low, true), eod.Low, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
+                            lastMonthRecorded = eod.Day.Month;
+                            //System.Diagnostics.Debug.WriteLine($"Next O box {eod.Day} - {eod.High}\t{eod.Low}");
                         }
                         else
                         {
@@ -100,7 +130,9 @@ namespace PnFData.Services
                                     CurrentBoxIndex = newStartIndex
                                 };
                                 currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
+                                lastMonthRecorded = eod.Day.Month;
                                 chart.Columns.Add(currentColumn);
+                                //System.Diagnostics.Debug.WriteLine($"Reversed to X {eod.Day} - {eod.High}\t{eod.Low}, Col Index = {currentColumn.Index}");
                             }
                         }
                     }
@@ -111,6 +143,8 @@ namespace PnFData.Services
                         if (eod.High >= nextBox)
                         {
                             currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
+                            lastMonthRecorded = eod.Day.Month;
+                            //System.Diagnostics.Debug.WriteLine($"Next X box {eod.Day} - {eod.High}\t{eod.Low}");
                         }
                         else
                         {
@@ -128,6 +162,8 @@ namespace PnFData.Services
                                 };
                                 currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low, true), eod.Low, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
                                 chart.Columns.Add(currentColumn);
+                                //System.Diagnostics.Debug.WriteLine($"Reversed to O {eod.Day} - {eod.High}\t{eod.Low}, Col Index = {currentColumn.Index}");
+                                lastMonthRecorded = eod.Day.Month;
                             }
 
                         }
@@ -140,7 +176,6 @@ namespace PnFData.Services
                     }
                 }
                 currentColumn.Volume += eod.Volume;
-                lastMonthRecorded = eod.Day.Month;
                 lastYearRecorded = eod.Day.Year;
                 chart.GeneratedDate = eod.Day;
             }

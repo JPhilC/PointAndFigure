@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PnFData.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace PnFData.Model
 {
-    public class IndexRSI : EntityData
+    public class IndexRSI : EntityData, IDayValue
     {
 
         public DateTime Day { get; set; }
