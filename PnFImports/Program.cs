@@ -380,7 +380,7 @@ namespace PnFImports
                                     && c.Chart.BoxSize == newChart.BoxSize
                                     && c.Chart.Reversal == newChart.Reversal
                                     && c.Chart.Source == PnFChartSource.Share
-                                    && c.Chart.GeneratedDate < newChart.GeneratedDate.AddDays(-5));
+                                    && c.Chart.GeneratedDate == newChart.GeneratedDate);
                                 foreach (var shareChart in shareCharts.ToList())
                                 {
                                     db.Remove(shareChart.Chart);
@@ -556,7 +556,7 @@ namespace PnFImports
                                         && c.Chart.BoxSize == newChart.BoxSize
                                         && c.Chart.Reversal == newChart.Reversal
                                         && c.Chart.Source == chartSource
-                                        && c.Chart.GeneratedDate < newChart.GeneratedDate.AddDays(-5));
+                                        && c.Chart.GeneratedDate == newChart.GeneratedDate);
                                     foreach (var indexChart in indexCharts.ToList())
                                     {
                                         db.Remove(indexChart.Chart);
@@ -621,7 +621,7 @@ namespace PnFImports
                                         && c.Chart.BoxSize == newChart.BoxSize
                                         && c.Chart.Reversal == newChart.Reversal
                                         && c.Chart.Source == chartSource
-                                        && c.Chart.GeneratedDate < newChart.GeneratedDate.AddDays(-5));
+                                        && c.Chart.GeneratedDate == newChart.GeneratedDate);
                                     foreach (var shareChart in shareCharts.ToList())
                                     {
                                         db.Remove(shareChart.Chart);

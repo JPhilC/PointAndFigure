@@ -11,7 +11,7 @@ namespace PnFData.Model
         Share,
         [Description("Index")]
         Index,
-        [Description("Market RS")]
+        [Description("Stock RS")]
         RSStockVMarket,
         [Description("Peer RS")]
         RSStockVSector,
