@@ -19,5 +19,18 @@ namespace PnFData.Model
         public double Value { get; set; }
 
         public int Contributors { get; set; }
+        
+        public double? BullishPercent {get;set;}
+
+        public double? PercentAboveEma10 {get;set;}
+
+        public double? PercentAboveEma30 {get;set;}
+
+        public double? PercentRsBuy {get;set;}
+
+        public double? PercentRsRising {get;set;}
+
+        public double? PercentPositiveTrend {get;set;}
+
     }
 }

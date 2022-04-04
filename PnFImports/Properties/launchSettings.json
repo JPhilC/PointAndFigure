@@ -2,7 +2,7 @@
   "profiles": {
     "PnFImports": {
       "commandName": "Project",
-      "commandLineArgs": "hilochart HGEN.LON 2022-12-10"
+      "commandLineArgs": "indexpercentcharts AVON.LON 2022-03-17"
     }
   }
 }

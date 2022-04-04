@@ -17,6 +17,7 @@ CREATE PROCEDURE [dbo].[uspGenerate10And30WeekEmas]
 	AS
 SET NOCOUNT ON
 
+RAISERROR (N'Generating 10 week and 30 week moving averages ...', 0, 0) WITH NOWAIT;
 
 IF OBJECT_ID('tempdb..#TBL_EMA_RT') IS NOT NULL BEGIN
     DROP TABLE #TBL_EMA_RT
@@ -122,22 +123,26 @@ SELECT q.[ShareId], q.[Day], q.[Close], ema10.[Ema] As Ema10, ema30.[Ema] AS Ema
 	ORDER BY q.[ShareId], q.[Day]
 
 UPDATE si
-	SET si.[Ema10] = t1.[Ema10],
-		si.[Ema30] = t1.[Ema30]
+	SET si.[Ema10] = t1.[Ema10]
+	,	si.[Ema30] = t1.[Ema30]
+	,	si.[ClosedAboveEma10] = IIF(q.[Close] > t1.[Ema10], 1, 0)
+	,	si.[ClosedAboveEma30] = IIF(q.[Close] > t1.[Ema30], 1, 0)
 FROM [dbo].[ShareIndicators] si
-INNER JOIN #TBL_EMAS t1
-ON t1.[ShareId] = si.[ShareId]
-	AND t1.[Day] = si.[Day];
+INNER JOIN #TBL_EMAS t1 ON t1.[ShareId] = si.[ShareId] AND t1.[Day] = si.[Day]
+INNER JOIN [EodPrices] q ON q.[ShareId] = si.[ShareId] AND q.[Day] = si.[Day];
 
 
-INSERT INTO [dbo].[ShareIndicators] ([Id], [ShareId], [Day], [Ema10], [Ema30])
-	SELECT NEWID() AS Id,
-		t1.[ShareId],
-		t1.[Day],
-		t1.[Ema10],
-		t1.[Ema30]
+INSERT INTO [dbo].[ShareIndicators] ([Id], [ShareId], [Day], [Ema10], [Ema30], [ClosedAboveEma10], [ClosedAboveEma30])
+	SELECT NEWID() AS Id
+		,	t1.[ShareId]
+		,	t1.[Day]
+		,	t1.[Ema10]
+		,	t1.[Ema30]
+		,	IIF(q.[Close] > t1.[Ema10], 1, 0)
+		,	IIF(q.[Close] > t1.[Ema30], 1, 0)
 	FROM #TBL_EMAS t1
 	LEFT JOIN [ShareIndicators] si ON si.[ShareId] = t1.[ShareId] AND si.[Day] = t1.[Day]
+	LEFT JOIN [EodPrices] q ON q.[ShareId] = si.[ShareId] AND q.[Day] = si.[Day]
 	WHERE si.[Id] IS NULL
 
 
@@ -147,6 +152,8 @@ DROP TABLE #TBL_EMA_150;
 DROP TABLE #TBL_EMA_RT;
 DROP TABLE #TBL_START_AVG;
 DROP TABLE #TBL_EMAS;
+
+RAISERROR (N'Done', 0, 0) WITH NOWAIT;
 
 
 RETURN

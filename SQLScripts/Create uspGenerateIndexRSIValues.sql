@@ -1,6 +1,10 @@
 USE [PnFData]
 GO
 
+IF OBJECT_ID('dbo.[uspGenerateIndexRSIValues]', 'P') IS NOT NULL  
+   DROP PROCEDURE dbo.[uspGenerateIndexRSIValues];  
+GO  
+
 /****** Object:  StoredProcedure [dbo].[uspGenerateMarketIndices]    Script Date: 05/03/2022 21:30:21 ******/
 SET ANSI_NULLS ON
 GO
@@ -12,6 +16,8 @@ GO
 CREATE PROCEDURE [dbo].[uspGenerateIndexRSIValues]
 	AS
 SET NOCOUNT ON;
+
+RAISERROR (N'Generating index RSI values ...', 0, 0) WITH NOWAIT;
 
 -- Get market prices
 SELECT ixh.ExchangeCode, ixh.ExchangeSubCode, ixv.[Day], ixv.[Value]
@@ -40,6 +46,8 @@ SELECT nv.[Id], nv.[Day], nv.[Value], nv.[IndexId]
 
 DROP TABLE #market;
 DROP TABLE #rsivalues;
+
+RAISERROR (N'Done', 0, 0) WITH NOWAIT;
 
 
 

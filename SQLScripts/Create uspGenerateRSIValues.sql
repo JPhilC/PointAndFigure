@@ -18,6 +18,8 @@ CREATE PROCEDURE [dbo].[uspGenerateRSIValues]
 	AS
 SET NOCOUNT ON;
 
+RAISERROR (N'Generating share RSI values ...', 0, 0) WITH NOWAIT;
+
 -- Create relative to Market RSI Values
 INSERT INTO ShareRSIValues ([ShareId], [Day], [Value], [Id], [RelativeTo])
 SELECT s.Id as ShareId, p.[Day], p.[Close]/ixv.[Value] * 1000 as [Value], NEWID() as Id, CONVERT(int, 0) AS [RelativeTo] 
@@ -37,6 +39,8 @@ SELECT s.Id as ShareId, p.[Day], p.[Close]/ixv.[Value] * 1000 as [Value], NEWID(
 	LEFT JOIN IndexValues ixv ON ixv.IndexId = ix.Id AND ixv.[Day] = p.[Day]
 	LEFT JOIN ShareRSIValues rsi ON rsi.[RelativeTo]=1 AND rsi.ShareId = s.Id AND rsi.[Day] = p.[Day]
 	WHERE rsi.Value IS NULL AND ixv.Value IS NOT NULL
+
+RAISERROR (N'Done', 0, 0) WITH NOWAIT;
 
 RETURN
 

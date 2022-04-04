@@ -22,6 +22,14 @@ using PnFData.Model;
 
 namespace PnFData.Services
 {
+
+    public class SimpleDayValue :IDayValue
+    {
+        public DateTime Day { get; set; }
+
+        public double Value { get; set; }
+    }
+
     public class PnFSingleValueChartBuilderService : PnFChartBuilderService
     {
 
@@ -62,7 +70,7 @@ namespace PnFData.Services
                     if (nextValue.Value < dayValue.Value)
                     {
                         // Start with Os (down day)
-                        int newStartIndex = GetIndex(dayValue.Value) + 1;
+                        int newStartIndex = GetIndex(dayValue.Value, true) + 1;
                         currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, ContainsNewYear = true };
                         currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                         lastMonthRecorded = dayValue.Day.Month;
@@ -171,7 +179,7 @@ namespace PnFData.Services
                          }).First();
 
 
-            boxSize = RangeBoxSize((stats.BestLow + stats.BestHigh) * 0.5);
+            boxSize = RangeBoxSize((stats.BestHigh - stats.BestLow) * 0.005);   // Take 1% of mid price
             //int bs = (int)(boxSize + 0.5);
             //boxSize = bs * 0.01d;
             //boxSize = stats.SumHighLessLow / _eodList.Count;

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220403161634_Updating_Index_Indicators")]
+    partial class Updating_Index_Indicators
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,7 +208,7 @@ namespace PnFData.Migrations
                     b.Property<bool?>("PercentRSBuyRising")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("PercentRsRisingFalling")
+                    b.Property<bool?>("PercentRsFallingFalling")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("PercentRsRisingRising")

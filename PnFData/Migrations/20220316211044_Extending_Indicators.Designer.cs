@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220316211044_Extending_Indicators")]
+    partial class Extending_Indicators
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,11 +161,8 @@ namespace PnFData.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newid()");
 
-                    b.Property<bool?>("BullishPercentFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("BullishPercentRising")
-                        .HasColumnType("bit");
+                    b.Property<double?>("BullishPercent")
+                        .HasColumnType("float");
 
                     b.Property<bool?>("Buy")
                         .HasColumnType("bit");
@@ -181,36 +180,6 @@ namespace PnFData.Migrations
 
                     b.Property<Guid>("IndexId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool?>("PercentAbove10EmaFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentAbove10EmaRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentAbove30EmaFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentAbove30EmaRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentPositiveTrendFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentPositiveTrendRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRSBuyFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRSBuyRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRsRisingFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRsRisingRising")
-                        .HasColumnType("bit");
 
                     b.Property<bool?>("Rising")
                         .HasColumnType("bit");
@@ -292,9 +261,6 @@ namespace PnFData.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newid()");
 
-                    b.Property<double?>("BullishPercent")
-                        .HasColumnType("float");
-
                     b.Property<int>("Contributors")
                         .HasColumnType("int");
 
@@ -308,21 +274,6 @@ namespace PnFData.Migrations
 
                     b.Property<Guid>("IndexId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<double?>("PercentAboveEma10")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("PercentAboveEma30")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("PercentPositiveTrend")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("PercentRsBuy")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("PercentRsRising")
-                        .HasColumnType("float");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
@@ -624,12 +575,6 @@ namespace PnFData.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newid()");
 
-                    b.Property<bool?>("ClosedAboveEma10")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("ClosedAboveEma30")
-                        .HasColumnType("bit");
-
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
@@ -653,31 +598,31 @@ namespace PnFData.Migrations
                     b.Property<bool?>("Falling")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("PeerRsBuy")
+                    b.Property<bool>("PeerRsBuy")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("PeerRsFalling")
+                    b.Property<bool>("PeerRsFalling")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("PeerRsRising")
+                    b.Property<bool>("PeerRsRising")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("PeerRsSell")
+                    b.Property<bool>("PeerRsSell")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("Rising")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("RsBuy")
+                    b.Property<bool>("RsBuy")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("RsFalling")
+                    b.Property<bool>("RsFalling")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("RsRising")
+                    b.Property<bool>("RsRising")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("RsSell")
+                    b.Property<bool>("RsSell")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("ShareId")

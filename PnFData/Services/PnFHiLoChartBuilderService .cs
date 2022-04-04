@@ -195,13 +195,12 @@ namespace PnFData.Services
                          select new
                          {
                              BestLow = g.Min(l => l.Low),
-                             BestHigh = g.Max(h => h.High),
-                             SumHighLessLow = g.Sum(s => s.High - s.Low)
+                             BestHigh = g.Max(h => h.High)
                          }).First();
 
 
 
-            boxSize = RangeBoxSize((stats.BestLow + stats.BestHigh) * 0.5);
+            boxSize = RangeBoxSize((stats.BestHigh - stats.BestLow) * 0.005);   // Take 1% of the middle of the range
             //int bs = (int)(boxSize + 0.5);
             //boxSize = bs * 0.01d;
             //boxSize = stats.SumHighLessLow / _eodList.Count;

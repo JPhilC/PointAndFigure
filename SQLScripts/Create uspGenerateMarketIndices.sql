@@ -5,13 +5,12 @@ IF OBJECT_ID('dbo.[uspGenerateMarketIndices]', 'P') IS NOT NULL
    DROP PROCEDURE dbo.[uspGenerateMarketIndices];  
 GO  
 
-CREATE PROCEDURE [uspGenerateMarketIndices] (@upToDate DATETIME)
+CREATE PROCEDURE [uspGenerateMarketIndices] 
 	AS
 SET NOCOUNT ON;
 -- Generates a Price Weighted Index by exchange code and exchange sub code
 
---DECLARE @upToDate DATETIME;
---SET @upToDate = '2022-02-04';
+RAISERROR (N'Generating market indices ...', 0, 0) WITH NOWAIT;
 
 IF object_id('tempdb..#totals','U') is not null
 	DROP TABLE #totals;
@@ -28,7 +27,7 @@ SELECT s.[ExchangeCode], s.[ExchangeSubCode], p.[Day], SUM(p.[Close]) TotalClose
 	INTO #totals
 	FROM EodPrices p
 	LEFT JOIN Shares s ON s.Id = p.ShareId
-	WHERE p.[Day] <= @upToDate AND ISNULL(s.[SuperSector], '') <>''
+	WHERE ISNULL(s.[SuperSector], '') <>''
 	GROUP BY s.[ExchangeCode], s.[ExchangeSubCode], p.[Day]
 	ORDER BY s.[ExchangeCode], s.[ExchangeSubCode], P.[Day] DESC;
 
@@ -38,7 +37,7 @@ SELECT t.[ExchangeCode], t.[ExchangeSubCode], p.[ShareId], p.[Day], p.[Close]/t.
 	FROM [EodPrices] p
 	LEFT JOIN [Shares] s ON s.[Id] = p.[ShareId]
 	LEFT JOIN #totals t on t.[ExchangeCode] = s.[ExchangeCode] AND t.[ExchangeSubCode] = s.[ExchangeSubCode] AND t.[Day] = p.[Day]
-	WHERE p.[Day] <= @upToDate AND ISNULL(s.[SuperSector], '') <>''
+	WHERE ISNULL(s.[SuperSector], '') <>''
 
 SELECT w.[ExchangeCode], w.[ExchangeSubCode], w.[Day], SUM(w.[Weight] * p.[Close]) [Value], Count(*) [ShareCount]
 	INTO #newIndex
@@ -75,6 +74,7 @@ DROP TABLE #totals;
 DROP TABLE #weights;
 DROP TABLE #newIndex
 
+RAISERROR (N'Done.', 0, 0) WITH NOWAIT;
 
 RETURN
 

@@ -5,10 +5,12 @@ IF OBJECT_ID('dbo.uspGenerateSectorIndices', 'P') IS NOT NULL
    DROP PROCEDURE dbo.uspGenerateSectorIndices;  
 GO  
 
-CREATE PROCEDURE uspGenerateSectorIndices (@upToDate DATETIME)
+CREATE PROCEDURE uspGenerateSectorIndices
 	AS
 SET NOCOUNT ON;
 -- Generates a Equal Weighted Indexes by exchange code, exchange sub code and sector
+
+RAISERROR (N'Generating sector indices ...', 0, 0) WITH NOWAIT;
 
 --DECLARE @upToDate DATETIME;
 --SET @upToDate = '2022-02-18';
@@ -27,7 +29,7 @@ SELECT s.[ExchangeCode], s.[ExchangeSubCode], s.[SuperSector], p.[Day], SUM(p.[C
 	INTO #totals
 	FROM EodPrices p
 	LEFT JOIN Shares s ON s.Id = p.ShareId
-	WHERE p.[Day] <= @upToDate AND ISNULL(s.[SuperSector], '') <>''
+	WHERE ISNULL(s.[SuperSector], '') <>''
 	GROUP BY s.[ExchangeCode], s.[ExchangeSubCode], s.[SuperSector], p.[Day]
 	ORDER BY s.[ExchangeCode], s.[ExchangeSubCode], s.[SuperSector], p.[Day] DESC;
 
@@ -41,7 +43,7 @@ SELECT t.[ExchangeCode], t.[ExchangeSubCode], t.[SuperSector], p.[ShareId], p.[D
 		AND t.[ExchangeSubCode] = s.[ExchangeSubCode] 
 		AND t.[SuperSector] = s.[SuperSector] 
 		AND t.[Day] = p.[Day]
-	WHERE p.[Day] <= @upToDate AND ISNULL(s.[SuperSector], '') <>''
+	WHERE ISNULL(s.[SuperSector], '') <>''
 
 SELECT w.[ExchangeCode], w.[ExchangeSubCode], w.[SuperSector], w.[Day], SUM(w.[Weight] * p.[Close]) [Value], Count(*) [ShareCount]
 	INTO #newIndex
@@ -83,6 +85,7 @@ DROP TABLE #totals;
 DROP TABLE #weights;
 DROP TABLE #newIndex
 
+RAISERROR (N'Done', 0, 0) WITH NOWAIT;
 
 RETURN
 

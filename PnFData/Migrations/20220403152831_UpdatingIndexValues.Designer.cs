@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220403152831_UpdatingIndexValues")]
+    partial class UpdatingIndexValues
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,12 +161,6 @@ namespace PnFData.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newid()");
 
-                    b.Property<bool?>("BullishPercentFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("BullishPercentRising")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("Buy")
                         .HasColumnType("bit");
 
@@ -181,36 +177,6 @@ namespace PnFData.Migrations
 
                     b.Property<Guid>("IndexId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool?>("PercentAbove10EmaFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentAbove10EmaRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentAbove30EmaFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentAbove30EmaRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentPositiveTrendFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentPositiveTrendRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRSBuyFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRSBuyRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRsRisingFalling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRsRisingRising")
-                        .HasColumnType("bit");
 
                     b.Property<bool?>("Rising")
                         .HasColumnType("bit");

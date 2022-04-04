@@ -5,8 +5,8 @@ namespace PnFData.Model
 {
     public class PnFDataContext : DbContext
     {
-        private const string ConnectionString =
-            @"Server=localhost\SQLEXPRESS;Database=PnFData;Trusted_Connection=True;";
+        public static string ConnectionString =
+            @"Server=localhost\SQLEXPRESS;Database=PnFData;Trusted_Connection=True";
 
         public static readonly ILoggerFactory loggerFactory = LoggerFactory.Create(builder => {
                 builder.AddFilter("Database.Command", LogLevel.None)
@@ -37,6 +37,8 @@ namespace PnFData.Model
         public DbSet<ShareChart> ShareCharts { get; set; }
 
         public DbSet<IndexChart> IndexCharts { get; set; }
+
+        public DbSet<IndexIndicator> IndexIndicators {get;set;}
 
         // The following configures EF to create a Sqlite database file in the
         // special "local" folder for your platform.
@@ -97,6 +99,9 @@ namespace PnFData.Model
             modelBuilder.Entity<IndexChart>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("newid()");
+            modelBuilder.Entity<IndexIndicator>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("newid()");
 
             // Define Db generated default values for CreatedAt
             modelBuilder.Entity<Share>()
@@ -133,6 +138,9 @@ namespace PnFData.Model
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("getdate()");
             modelBuilder.Entity<ShareIndicator>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<IndexIndicator>()
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("getdate()");
 
@@ -180,6 +188,11 @@ namespace PnFData.Model
             modelBuilder.Entity<IndexChart>()
                 .HasOne(p => p.Index)
                 .WithMany(b => b.Charts)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<IndexIndicator>()
+                .HasOne(p => p.Index)
+                .WithMany(b => b.Indicators)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PnFChart>()
