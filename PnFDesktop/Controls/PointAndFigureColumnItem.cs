@@ -20,6 +20,9 @@ namespace PnFDesktop.Controls
         public static readonly DependencyProperty YProperty =
             DependencyProperty.Register("Y", typeof(double), typeof(PointAndFigureColumnItem),
                 new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        public static readonly DependencyProperty BullishSupportYProperty =
+            DependencyProperty.Register("BullishSupportY", typeof(double), typeof(PointAndFigureColumnItem),
+                new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public static readonly DependencyProperty BoxOffsetXProperty =
            DependencyProperty.Register("BoxOffsetX", typeof(double), typeof(PointAndFigureColumnItem),
@@ -63,6 +66,15 @@ namespace PnFDesktop.Controls
         {
             get => (double)GetValue(YProperty);
             set => SetValue(YProperty, value);
+        }
+
+        /// <summary>
+        /// The Y coordinate of the Bullish Support box.
+        /// </summary>
+        public double BullishSupportY
+        {
+            get => (double)GetValue(BullishSupportYProperty);
+            set => SetValue(BullishSupportYProperty, value);
         }
 
         /// <summary>

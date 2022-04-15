@@ -48,6 +48,8 @@ namespace PnFData.Services
                 Reversal = reversal
             };
             PnFColumn currentColumn = new PnFColumn();
+            PnFColumn prevColumnOne = null;
+            PnFColumn prevColumnTwo = null;
 
             DateTime firstDay = DateTime.MinValue;
             bool firstEod = true;
@@ -58,6 +60,7 @@ namespace PnFData.Services
             double firstLowTarget = 0;
             int lastMonthRecorded = 0;
             int lastYearRecorded = 0;
+            int columnIndex = -1;
             foreach (Eod eod in sortedList)
             {
                 // System.Diagnostics.Debug.WriteLine($"{eod.Open}\t{eod.High}\t{eod.Low}\t{eod.Close}");
@@ -79,8 +82,9 @@ namespace PnFData.Services
                     {
                         // Start with Os (down day)
                         int newStartIndex = GetIndex(firstLow, true) + 1;
-                        currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, ContainsNewYear = true };
+                        currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, BullSupportIndex = newStartIndex - 1, ContainsNewYear = true };
                         chart.Columns.Add(currentColumn);
+                        columnIndex++;
                         currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(firstLow, true), firstLow, firstDay, (firstDay.Month != lastMonthRecorded ? GetMonthIndicator(firstDay) : null));
                         lastMonthRecorded = firstDay.Month;
                         currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low, true), eod.Low, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
@@ -92,8 +96,9 @@ namespace PnFData.Services
                     {
                         // Start with Xs (up day)
                         int newStartIndex = GetIndex(firstHigh) - 1;
-                        currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.X, CurrentBoxIndex = newStartIndex, ContainsNewYear = true };
+                        currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.X, CurrentBoxIndex = newStartIndex, BullSupportIndex = newStartIndex - 1, ContainsNewYear = true };
                         chart.Columns.Add(currentColumn);
+                        columnIndex++;
                         currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(firstHigh), firstHigh, firstDay, (firstDay.Month != lastMonthRecorded ? GetMonthIndicator(firstDay) : null));
                         lastMonthRecorded = firstDay.Month;
                         currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
@@ -122,16 +127,40 @@ namespace PnFData.Services
                             if (eod.High >= reversalBox)
                             {
                                 int newStartIndex = currentColumn.CurrentBoxIndex;
+                                int newBullishSupportIndex = currentColumn.BullSupportIndex + 1;
+                                if (prevColumnOne != null)
+                                {
+                                    prevColumnTwo = prevColumnOne;
+                                }
+                                prevColumnOne = currentColumn;
                                 currentColumn = new PnFColumn()
                                 {
                                     PnFChart = chart,
                                     Index = currentColumn.Index + 1,
                                     ColumnType = PnFColumnType.X,
-                                    CurrentBoxIndex = newStartIndex
+                                    CurrentBoxIndex = newStartIndex,
+                                    BullSupportIndex = newBullishSupportIndex,
+                                    ShowBullishSupport = prevColumnOne.ShowBullishSupport
                                 };
-                                currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
+                                // Determine if bullish support line should be shown
+                                int targetIndex = GetIndex(eod.High);
+                                if (prevColumnTwo != null && targetIndex > prevColumnTwo.EndAtIndex)
+                                {
+                                    // Buy signal so switch on Showing bullish support line
+                                    int colIndex = columnIndex;
+                                    while(colIndex > -1 && chart.Columns[colIndex].BullSupportIndex < newBullishSupportIndex)
+                                    {
+                                        chart.Columns[colIndex].ShowBullishSupport = true;
+                                        colIndex--;
+                                    }
+                                    //prevColumnOne.ShowBullishSupport = true;
+                                    //currentColumn.ShowBullishSupport = true;
+                                }
+
+                                currentColumn.AddBox(PnFBoxType.X, BoxSize, targetIndex, eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
                                 lastMonthRecorded = eod.Day.Month;
                                 chart.Columns.Add(currentColumn);
+                                columnIndex++;
                                 //System.Diagnostics.Debug.WriteLine($"Reversed to X {eod.Day} - {eod.High}\t{eod.Low}, Col Index = {currentColumn.Index}");
                             }
                         }
@@ -142,7 +171,20 @@ namespace PnFData.Services
                         double nextBox = GetValue(currentColumn.CurrentBoxIndex + 1);
                         if (eod.High >= nextBox)
                         {
-                            currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(eod.High), eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
+                            int targetIndex = GetIndex(eod.High);
+                            if (prevColumnTwo != null && targetIndex > prevColumnTwo.EndAtIndex)
+                            {
+                                // Buy signal so switch on Showing bullish support line
+                                    int colIndex = columnIndex;
+                                    while(colIndex > -1 && chart.Columns[colIndex].BullSupportIndex <= chart.Columns[columnIndex].BullSupportIndex)
+                                    {
+                                        chart.Columns[colIndex].ShowBullishSupport = true;
+                                        colIndex--;
+                                    }
+                                //prevColumnOne.ShowBullishSupport = true;
+                                //currentColumn.ShowBullishSupport = true;
+                            }
+                            currentColumn.AddBox(PnFBoxType.X, BoxSize, targetIndex, eod.High, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
                             lastMonthRecorded = eod.Day.Month;
                             //System.Diagnostics.Debug.WriteLine($"Next X box {eod.Day} - {eod.High}\t{eod.Low}");
                         }
@@ -153,15 +195,24 @@ namespace PnFData.Services
                             if (eod.Low <= reversalBox)
                             {
                                 int newStartIndex = currentColumn.CurrentBoxIndex;
+                                int newBullishSupportIndex = currentColumn.BullSupportIndex + 1;
+                                if (prevColumnOne != null)
+                                {
+                                    prevColumnTwo = prevColumnOne;
+                                }
+                                prevColumnOne = currentColumn;
                                 currentColumn = new PnFColumn()
                                 {
                                     PnFChart = chart,
                                     Index = currentColumn.Index + 1,
                                     ColumnType = PnFColumnType.O,
-                                    CurrentBoxIndex = newStartIndex
+                                    CurrentBoxIndex = newStartIndex,
+                                    BullSupportIndex = newBullishSupportIndex,
+                                    ShowBullishSupport = prevColumnOne.ShowBullishSupport
                                 };
                                 currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(eod.Low, true), eod.Low, eod.Day, (eod.Day.Month != lastMonthRecorded ? GetMonthIndicator(eod.Day) : null));
                                 chart.Columns.Add(currentColumn);
+                                columnIndex++;
                                 //System.Diagnostics.Debug.WriteLine($"Reversed to O {eod.Day} - {eod.High}\t{eod.Low}, Col Index = {currentColumn.Index}");
                                 lastMonthRecorded = eod.Day.Month;
                             }

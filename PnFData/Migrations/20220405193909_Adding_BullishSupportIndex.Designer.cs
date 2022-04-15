@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220405193909_Adding_BullishSupportIndex")]
+    partial class Adding_BullishSupportIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -471,9 +473,6 @@ namespace PnFData.Migrations
 
                     b.Property<Guid>("PnFChartId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("ShowBullishSupport")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("StartAt")
                         .HasColumnType("datetime2");

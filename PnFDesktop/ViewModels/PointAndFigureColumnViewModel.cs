@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using Accessibility;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using PnFData.Model;
@@ -51,6 +52,48 @@ namespace PnFDesktop.ViewModels
             get => _y;
             set => SetProperty(ref _y, value);
         }
+
+        /// <summary>
+        /// The Y coordinate for the position of the bullish support line.
+        /// </summary>
+        private double _bullishSupportY;
+
+        /// <summary>
+        /// The Y coordinate for the position of the bullish support line.
+        /// </summary>
+        public double BullishSupportY
+        {
+            get => _bullishSupportY;
+            set => SetProperty(ref _bullishSupportY, value);
+        }
+
+        private bool _showBullishSupportImage;
+
+        /// <summary>
+        /// The Y coordinate for the position of the bullish support line.
+        /// </summary>
+        public bool ShowBullishSupportImage
+        {
+            get => _showBullishSupportImage;
+            set => SetProperty(ref _showBullishSupportImage, value);
+        }
+
+        private string _artworkKey = "BullishSupport4X4";
+
+        public DrawingImage BullishSupportImage
+        {
+            get
+            {
+                DrawingImage image = Application.Current.TryFindResource(_artworkKey) as DrawingImage;
+                if (image == null)
+                {
+                    MessageLog.LogMessage(this, LogType.Error, $"The artwork is missing for key '{_artworkKey}'.");
+                    image = Application.Current.TryFindResource("UnknownPort") as DrawingImage;
+                }
+                return image;
+            }
+        }
+
 
         /// <summary>
         /// The Z index of the column.
@@ -108,18 +151,24 @@ namespace PnFDesktop.ViewModels
             _x = column.Index * chartGridSize;
             if (column.Boxes.Any())
             {
-                Size = AddBoxes(chartGridSize, out int maxIndex);
+                Size = AddBoxes(chartGridSize, out int minIndex, out int maxIndex);
                 _y = (maxChartBoxIndex - maxIndex) * chartGridSize;
+                _bullishSupportY = (maxIndex - Column.BullSupportIndex) * chartGridSize;
+                ShowBullishSupportImage = Column.ShowBullishSupport;
             }
             else
             {
                 _y = 0d;
+                _bullishSupportY = 0d;
+                ShowBullishSupportImage = false;
             }
             OnPropertyChanged("X");
             OnPropertyChanged("Y");
+            OnPropertyChanged("BullishSupportY");
+
         }
 
-        private Size AddBoxes(double chartGridSize, out int maxIndex)
+        private Size AddBoxes(double chartGridSize, out int minIndex, out int maxIndex)
         {
             int i = 0;
             foreach (var box in Column.Boxes.OrderByDescending(b=>b.Index))
@@ -128,7 +177,9 @@ namespace PnFDesktop.ViewModels
                 i++;
             }
 
+            minIndex = Boxes.Min(b => b.Box.Index);
             maxIndex = Boxes.Max(b => b.Box.Index);
+
             return new Size(chartGridSize, Boxes.Count * chartGridSize);
         }
 

@@ -67,5 +67,36 @@
             </GeometryDrawing>
         </DrawingImage.Drawing>
     </DrawingImage>
-    
+
+    <!-- Bullish Support -->
+    <DrawingImage x:Key="BullishSupport5X5">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,5 L5,0">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource XColorBrush}" Thickness="{StaticResource BoxPenThickness}"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="BullishSupport4X4">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,4 L4,0">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource XColorBrush}" Thickness="{StaticResource BoxPenThickness}"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="BullishSupport2X2">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M 0,2 L2,0">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource XColorBrush}" Thickness="{StaticResource BoxPenThickness}"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
 </ResourceDictionary>

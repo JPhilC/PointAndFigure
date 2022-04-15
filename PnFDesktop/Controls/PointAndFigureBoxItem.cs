@@ -25,13 +25,6 @@ namespace PnFDesktop.Controls
             DependencyProperty.Register("Image", typeof(ImageSource), typeof(PointAndFigureBoxItem),
                 new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public static readonly DependencyProperty OffsetXProperty =
-            DependencyProperty.Register("OffsetX", typeof(double), typeof(PointAndFigureBoxItem), new FrameworkPropertyMetadata(0.0));
-        public static readonly DependencyProperty OffsetYProperty =
-            DependencyProperty.Register("OffsetY", typeof(double), typeof(PointAndFigureBoxItem), new FrameworkPropertyMetadata(0.0));
-
-
-
 
         public static readonly DependencyProperty ParentPointAndFigureChartProperty =
             DependencyProperty.Register("ParentPointAndFigureChart", typeof(PointAndFigureChartControl), typeof(PointAndFigureBoxItem),
@@ -99,23 +92,6 @@ namespace PnFDesktop.Controls
             set => SetValue(ImageProperty, value);
         }
 
-        /// <summary>
-        /// The X offset to adjust the position of the connector
-        /// </summary>
-        public double OffsetX
-        {
-            get => (double)GetValue(OffsetXProperty);
-            set => SetValue(OffsetXProperty, value);
-        }
-
-        /// <summary>
-        /// The Y offset to adjust the position of the connector
-        /// </summary>
-        public double OffsetY
-        {
-            get => (double)GetValue(OffsetYProperty);
-            set => SetValue(OffsetYProperty, value);
-        }
 
         #region Private Methods
 

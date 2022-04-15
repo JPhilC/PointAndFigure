@@ -3,8 +3,7 @@
                     xmlns:controls="clr-namespace:PnFDesktop.Controls"
                     xmlns:system="clr-namespace:System;assembly=System.Runtime"
                     xmlns:local="clr-namespace:PnFDesktop.Classes">
-
-    <local:BoxPropertyConverter x:Key="BoxPropertyConverter" />
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
     <SolidColorBrush
         x:Key="selectionBorderColor"
@@ -48,19 +47,13 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:PointAndFigureColumnItem}" >
-                    <Grid>
-                        <Grid.RenderTransform>
-                            <TranslateTransform X="{Binding X}" 
-                                                Y="{Binding Y}"/>
-                        </Grid.RenderTransform>
-
-                        <!-- 
+                    <!-- 
                         This border indicates that node is selected.
                         Normally it is transparent, but when 'IsSelected' is set
                         to 'true' the border brush becomes blue and its background
                         becomds light blue.
                         -->
-                        <Border
+                    <Border
                             x:Name="selectionBorder"
                             Background="{TemplateBinding Background}" 
                             BorderBrush="{TemplateBinding BorderBrush}" 
@@ -68,14 +61,32 @@
                             Margin="{TemplateBinding Margin}"
                             Padding="{TemplateBinding Padding}"
                             CornerRadius="0">
-
+                        <Border.RenderTransform>
+                            <TranslateTransform X="{Binding X}" 
+                                                    Y="{Binding Y}"/>
+                        </Border.RenderTransform>
+                        <Canvas>
                             <!-- 
                             User-defined node content is presented here. 
                             -->
                             <ContentPresenter />
-                        </Border>
+                            <!-- The visual for the bullish support box. -->
+                            <Grid Visibility="{Binding ShowBullishSupportImage, Converter={StaticResource BoolToVis}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding GridSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}}"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="{Binding GridSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}}"/>
+                                </Grid.RowDefinitions>
+                                <!-- The names are added to the transforms below to prevent error appearing in the output window -->
+                                <Grid.RenderTransform>
+                                    <TranslateTransform Y="{Binding BullishSupportY}"/>
+                                </Grid.RenderTransform>
+                                <Image Source="{Binding BullishSupportImage}"  Stretch="None"/>
+                            </Grid>
+                        </Canvas>
+                    </Border>
 
-                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected"  Value="True">
 
@@ -142,9 +153,9 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{Binding GridSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}}"/>
                         </Grid.ColumnDefinitions>
-                           <Grid.RowDefinitions>
-                               <RowDefinition Height="{Binding GridSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}}"/>
-                           </Grid.RowDefinitions> 
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="{Binding GridSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}}"/>
+                        </Grid.RowDefinitions>
                         <!-- The names are added to the transforms below to prevent error appearing in the output window -->
                         <Grid.RenderTransform>
                             <TranslateTransform X="{Binding X}" 
@@ -159,19 +170,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-
-    <!-- 
-    A data-template that defines the UI for boxes.
-    -->
-    <DataTemplate x:Key="PointAndFigureBoxTemplate" >
-        <Grid Cursor="Hand">
-            <controls:PointAndFigureBoxItem 
-                    x:Name="PointAndFigureBoxItem"
-                    Image="{Binding Box, Converter={StaticResource BoxPropertyConverter}, ConverterParameter={x:Static local:BoxPropertyEnum.Drawing}}"/>
-        </Grid>
-    </DataTemplate>
-
 
     <!-- Style for the port Items list -->
     <Style x:Key="BoxItemsList" TargetType="{x:Type ItemsControl}">

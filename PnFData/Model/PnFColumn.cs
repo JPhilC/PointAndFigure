@@ -36,6 +36,10 @@ namespace PnFData.Model
 
         public DateTime? EndAt { get; set; }
 
+        public int BullSupportIndex {get; set;}
+
+        public bool ShowBullishSupport {get;set;}
+
         public bool ContainsNewYear { get; set; }
 
         public List<PnFBox> Boxes { get; } = new List<PnFBox>();
@@ -94,6 +98,13 @@ namespace PnFData.Model
                 {
                     CurrentBoxIndex--;
                     AddBoxInternal(boxType, boxSize, CurrentBoxIndex, value, day);
+                }
+
+                // Push the bullish support index down if necessary.
+                if (index <= BullSupportIndex)
+                {
+                    BullSupportIndex = index-1;
+                    ShowBullishSupport = false;
                 }
             }
             else

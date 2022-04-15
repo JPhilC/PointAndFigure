@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PnFData.Model;
+using PnFDesktop.Classes;
 using PnFDesktop.Interfaces;
 using System;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace PnFDesktop.Services
         public async Task<PnFChart?> GetPointAndFigureChartAsync(Guid itemId, PnFChartSource chartSource)
         {
             PnFChart chart = null;
+            try {
             using (var db = new PnFDataContext())
             {
                 if (chartSource == PnFChartSource.RSSectorVMarket)
@@ -67,12 +69,12 @@ namespace PnFDesktop.Services
                         {
                             var maxDay = share.Charts.Where(c =>
                                 c.Chart != null
-                                && c.Chart.Source == chartSource).Max(c => c.Chart.GeneratedDate);
+                                && c.Chart.Source == chartSource).Max(c => c.Chart.CreatedAt);
 
                             var shareChart = share.Charts.Where(c =>
                                 c.Chart != null
                                 && c.Chart.Source == chartSource
-                                && c.Chart.GeneratedDate == maxDay).FirstOrDefault();
+                                && c.Chart.CreatedAt == maxDay).FirstOrDefault();
                             if (shareChart != null)
                             {
                                 chart = await db.PnFCharts
@@ -83,6 +85,11 @@ namespace PnFDesktop.Services
 
                     }
                 }
+            }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(null, LogType.Error, "An error occurred loading the PnF chart data", ex);
             }
             return chart;
         }

@@ -15,7 +15,6 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <classes:ColumnPropertyConverter x:Key="ColumnPropertyConverter"/>
-            <classes:BoxPropertyConverter x:Key="BoxPropertyConverter"/>
             <classes:ScaleToValueConverter x:Key="ScaleToValueConverter"/>
 
             <!-- UI commands. -->
@@ -27,20 +26,16 @@
             <RoutedUICommand x:Key="Commands.OneHundredPercent" />
 
             <DataTemplate DataType="{x:Type vm:PointAndFigureColumnViewModel}">
-                <Grid>
-                    <Viewbox HorizontalAlignment="Left" VerticalAlignment="Top"
+                <Viewbox HorizontalAlignment="Left" VerticalAlignment="Top"
                              Stretch="None">
-                        <Grid>
-                            <ItemsControl x:Name="PART_BoxItemsControl"
+                    <ItemsControl x:Name="PART_BoxItemsControl"
                                       ItemsSource="{Binding Boxes}"
                                       Style="{StaticResource BoxItemsList}"
                                       Focusable="True"/>
-                        </Grid>
-                    </Viewbox>
-                    <Grid.ToolTip>
+                    <Viewbox.ToolTip>
                         <TextBlock Text="{Binding Tooltip}"/>
-                    </Grid.ToolTip>
-                </Grid>
+                    </Viewbox.ToolTip>
+                </Viewbox>
             </DataTemplate>
 
             <DataTemplate DataType="{x:Type vm:PointAndFigureBoxViewModel}">

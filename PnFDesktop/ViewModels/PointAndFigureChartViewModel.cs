@@ -341,11 +341,20 @@ namespace PnFDesktop.ViewCharts
         #region Helper methods ...
         private void AddColumns()
         {
+            //int lastBullishSupportIndex = int.MaxValue;
+            PointAndFigureColumnViewModel previousColumnVm = null;
             Columns.Clear();
-            foreach (PnFColumn column in Chart.Columns)
+            foreach (PnFColumn column in Chart.Columns.OrderBy(c => c.Index))
             {
+                //bool showBullishSupportImage = (lastBullishSupportIndex == column.BullSupportIndex - 1);
+                //if (showBullishSupportImage && previousColumnVm!=null && !previousColumnVm.ShowBullishSupportImage)
+                //{
+                //    previousColumnVm.ShowBullishSupportImage = true;
+                //}
                 PointAndFigureColumnViewModel columnVm = new PointAndFigureColumnViewModel(column, GridSize, _maxIndex);
                 Columns.Add(columnVm);
+                // lastBullishSupportIndex = column.BullSupportIndex;
+                previousColumnVm = columnVm;
             }
         }
 
