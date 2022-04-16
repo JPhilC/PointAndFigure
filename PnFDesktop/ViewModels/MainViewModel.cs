@@ -36,30 +36,32 @@ namespace PnFDesktop.ViewModels
                 AdLayout = new AvalonDockLayoutViewModel(this);
             }
 
-            WeakReferenceMessenger.Default.Register<PointAndFigureChartClosedMessage>(this, (r, message) =>
+            WeakReferenceMessenger.Default.Register<DocumentClosedMessage>(this, (r, message) =>
             {
                 if (message.Sender != this)
                 {
                     // Remove the chart from the list of open documents.
-                    PaneViewModel vm = Charts.FirstOrDefault(m => m.ContentId == "PointAndFigureChart_" + message.ViewModel.Chart.Name);
+                    PaneViewModel vm = DocumentPanes.FirstOrDefault(m => m.ContentId == message.DocumentId);
                     if (vm != null)
                     {
-                        Charts.Remove(vm);
+                        DocumentPanes.Remove(vm);
                     }
                 }
             });
 
 
-            WeakReferenceMessenger.Default.Register<ActivePointAndFigureChartChangedMessage>(this, (r, message) =>
+            WeakReferenceMessenger.Default.Register<ActiveDocumentChangedMessage>(this, (r, message) =>
             {
                 if (message.Sender != this)
                 {
-                    PointAndFigureChartViewModel pnfChartVm = Charts.FirstOrDefault(c => c is PointAndFigureChartViewModel && ((PointAndFigureChartViewModel)c).Chart.Id == message.Chart.Id) as PointAndFigureChartViewModel;
-                    if (pnfChartVm != null)
+                    if (message.DocumentType == ActiveDocumentType.PandFChart)
                     {
-                        ActiveDocument = (PaneViewModel)pnfChartVm;
-                        ActiveChart = pnfChartVm.Chart;
-                        ActiveObject = ActiveChart;
+                        if (this.DocumentPanes.FirstOrDefault(c => c is IPointAndFigureChartViewModel && ((IPointAndFigureChartViewModel)c).ChartId == message.DocumentId) is IPointAndFigureChartViewModel pnfChartVm)
+                        {
+                            ActiveDocument = (PaneViewModel)pnfChartVm;
+                            ActiveChart = pnfChartVm.Chart;
+                            ActiveObject = ActiveChart;
+                        }
                     }
                 }
             });
@@ -134,9 +136,21 @@ namespace PnFDesktop.ViewModels
 
         public AvalonDockLayoutViewModel AdLayout { get; } = null;
 
-        #region PointAndFigureCharts property ...
+        #region DocumentPanes property ...
+        ObservableCollection<PaneViewModel> _documentPanes;
+        public ObservableCollection<PaneViewModel> DocumentPanes
+        {
+            get
+            {
+                if (_documentPanes == null)
+                {
+                    _documentPanes = new ObservableCollection<PaneViewModel>();
+                }
 
-        public ObservableCollection<PaneViewModel> Charts { get; } = new ObservableCollection<PaneViewModel>();
+                return _documentPanes;
+            }
+        }
+
 
         #endregion
 
@@ -150,13 +164,13 @@ namespace PnFDesktop.ViewModels
             {
                 if (SetProperty(ref _activeDocument, value))
                 {
-                    UpdateActiveModel(_activeDocument);
+                    UpdateActiveDocument(_activeDocument);
                 }
             }
         }
 
 
-        private void UpdateActiveModel(PaneViewModel paneVm)
+        private void UpdateActiveDocument(PaneViewModel paneVm)
         {
             IPointAndFigureChartViewModel designerVm = paneVm as IPointAndFigureChartViewModel;
             if (designerVm != null)
@@ -207,14 +221,17 @@ namespace PnFDesktop.ViewModels
         {
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
             // source for viewpnfCharts.
-            PointAndFigureChartViewModel pnfChartDesignerViewModel = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart, forceRefresh);
-            if (!Charts.Contains(pnfChartDesignerViewModel))
+            IPointAndFigureChartViewModel pnfChartDesignerViewModel = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart, forceRefresh);
+            if (pnfChartDesignerViewModel is PaneViewModel paneViewModel)
             {
-                Charts.Add(pnfChartDesignerViewModel);
-            }
-            if (makeActive)
-            {
-                ActiveDocument = pnfChartDesignerViewModel;
+                if (!this.DocumentPanes.Contains(paneViewModel))
+                {
+                    this.DocumentPanes.Add(paneViewModel);
+                }
+                if (makeActive)
+                {
+                    ActiveDocument = paneViewModel;
+                }
             }
         }
 
@@ -223,7 +240,7 @@ namespace PnFDesktop.ViewModels
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
             // source for viewpnfCharts.
             PaneViewModel paneVm = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart) as PaneViewModel;
-            Charts.Remove(paneVm);
+            this.DocumentPanes.Remove(paneVm);
         }
 
         private RelayCommand _userOptionsCommand;
@@ -246,30 +263,75 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        private RelayCommand _openTestChartCommand;
+        private RelayCommand _openShareChartCommand;
 
         /// <summary>
         /// Close the current pnfChart display window
         /// </summary>
-        public RelayCommand OpenTestChartCommand
+        public RelayCommand OpenShareChartCommand
         {
             get
             {
-                return _openTestChartCommand
-                       ?? (_openTestChartCommand = new RelayCommand(
+                return _openShareChartCommand
+                       ?? (_openShareChartCommand = new RelayCommand(
                            async () =>
                            {
-                               MessageLog.LogMessage(this, LogType.Information, "Retrieving P & F chart data ...");
-                               //PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(new Guid("B9B46E45-2258-496D-9F6D-8D681A19926B"), PnFChartSource.RSSectorVMarket);
-                               PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(new Guid("B2B716E0-B3F2-4C34-DB2C-08D9EFDF465C"), PnFChartSource.Share);
-                               if (testChart != null)
+                               OpenShareChartViewModel openChartVm = SimpleIoc.Default.GetInstance<OpenShareChartViewModel>();
+                               Window dialog = new OpenShareChartWindow(openChartVm);
+                               dialog.Owner = Application.Current.MainWindow;
+                               bool? dialogResult = dialog.ShowDialog();
+
+                               if (dialogResult.HasValue && dialogResult.Value == true && openChartVm.SelectedShare != null)
                                {
-                                   MessageLog.LogMessage(this, LogType.Information, "Generating P & F chart ...");
-                                   OpenPointAndFigureChart(testChart, true);
+                                   MessageLog.LogMessage(this, LogType.Information, $"Retrieving P & F chart data for {openChartVm.SelectedShare.Name} ...");
+                                   //PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(new Guid("B9B46E45-2258-496D-9F6D-8D681A19926B"), PnFChartSource.RSSectorVMarket);
+                                   PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(openChartVm.SelectedShare.Id, (PnFChartSource)openChartVm.ShareChartType);
+                                   if (testChart != null)
+                                   {
+                                       MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for {openChartVm.SelectedShare.Name} ...");
+                                       OpenPointAndFigureChart(testChart, true);
+                                   }
+                                   else
+                                   {
+                                       MessageLog.LogMessage(this, LogType.Information, "Chart does not exist.");
+                                   }
                                }
-                               else
+                           }));
+            }
+        }
+
+        private RelayCommand _openIndexChartCommand;
+
+        /// <summary>
+        /// Close the current pnfChart display window
+        /// </summary>
+        public RelayCommand OpenIndexChartCommand
+        {
+            get
+            {
+                return _openIndexChartCommand
+                       ?? (_openIndexChartCommand = new RelayCommand(
+                           async () =>
+                           {
+                               OpenIndexChartViewModel openChartVm = SimpleIoc.Default.GetInstance<OpenIndexChartViewModel>();
+                               Window dialog = new OpenIndexChartWindow(openChartVm);
+                               dialog.Owner = Application.Current.MainWindow;
+                               bool? dialogResult = dialog.ShowDialog();
+
+                               if (dialogResult.HasValue && dialogResult.Value == true && openChartVm.SelectedIndex != null)
                                {
-                                   MessageLog.LogMessage(this, LogType.Information, "Chart does not exist.");
+                                   MessageLog.LogMessage(this, LogType.Information, $"Retrieving P & F chart data for {openChartVm.SelectedIndex.Description} ...");
+                                   //PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(new Guid("B9B46E45-2258-496D-9F6D-8D681A19926B"), PnFChartSource.RSSectorVMarket);
+                                   PnFChart? indexChart = await _dataService.GetPointAndFigureChartAsync(openChartVm.SelectedIndex.Id, (PnFChartSource)openChartVm.IndexChartType);
+                                   if (indexChart != null)
+                                   {
+                                       MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for {openChartVm.SelectedIndex.Description} ...");
+                                       OpenPointAndFigureChart(indexChart, true);
+                                   }
+                                   else
+                                   {
+                                       MessageLog.LogMessage(this, LogType.Information, "Chart does not exist.");
+                                   }
                                }
                            }));
             }
@@ -287,7 +349,13 @@ namespace PnFDesktop.ViewModels
             {
                 return _closePointAndFigureChartCommand
                        ?? (_closePointAndFigureChartCommand = new RelayCommand<PointAndFigureChartViewModel>(
-                           (c) => { Charts.Remove((PaneViewModel)c); }));
+                           (c) =>
+                           {
+                               if (c != null)
+                               {
+                                   DocumentPanes.Remove(c);
+                               }
+                           }));
             }
         }
 
@@ -349,7 +417,7 @@ namespace PnFDesktop.ViewModels
                 return anchorable_vm;
             }
 
-            var pnfChartVM = this.Charts.FirstOrDefault(d => d.ContentId == contentId);
+            var pnfChartVM = this.DocumentPanes.FirstOrDefault(d => d.ContentId == contentId);
             if (pnfChartVM != null)
             {
                 return pnfChartVM;

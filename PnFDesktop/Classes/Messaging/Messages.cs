@@ -10,6 +10,28 @@ using PnFDesktop.ViewModels;
 
 namespace PnFDesktop.Classes.Messaging
 {
+
+    public enum ActiveDocumentType
+    {
+        PandFChart
+    }
+
+    public class ActiveDocumentChangedMessage
+    {
+        public Object Sender { get; set; }
+        public Guid DocumentId { get; set; }
+
+        public ActiveDocumentType DocumentType { get; set; }
+
+        public ActiveDocumentChangedMessage(object sender, ActiveDocumentType documentType, Guid documentId)
+        {
+            this.Sender = sender;
+            this.DocumentType = documentType;
+            this.DocumentId = documentId;
+        }
+
+    }
+
     public class ActivePointAndFigureChartChangedMessage
     {
         public Object Sender { get; set; }
@@ -64,6 +86,29 @@ namespace PnFDesktop.Classes.Messaging
         {
             this.Sender = sender;
             this.ViewModel = viewModel;
+        }
+    }
+    public class DocumentClosedMessage
+    {
+        public Object Sender { get; set; }
+
+        public ActiveDocumentType DocumentType { get; set; }
+        public Guid ProcedureId { get; set; }
+
+        public string DocumentId { get; set; }
+        public DocumentClosedMessage(object sender, Guid procedureId, string documentId)
+        {
+            this.Sender = sender;
+            this.DocumentType = ActiveDocumentType.PandFChart;
+            this.ProcedureId = procedureId;
+            this.DocumentId = documentId;
+        }
+
+        public DocumentClosedMessage(object sender, ActiveDocumentType documentType, string documentId)
+        {
+            this.Sender = sender;
+            this.DocumentType = documentType;
+            this.DocumentId = documentId;
         }
     }
 

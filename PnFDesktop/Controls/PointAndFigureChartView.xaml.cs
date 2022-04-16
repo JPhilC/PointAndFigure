@@ -11,7 +11,7 @@ using Microsoft.Toolkit.Mvvm.Messaging;
 using PnFDesktop.Classes.Messaging;
 using PnFDesktop.Services;
 
-namespace PnFDesktop.Views
+namespace PnFDesktop.Controls
 {
     /// <summary>
     /// Interaction logic for PointAndFigureChartView.xaml

@@ -1,5 +1,7 @@
 ﻿using PnFData.Model;
+using PnFDesktop.DTOs;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PnFDesktop.Interfaces
@@ -10,5 +12,10 @@ namespace PnFDesktop.Interfaces
         PnFChart GetPointAndFigureChart(string tidm, float boxSize, int reversal);
 
         Task<PnFChart?> GetPointAndFigureChartAsync(Guid itemId, PnFChartSource chartSource);
+
+        Task<IEnumerable<ShareDTO>> GetSharesAsync();
+
+        Task<IEnumerable<IndexDTO>> GetIndicesAsync();
+
     }
 }

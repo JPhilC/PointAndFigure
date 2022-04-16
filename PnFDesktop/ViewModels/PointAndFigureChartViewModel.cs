@@ -3,7 +3,6 @@ using PnFDesktop.Classes;
 using PnFDesktop.Interfaces;
 using PnFDesktop.Services;
 using PnFDesktop.ViewModels;
-using PnFDesktop.Views;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -11,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using PnFDesktop.Classes.Messaging;
+using PnFDesktop.Controls;
 
 namespace PnFDesktop.ViewCharts
 {
@@ -93,12 +93,30 @@ namespace PnFDesktop.ViewCharts
             set => SetProperty(ref _leftPadding, value);
         }
 
+        private double _rightPadding = 30d;
+
+        public double RightPadding
+        {
+            get => _rightPadding;
+            set => SetProperty(ref _rightPadding, value);
+        }
+
         private double _topPadding = 30d;
+
 
         public double TopPadding
         {
             get => _topPadding;
             set => SetProperty(ref _topPadding, value);
+        }
+
+
+        private double _bottomPadding = 30d;
+
+        public double BottomPadding
+        {
+            get => _bottomPadding;
+            set => SetProperty(ref _bottomPadding, value);
         }
 
         #region Layout and zoom control properties and methods...
@@ -319,8 +337,8 @@ namespace PnFDesktop.ViewCharts
             AddColumns();
             // At this stage the content is at least a margins width from the top and left
             // So the width and height are the right and bottom limit plus the margin.
-            ContentHeight = _contentBottomLimit + TopPadding + Constants.ChartMargin;
-            ContentWidth = _contentRightLimit + LeftPadding + Constants.ChartMargin;
+            ContentHeight = _contentBottomLimit + TopPadding + BottomPadding + Constants.ChartMargin;
+            ContentWidth = _contentRightLimit + LeftPadding + RightPadding + Constants.ChartMargin;
 
             Control = new PointAndFigureChartView(this);
         }
@@ -398,7 +416,7 @@ namespace PnFDesktop.ViewCharts
                 columnLeftLimit = Math.Min((minColIndex * GridSize), 0.0);
                 columnTopLimit = Math.Min((minBoxIndex * GridSize), 0.0);
                 columnRightLimit = Math.Max((maxColIndex * GridSize), Constants.DefaultChartWidth);
-                columnBottomLimit = Math.Max((maxBoxIndex * GridSize), Constants.DefaultChartHeight);
+                columnBottomLimit = Math.Max(((maxBoxIndex - minBoxIndex) * GridSize), Constants.DefaultChartHeight);
 
             }
             else

@@ -24,8 +24,9 @@
         </Grid.RowDefinitions>
                 <Menu>
             <MenuItem Header="File">
-                <MenuItem Header="New">
-                    <MenuItem Header="Point &amp; Figure Chart Test" Command="{Binding OpenTestChartCommand}" ToolTip="Open a test chart"/>
+                <MenuItem Header="Open">
+                    <MenuItem Header="Share Point &amp; Figure Chart" Command="{Binding OpenShareChartCommand}" ToolTip="Open a share chart"/>
+                    <MenuItem Header="Market/Sector Point &amp; Figure Chart" Command="{Binding OpenIndexChartCommand}" ToolTip="Open a market or sector chart"/>
                 </MenuItem>
                 <Separator/>
                 <MenuItem Header="User options" Command="{Binding UserOptionsCommand}" ToolTip="Displays the user options dialogue box allowing the user to configure various default settings."/>
@@ -53,8 +54,8 @@
                              BorderBrush="Black"
                              BorderThickness="1"
                              AnchorablesSource="{Binding Tools}"
-                             DocumentsSource="{Binding Charts}"
-                             ActiveContent="{Binding ActiveChart, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
+                             DocumentsSource="{Binding DocumentPanes}"
+                             ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
                              DocumentClosed="dockingManager_DocumentClosed"
                              classes:AvalonDockLayoutSerializer.LoadLayoutCommand="{Binding AdLayout.LoadLayoutCommand}"
                              classes:AvalonDockLayoutSerializer.SaveLayoutCommand="{Binding AdLayout.SaveLayoutCommand}">

@@ -1,12 +1,19 @@
 ﻿using PnFData.Model;
+using PnFDesktop.DTOs;
 using PnFDesktop.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PnFDesktop.Services
 {
     public class DesignDataService : IDataService
     {
+        public Task<IEnumerable<IndexDTO>> GetIndicesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public PnFChart GetPointAndFigureChart(string tidm, int reversal)
         {
             throw new NotImplementedException();
@@ -78,5 +85,9 @@ namespace PnFDesktop.Services
             throw new NotImplementedException();
         }
 
+        public Task<IEnumerable<ShareDTO>> GetSharesAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

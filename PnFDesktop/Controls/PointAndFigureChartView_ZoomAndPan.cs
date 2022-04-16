@@ -8,7 +8,7 @@ using System.Collections;
 using PnFDesktop.Controls;
 using PnFDesktop.ViewModels;
 
-namespace PnFDesktop.Views
+namespace PnFDesktop.Controls
 {
     /// <summary>
     /// Defines the current state of the mouse handling logic.

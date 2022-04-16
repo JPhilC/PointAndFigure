@@ -48,6 +48,8 @@ namespace PnFDesktop.ViewModels
             SimpleIoc.Default.Register<PointAndFigureChartViewModel>();
             SimpleIoc.Default.Register<UserOptionsViewModel>();
             SimpleIoc.Default.Register<SplashScreenViewModel>();
+            SimpleIoc.Default.Register<OpenShareChartViewModel>();
+            SimpleIoc.Default.Register<OpenIndexChartViewModel>();
         }
 
 

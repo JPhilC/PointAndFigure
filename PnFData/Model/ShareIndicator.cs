@@ -46,6 +46,8 @@ namespace PnFData.Model
 
         public bool? PeerRsSell {get;set;}
 
+        public bool AboveBullSupport {get;set;}
+
         [Required]
         public Guid ShareId { get; set; }
 

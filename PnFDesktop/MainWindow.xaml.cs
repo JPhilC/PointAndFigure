@@ -119,10 +119,9 @@ namespace PnFDesktop
             // Signal to anyone who is listening that a document has been closed.
             if (e.Document.Content != null)
             {
-                PointAndFigureChartViewModel vm = e.Document.Content as PointAndFigureChartViewModel;
-                if (vm != null)
+                if (e.Document.Content is PointAndFigureChartViewModel vm)
                 {
-                    WeakReferenceMessenger.Default.Send(new PointAndFigureChartClosedMessage(this, vm));
+                    WeakReferenceMessenger.Default.Send(new DocumentClosedMessage(this, vm.Chart.Id, e.Document.ContentId));
                 }
             }
         }
