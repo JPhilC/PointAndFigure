@@ -8,6 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Classes\Messaging\IExecuteWithObject.cs" />
+    <Compile Remove="Classes\Messaging\IExecuteWithObjectAndResult.cs" />
+    <Compile Remove="Classes\Messaging\IMessenger.cs" />
+    <Compile Remove="Classes\Messaging\Messenger.cs" />
+    <Compile Remove="Classes\Messaging\WeakAction.cs" />
+    <Compile Remove="Classes\Messaging\WeakActionGeneric.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommonServiceLocator" Version="2.0.6" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.2.0" />
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.101" />

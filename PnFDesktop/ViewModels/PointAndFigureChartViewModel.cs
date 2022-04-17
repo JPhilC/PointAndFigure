@@ -57,13 +57,13 @@ namespace PnFDesktop.ViewCharts
         private double _contentViewportHeight = 0;
 
         #endregion Internal Data Members
-        private PnFChart _chart;
+        private PnFChart? _chart;
 
         /// <summary>
         /// Sets and gets the Chart property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public PnFChart Chart
+        public PnFChart? Chart
         {
             get => _chart;
             set
@@ -332,7 +332,7 @@ namespace PnFDesktop.ViewCharts
         public PointAndFigureChartViewModel(PnFChart chart)
         {
             Chart = chart;
-
+            ContentId = $"{Constants.PointAndFigureChart}_{chart.Id}";
             CalculateLimits();
             AddColumns();
             // At this stage the content is at least a margins width from the top and left

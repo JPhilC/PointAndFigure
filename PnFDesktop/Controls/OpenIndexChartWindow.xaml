@@ -70,13 +70,13 @@
                         <TextBlock Text="{Binding Description}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
-                </ComboBox>
-            
+            </ComboBox>
+
             <TextBlock Grid.Row="2" Grid.Column="0" Text="Chart type"/>
             <ComboBox Grid.Row="2" Grid.Column="2" SelectedItem="{Binding IndexChartType, UpdateSourceTrigger=PropertyChanged}" 
                       ItemsSource="{Binding Source={local:EnumBindingSource {x:Type vm:IndexChartType}}}"
-                      Width="200" HorizontalAlignment="Left"/>
-                       
+                      Width="400" HorizontalAlignment="Left"/>
+
         </Grid>
     </DockPanel>
 </Window>

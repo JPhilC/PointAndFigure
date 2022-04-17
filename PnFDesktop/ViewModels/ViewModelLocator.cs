@@ -50,6 +50,7 @@ namespace PnFDesktop.ViewModels
             SimpleIoc.Default.Register<SplashScreenViewModel>();
             SimpleIoc.Default.Register<OpenShareChartViewModel>();
             SimpleIoc.Default.Register<OpenIndexChartViewModel>();
+            SimpleIoc.Default.Register<MarketSummaryViewModel>();
         }
 
 
@@ -96,7 +97,7 @@ namespace PnFDesktop.ViewModels
         /// </summary>
         public PointAndFigureChartViewModel GetPointAndFigureChartViewModel(PnFChart newChart, bool forceRefresh = false)
         {
-            string key = "PointAndFigureChart_" + newChart.Name;
+            string key = $"{Constants.PointAndFigureChart}_{newChart.Id}";
             PointAndFigureChartViewModel vm = null;
             if (forceRefresh && SimpleIoc.Default.IsRegistered<PointAndFigureChartViewModel>(key))
             {
@@ -132,16 +133,6 @@ namespace PnFDesktop.ViewModels
         }
 
 
-        /// <summary>
-        /// Viewmodel for design binding to ProcedureViewModel
-        /// </summary>
-        public PointAndFigureChartViewModel ProcedureViewModel
-        {
-            get
-            {
-                return ServiceLocator.Current.GetInstance<PointAndFigureChartViewModel>();
-            }
-        }
 
         /// <summary>
         /// Viewmodel for managing batches
@@ -165,6 +156,16 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Viewmodel for the Market Summary page
+        /// </summary>
+        public MarketSummaryViewModel MarketSummaryViewModel
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<MarketSummaryViewModel>();
+            }
+        }
 
         /// <summary>
         /// Cleans up all the resources.

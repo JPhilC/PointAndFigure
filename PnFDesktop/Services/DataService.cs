@@ -154,5 +154,84 @@ namespace PnFDesktop.Services
             }
             return indices;
         }
+
+        public async Task<IEnumerable<DateTime>> GetMarketAvailableDates(DateTime cutOff)
+        {
+            IEnumerable<DateTime> dates = new List<DateTime>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    dates = await db.IndexValues
+                        .Where(iv => iv.Day >= cutOff)
+                        .Select(iv => iv.Day)
+                        .Distinct()
+                        .ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the market available dates", ex);
+            }
+            return dates;
+        }
+
+        public async Task<IEnumerable<MarketSummaryValueDTO>> GetMarketValuesAsync(DateTime day)
+        {
+            IEnumerable<MarketSummaryValueDTO> indices = new List<MarketSummaryValueDTO>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    indices = await (from iv in db.IndexValues
+                                     join i in db.Indices on iv.IndexId equals i.Id
+                                     join ii in db.IndexIndicators on new { iv.IndexId, iv.Day } equals new { ii.IndexId, ii.Day }
+                                     where iv.Day == day
+                                     orderby i.SuperSector, i.ExchangeCode, i.ExchangeSubCode
+                                     select new MarketSummaryValueDTO()
+                                     {
+                                         Id = i.Id,
+                                         Description = (i.SuperSector == null ?
+                                              $"Market - {i.ExchangeCode}/{i.ExchangeSubCode}" :
+                                              $"Sector - {i.ExchangeCode}/{i.ExchangeSubCode}, {i.SuperSector}"),
+                                         Value = iv.Value,
+                                         Contributors = iv.Contributors,
+                                         BullishPercent = iv.BullishPercent,
+                                         PercentAboveEma10 = iv.PercentAboveEma10,
+                                         PercentAboveEma30 = iv.PercentAboveEma30,
+                                         PercentRsBuy = iv.PercentRsBuy,
+                                         PercentRsRising = iv.PercentRsRising,
+                                         PercentPositiveTrend = iv.PercentPositiveTrend,
+                                         Rising = ii.Rising,
+                                         Buy = ii.Buy,
+                                         RsRising = ii.RsRising,
+                                         RsBuy = ii.RsBuy,
+                                         Falling = ii.Falling,
+                                         Sell = ii.Sell,
+                                         RsFalling = ii.RsFalling,
+                                         RsSell = ii.RsSell,
+                                         BullishPercentRising = ii.BullishPercentRising,
+                                         PercentRSBuyRising = ii.PercentRSBuyRising,
+                                         PercentRsRisingRising = ii.PercentRsRisingRising,
+                                         PercentPositiveTrendRising = ii.PercentPositiveTrendRising,
+                                         PercentAbove30EmaRising = ii.PercentAbove30EmaRising,
+                                         PercentAbove10EmaRising = ii.PercentAbove10EmaRising,
+                                         BullishPercentFalling = ii.BullishPercentFalling,
+                                         PercentRSBuyFalling = ii.PercentRSBuyFalling,
+                                         PercentRsRisingFalling = ii.PercentRsRisingFalling,
+                                         PercentPositiveTrendFalling = ii.PercentPositiveTrendFalling,
+                                         PercentAbove30EmaFalling = ii.PercentAbove30EmaFalling,
+                                         PercentAbove10EmaFalling = ii.PercentAbove10EmaFalling
+                                     }).ToListAsync();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the index data", ex);
+            }
+            return indices;
+        }
+
     }
 }

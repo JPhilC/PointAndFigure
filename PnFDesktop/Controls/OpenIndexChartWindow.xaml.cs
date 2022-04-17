@@ -1,4 +1,5 @@
-﻿using PnFDesktop.Classes;
+﻿using Microsoft.Toolkit.Mvvm.Messaging;
+using PnFDesktop.Classes;
 using PnFDesktop.Messaging;
 using PnFDesktop.ViewModels;
 using System;
@@ -69,7 +70,7 @@ namespace PnFDesktop.Controls
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Messenger.Default.Send<NotificationMessage>(new NotificationMessage("OpenIndexChartWindowLoaded"));
+            WeakReferenceMessenger.Default.Send<NotificationMessage>(new NotificationMessage(Constants.OpenIndexChartWindowLoaded));
         }
     }
 }

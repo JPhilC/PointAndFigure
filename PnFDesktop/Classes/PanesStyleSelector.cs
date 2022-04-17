@@ -7,19 +7,24 @@ namespace PnFDesktop.Classes
 {
     class PanesStyleSelector : StyleSelector
     {
-        public Style ToolStyle
+        public Style? ToolStyle
         {
             get;
             set;
         }
 
-        public Style PointAndFigureChartStyle
+        public Style? PointAndFigureChartStyle
+        {
+            get;
+            set;
+        }
+        public Style? MarketSummaryStyle
         {
             get;
             set;
         }
 
-        public override System.Windows.Style SelectStyle(object item, System.Windows.DependencyObject container)
+        public override System.Windows.Style? SelectStyle(object item, System.Windows.DependencyObject container)
         {
             if (item is ToolViewModel) {
                 return ToolStyle;
@@ -27,6 +32,9 @@ namespace PnFDesktop.Classes
 
             if (item is PointAndFigureChartViewModel)
                 return PointAndFigureChartStyle;
+
+            if (item is MarketSummaryViewModel)
+                return MarketSummaryStyle;
 
             return base.SelectStyle(item, container);
         }

@@ -13,7 +13,8 @@ namespace PnFDesktop.Classes.Messaging
 
     public enum ActiveDocumentType
     {
-        PandFChart
+        PandFChart,
+        MarketSummary
     }
 
     public class ActiveDocumentChangedMessage

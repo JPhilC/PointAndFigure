@@ -1,14 +1,11 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using Microsoft.Toolkit.Mvvm.Messaging;
 using PnFDesktop.Classes;
 using PnFDesktop.DTOs;
 using PnFDesktop.Interfaces;
 using PnFDesktop.Messaging;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
@@ -66,9 +63,9 @@ namespace PnFDesktop.ViewModels
             BindingOperations.EnableCollectionSynchronization(Indices, _ItemsLock);
 
 
-            Messenger.Default.Register<NotificationMessage>(this, async message =>
+            WeakReferenceMessenger.Default.Register<NotificationMessage>(this, async (r, message) =>
             {
-                if (message.Notification == "OpenIndexChartWindowLoaded")
+                if (message.Notification == Constants.OpenIndexChartWindowLoaded)
                 {
                     await LoadIndicesAsync();
                 }

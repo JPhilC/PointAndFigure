@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Toolkit.Mvvm.Messaging;
+using PnFDesktop.Classes.Messaging;
+using PnFDesktop.Services;
 using PnFDesktop.ViewCharts;
 using System.IO;
 using System.Printing;
@@ -6,10 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
-using Microsoft.Toolkit.Mvvm.Messaging;
-using PnFDesktop.Classes.Messaging;
-using PnFDesktop.Services;
 
 namespace PnFDesktop.Controls
 {
@@ -19,7 +17,6 @@ namespace PnFDesktop.Controls
     public partial class PointAndFigureChartView : UserControl
     {
         private PointAndFigureChartViewModel _viewModel;
-        private bool _initialLoad = true;
 
 
         public PointAndFigureChartView(PointAndFigureChartViewModel viewModel)

@@ -9,6 +9,6 @@ namespace PnFDesktop.Interfaces
 {
     public interface IViewModelResolver
     {
-        ObservableObject ContentViewModelFromID(string content_id);
+        ObservableObject? ContentViewModelFromID(string content_id);
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using PnFDesktop.Interfaces;
 using PnFDesktop.ViewCharts;
+using PnFDesktop.ViewModels;
 
 namespace PnFDesktop.Classes
 {
@@ -13,7 +14,8 @@ namespace PnFDesktop.Classes
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is IPointAndFigureChartViewModel)
+            if (value is IPointAndFigureChartViewModel 
+                || value is MarketSummaryViewModel)
             {
                 return value;
             }
@@ -24,7 +26,8 @@ namespace PnFDesktop.Classes
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is IPointAndFigureChartViewModel)
+            if (value is IPointAndFigureChartViewModel
+                || value is MarketSummaryViewModel)
             {
                 return value;
             }

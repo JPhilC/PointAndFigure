@@ -14,6 +14,16 @@ namespace PnFDesktop.Services
             throw new NotImplementedException();
         }
 
+        public Task<IEnumerable<DateTime>> GetMarketAvailableDates(DateTime cutOff)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<MarketSummaryValueDTO>> GetMarketValuesAsync(DateTime day)
+        {
+            throw new NotImplementedException();
+        }
+
         public PnFChart GetPointAndFigureChart(string tidm, int reversal)
         {
             throw new NotImplementedException();

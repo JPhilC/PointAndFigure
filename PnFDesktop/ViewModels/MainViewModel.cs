@@ -235,12 +235,19 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        public void ClosePointAndFigureChart(PnFChart pnfChart)
+        public void OpenMarketSummary()
         {
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
             // source for viewpnfCharts.
-            PaneViewModel paneVm = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart) as PaneViewModel;
-            this.DocumentPanes.Remove(paneVm);
+            MarketSummaryViewModel marketSummaryViewModel = SimpleIoc.Default.GetInstance<MarketSummaryViewModel>();
+            if (marketSummaryViewModel is PaneViewModel paneViewModel)
+            {
+                if (!this.DocumentPanes.Contains(paneViewModel))
+                {
+                    this.DocumentPanes.Add(paneViewModel);
+                }
+                    ActiveDocument = paneViewModel;
+            }
         }
 
         private RelayCommand _userOptionsCommand;
@@ -338,30 +345,24 @@ namespace PnFDesktop.ViewModels
         }
 
 
-        private RelayCommand<PointAndFigureChartViewModel> _closePointAndFigureChartCommand;
+        private RelayCommand _openMarketSummaryCommand;
 
         /// <summary>
-        /// Close the current pnfChart display window
+        /// Opens the market summary page
         /// </summary>
-        public RelayCommand<PointAndFigureChartViewModel> ClosePointAndFigureChartCommand
+        public RelayCommand OpenMarketSummaryCommand
         {
             get
             {
-                return _closePointAndFigureChartCommand
-                       ?? (_closePointAndFigureChartCommand = new RelayCommand<PointAndFigureChartViewModel>(
-                           (c) =>
+                return _openMarketSummaryCommand
+                       ?? (_openMarketSummaryCommand = new RelayCommand(
+                           async () =>
                            {
-                               if (c != null)
-                               {
-                                   DocumentPanes.Remove(c);
-                               }
+                               MessageLog.LogMessage(this, LogType.Information, $"Opening market summary page ...");
+                               OpenMarketSummary();
                            }));
             }
         }
-
-
-
-
 
         private RelayCommand _printPointAndFigureChartCommand;
 
@@ -408,26 +409,26 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        ObservableObject IViewModelResolver.ContentViewModelFromID(string contentId)
+        ObservableObject? IViewModelResolver.ContentViewModelFromID(string contentId)
         {
             System.Diagnostics.Debug.WriteLine($"Resolving for content id:\"{contentId}\"");
-            var anchorable_vm = this.Tools.FirstOrDefault(d => d.ContentId == contentId);
-            if (anchorable_vm != null)
+            var anchorableVm = this.Tools.FirstOrDefault(d => d.ContentId == contentId);
+            if (anchorableVm != null)
             {
-                return anchorable_vm;
+                return anchorableVm;
             }
 
-            var pnfChartVM = this.DocumentPanes.FirstOrDefault(d => d.ContentId == contentId);
-            if (pnfChartVM != null)
+            var paneVm = this.DocumentPanes.FirstOrDefault(d => d.ContentId == contentId);
+            if (paneVm != null)
             {
-                return pnfChartVM;
+                return paneVm;
             }
 
 
             return this.OpenContentViewModel(contentId);
         }
 
-        public ObservableObject OpenContentViewModel(string contentId)
+        public ObservableObject? OpenContentViewModel(string contentId)
         {
 
             System.Diagnostics.Debug.WriteLine($"Opening for content id:\"{contentId}\"");
@@ -442,7 +443,7 @@ namespace PnFDesktop.ViewModels
             if (splitId.Length == 2)
             {
                 Guid objectId = new Guid(splitId[1]);
-                if (splitId[0] == "PointAndFigureChart")
+                if (splitId[0] == Constants.PointAndFigureChart)
                 {
                     PnFChart chart = null;
                     WeakReferenceMessenger.Default.Send(new ObjectNotificationMessageAction<PnFChart>(
@@ -459,6 +460,10 @@ namespace PnFDesktop.ViewModels
                         return pointAndFigureChartViewModel;
                     }
                 }
+            }
+            else if (splitId[0] == Constants.MarketSummary)
+            {
+                return SimpleIoc.Default.GetInstance<MarketSummaryViewModel>();
             }
             return null;
         }
