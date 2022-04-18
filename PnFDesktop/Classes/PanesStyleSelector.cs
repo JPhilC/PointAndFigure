@@ -13,12 +13,7 @@ namespace PnFDesktop.Classes
             set;
         }
 
-        public Style? PointAndFigureChartStyle
-        {
-            get;
-            set;
-        }
-        public Style? MarketSummaryStyle
+        public Style? DocumentStyle
         {
             get;
             set;
@@ -31,10 +26,13 @@ namespace PnFDesktop.Classes
             }
 
             if (item is PointAndFigureChartViewModel)
-                return PointAndFigureChartStyle;
+                return DocumentStyle;
 
             if (item is MarketSummaryViewModel)
-                return MarketSummaryStyle;
+                return DocumentStyle;
+
+            if (item is SharesSummaryViewModel)
+                return DocumentStyle;
 
             return base.SelectStyle(item, container);
         }

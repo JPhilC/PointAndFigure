@@ -15,7 +15,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using CommonServiceLocator;
 
 namespace PnFDesktop.Interfaces
 {
@@ -31,7 +30,7 @@ namespace PnFDesktop.Interfaces
         "Microsoft.Naming",
         "CA1704:IdentifiersShouldBeSpelledCorrectly",
         MessageId = "Ioc")]
-    public interface ISimpleIoc : IServiceLocator
+    public interface ISimpleIoc
     {
 
 

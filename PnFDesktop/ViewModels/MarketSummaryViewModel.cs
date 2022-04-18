@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.Mvvm.Messaging;
+﻿using Microsoft.Toolkit.Mvvm.Input;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using PnFDesktop.Classes;
 using PnFDesktop.Controls;
 using PnFDesktop.DTOs;
@@ -15,18 +16,18 @@ namespace PnFDesktop.ViewModels
 {
     public class MarketSummaryViewModel : PaneViewModel
     {
-        public ObservableCollection<DateTime> Days { get; } = new ObservableCollection<DateTime>();
+        public ObservableCollection<DayDTO> Days { get; } = new ObservableCollection<DayDTO>();
 
 
-        private DateTime _selectedDay;
+        private DayDTO _selectedDay;
 
-        public DateTime SelectedDay
+        public DayDTO SelectedDay
         {
             get => _selectedDay;
             set => SetProperty(ref _selectedDay, value);
         }
 
-        public ObservableCollection<MarketSummaryValueDTO> Indices { get; } = new ObservableCollection<MarketSummaryValueDTO>();
+        public ObservableCollection<MarketSummaryDTO> Indices { get; } = new ObservableCollection<MarketSummaryDTO>();
 
         readonly IDataService? _DataService;
         private readonly object _ItemsLock = new object();
@@ -78,7 +79,7 @@ namespace PnFDesktop.ViewModels
                 lock (_ItemsLock)
                 {
                     App.Current.Dispatcher.Invoke(() => Days.Clear());
-                    foreach (DateTime day in dates.OrderByDescending(d => d))
+                    foreach (DayDTO day in dates.OrderByDescending(d => d.Day))
                     {
                         App.Current.Dispatcher.Invoke(() =>
                         {
@@ -87,23 +88,22 @@ namespace PnFDesktop.ViewModels
                     }
                 }
 
-                DateTime? latestDay = dates.Max(d => d);
-                if (latestDay != null)
+                if (this.Days.Any())
                 {
-                    SelectedDay = latestDay.Value;
-                    var list = await _DataService.GetMarketValuesAsync(latestDay.Value);
+                    DayDTO latestDay = dates.LastOrDefault();
+                    var list = await _DataService.GetMarketValuesAsync(latestDay!.Day);
                     lock (_ItemsLock)
                     {
                         App.Current.Dispatcher.Invoke(() => Indices.Clear());
-                        foreach (MarketSummaryValueDTO index in list)
+                        foreach (MarketSummaryDTO index in list)
                         {
                             App.Current.Dispatcher.Invoke(() =>
                             {
                                 Indices.Add(index);
                             });
                         }
+                        App.Current.Dispatcher.Invoke(() => SelectedDay = latestDay);
                     }
-
                 }
                 else
                 {
@@ -116,5 +116,24 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+
+        #region LoadSharesCommand ...
+        private RelayCommand<MarketSummaryDTO> _loadSharesCommand;
+
+        public RelayCommand<MarketSummaryDTO> LoadSharesCommand
+        {
+            get
+            {
+                return _loadSharesCommand ?? (_loadSharesCommand = new RelayCommand<MarketSummaryDTO>(currentSector =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"Signal to load shares for {currentSector!.Description}");
+                    WeakReferenceMessenger.Default.Send<NotificationMessage<MarketSummaryDTO>>( 
+                        new NotificationMessage<MarketSummaryDTO>(this, currentSector, Constants.OpenSharesSummaryPage)
+                        );
+                }));
+            }
+        }
+
+        #endregion
     }
 }

@@ -17,7 +17,9 @@ namespace PnFDesktop.Interfaces
 
         Task<IEnumerable<IndexDTO>> GetIndicesAsync();
 
-        Task<IEnumerable<DateTime>> GetMarketAvailableDates(DateTime cutOff);
-        Task<IEnumerable<MarketSummaryValueDTO>> GetMarketValuesAsync(DateTime day);
+        Task<IEnumerable<DayDTO>> GetMarketAvailableDates(DateTime cutOff);
+        Task<IEnumerable<MarketSummaryDTO>> GetMarketValuesAsync(DateTime day);
+
+        Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO);
     }
 }

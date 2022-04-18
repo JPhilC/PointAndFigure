@@ -155,16 +155,16 @@ namespace PnFDesktop.Services
             return indices;
         }
 
-        public async Task<IEnumerable<DateTime>> GetMarketAvailableDates(DateTime cutOff)
+        public async Task<IEnumerable<DayDTO>> GetMarketAvailableDates(DateTime cutOff)
         {
-            IEnumerable<DateTime> dates = new List<DateTime>();
+            IEnumerable<DayDTO> dates = new List<DayDTO>();
             try
             {
                 using (var db = new PnFDataContext())
                 {
                     dates = await db.IndexValues
                         .Where(iv => iv.Day >= cutOff)
-                        .Select(iv => iv.Day)
+                        .Select(iv => new DayDTO() { Day = iv.Day })
                         .Distinct()
                         .ToListAsync();
                 }
@@ -176,9 +176,9 @@ namespace PnFDesktop.Services
             return dates;
         }
 
-        public async Task<IEnumerable<MarketSummaryValueDTO>> GetMarketValuesAsync(DateTime day)
+        public async Task<IEnumerable<MarketSummaryDTO>> GetMarketValuesAsync(DateTime day)
         {
-            IEnumerable<MarketSummaryValueDTO> indices = new List<MarketSummaryValueDTO>();
+            IEnumerable<MarketSummaryDTO> indices = new List<MarketSummaryDTO>();
             try
             {
                 using (var db = new PnFDataContext())
@@ -188,9 +188,13 @@ namespace PnFDesktop.Services
                                      join ii in db.IndexIndicators on new { iv.IndexId, iv.Day } equals new { ii.IndexId, ii.Day }
                                      where iv.Day == day
                                      orderby i.SuperSector, i.ExchangeCode, i.ExchangeSubCode
-                                     select new MarketSummaryValueDTO()
+                                     select new MarketSummaryDTO()
                                      {
                                          Id = i.Id,
+                                         Day = day,
+                                         ExchangeCode = i.ExchangeCode,
+                                         ExchangeSubCode = i.ExchangeSubCode,
+                                         SuperSector = i.SuperSector,
                                          Description = (i.SuperSector == null ?
                                               $"Market - {i.ExchangeCode}/{i.ExchangeSubCode}" :
                                               $"Sector - {i.ExchangeCode}/{i.ExchangeSubCode}, {i.SuperSector}"),
@@ -233,5 +237,65 @@ namespace PnFDesktop.Services
             return indices;
         }
 
+                                    //where si.DoubleTop == marketSummaryDTO.BullishPercentRising || marketSummaryDTO.BullishPercentRising == false
+                                    //where si.RsRising == marketSummaryDTO.PercentRsRisingRising || marketSummaryDTO.PercentRsRisingRising == false
+                                    //where si.ClosedAboveEma10 == marketSummaryDTO.PercentAbove10EmaRising || marketSummaryDTO.PercentAbove10EmaRising == false
+                                    //where si.ClosedAboveEma30 == marketSummaryDTO.PercentAbove30EmaRising || marketSummaryDTO.PercentAbove30EmaRising == false
+                                    //where si.AboveBullSupport == marketSummaryDTO.PercentPositiveTrendRising || marketSummaryDTO.PercentPositiveTrendRising == false
+
+        public async Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO)
+        {
+            IEnumerable<ShareSummaryDTO> shares = new List<ShareSummaryDTO>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    shares = await (from si in db.ShareIndicators
+                                    join s in db.Shares on si.ShareId equals s.Id
+                                    join rs in db.ShareRSIValues on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Market } equals new { rs.ShareId, rs.Day, rs.RelativeTo }
+                                    join prs in db.ShareRSIValues on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Sector } equals new { prs.ShareId, prs.Day, prs.RelativeTo }
+                                    join q in db.EodPrices on new { si.ShareId, si.Day } equals new { q.ShareId, q.Day }
+                                    where si.Day == marketSummaryDTO.Day
+                                    where s.ExchangeCode == marketSummaryDTO.ExchangeCode
+                                    where s.ExchangeSubCode == marketSummaryDTO.ExchangeSubCode
+                                    where s.SuperSector == marketSummaryDTO.SuperSector || marketSummaryDTO.SuperSector == null
+                                    orderby s.Tidm
+                                    select new ShareSummaryDTO()
+                                    {
+                                        Id = s.Id,
+                                        Tidm = s.Tidm,
+                                        Name = s.Name,
+                                        Close = q.Close,
+                                        RsValue = rs.Value,
+                                        PeerRsValue = prs.Value,
+                                        Ema10 = si.Ema10??0d,
+                                        Ema30 = si.Ema30??0d,
+                                        ClosedAboveEma10 = si.ClosedAboveEma10??false,
+                                        ClosedAboveEma30 = si.ClosedAboveEma30??false,
+                                        Rising = si.Rising??false,
+                                        DoubleTop = si.DoubleTop??false,
+                                        TripleTop = si.TripleTop??false,
+                                        RsRising = si.RsRising??false,
+                                        RsBuy = si.RsBuy??false,
+                                        PeerRsRising = si.PeerRsRising??false,
+                                        PeerRsBuy = si.PeerRsBuy??false,
+                                        Falling = si.Falling??false,
+                                        DoubleBottom = si.DoubleBottom??false,
+                                        TripleBottom = si.TripleBottom??false,
+                                        RsFalling = si.RsFalling??false,
+                                        RsSell = si.RsSell??false,
+                                        PeerRsFalling = si.PeerRsFalling??false,
+                                        PeerRsSell = si.PeerRsSell??false,
+                                        AboveBullSupport = si.AboveBullSupport
+                                    }).ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the share values data", ex);
+            }
+            return shares;
+
+        }
     }
 }

@@ -66,16 +66,11 @@
             </xcad:DockingManager.Theme>
             <xcad:DockingManager.LayoutItemTemplateSelector>
                 <classes:PanesTemplateSelector>
-                    <classes:PanesTemplateSelector.PointAndFigureChartViewTemplate>
+                    <classes:PanesTemplateSelector.DocumentViewTemplate>
                         <DataTemplate>
                             <ContentPresenter Content="{Binding Control}"/>
                         </DataTemplate>
-                    </classes:PanesTemplateSelector.PointAndFigureChartViewTemplate>
-                    <classes:PanesTemplateSelector.MarketSummaryViewTemplate>
-                        <DataTemplate>
-                            <ContentPresenter Content="{Binding Control}"/>
-                        </DataTemplate>
-                    </classes:PanesTemplateSelector.MarketSummaryViewTemplate>
+                    </classes:PanesTemplateSelector.DocumentViewTemplate>
                     <classes:PanesTemplateSelector.MessagesViewTemplate>
                         <DataTemplate>
                             <TextBox Text="{Binding Messages, Mode=OneWay}" IsReadOnly="True" 
@@ -105,22 +100,14 @@
                             <Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>
                         </Style>
                     </classes:PanesStyleSelector.ToolStyle>
-                    <classes:PanesStyleSelector.PointAndFigureChartStyle>
+                    <classes:PanesStyleSelector.DocumentStyle>
                         <Style TargetType="{x:Type xcad:LayoutItem}">
                             <Setter Property="Title" Value="{Binding Model.Title}"/>
                             <!--<Setter Property="ToolTip" Value="{Binding Model.Tooltip}"/>-->
                             <!--<Setter Property="IconSource" Value="{Binding Model.IconSource}"/>-->
                             <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
                         </Style>
-                    </classes:PanesStyleSelector.PointAndFigureChartStyle>
-                    <classes:PanesStyleSelector.MarketSummaryStyle>
-                        <Style TargetType="{x:Type xcad:LayoutItem}">
-                            <Setter Property="Title" Value="{Binding Model.Title}"/>
-                            <!--<Setter Property="ToolTip" Value="{Binding Model.Tooltip}"/>-->
-                            <!--<Setter Property="IconSource" Value="{Binding Model.IconSource}"/>-->
-                            <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
-                        </Style>
-                    </classes:PanesStyleSelector.MarketSummaryStyle>
+                    </classes:PanesStyleSelector.DocumentStyle>
                 </classes:PanesStyleSelector>
             </xcad:DockingManager.LayoutItemContainerStyleSelector>
 

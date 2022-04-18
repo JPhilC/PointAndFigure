@@ -5,6 +5,7 @@ using PnFData.Model;
 using PnFDesktop.Classes;
 using PnFDesktop.Classes.Messaging;
 using PnFDesktop.Controls;
+using PnFDesktop.DTOs;
 using PnFDesktop.Interfaces;
 using PnFDesktop.Messaging;
 using PnFDesktop.ViewCharts;
@@ -62,6 +63,17 @@ namespace PnFDesktop.ViewModels
                             ActiveChart = pnfChartVm.Chart;
                             ActiveObject = ActiveChart;
                         }
+                    }
+                }
+            });
+
+            WeakReferenceMessenger.Default.Register<NotificationMessage<MarketSummaryDTO>>(this, (r, message) =>
+            {
+                if (message.Sender != this)
+                {
+                    if (message.Notification == Constants.OpenSharesSummaryPage)
+                    {
+                        OpenSharesSummary(message.Content);
                     }
                 }
             });
@@ -235,6 +247,19 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        public void OpenSharesSummary(MarketSummaryDTO marketSummaryDTO)
+        {
+            SharesSummaryViewModel sharesSummaryViewModel = ViewModelLocator.GetSharesSummaryViewModel(marketSummaryDTO);
+            if (sharesSummaryViewModel is PaneViewModel paneViewModel)
+            {
+                if (!this.DocumentPanes.Contains(paneViewModel))
+                {
+                    this.DocumentPanes.Add(paneViewModel);
+                }
+                ActiveDocument = paneViewModel;
+            }
+        }
+
         public void OpenMarketSummary()
         {
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
@@ -246,7 +271,7 @@ namespace PnFDesktop.ViewModels
                 {
                     this.DocumentPanes.Add(paneViewModel);
                 }
-                    ActiveDocument = paneViewModel;
+                ActiveDocument = paneViewModel;
             }
         }
 
@@ -440,11 +465,11 @@ namespace PnFDesktop.ViewModels
             Opening for content id:"Chart_8a3a28ea-8d5e-40a4-849a-1727ac8a84e1"
             */
             string[] splitId = contentId.Split('_');
-            if (splitId.Length == 2)
+            if (splitId[0] == Constants.PointAndFigureChart)
             {
-                Guid objectId = new Guid(splitId[1]);
-                if (splitId[0] == Constants.PointAndFigureChart)
+                if (splitId.Length == 2)
                 {
+                    Guid objectId = new Guid(splitId[1]);
                     PnFChart chart = null;
                     WeakReferenceMessenger.Default.Send(new ObjectNotificationMessageAction<PnFChart>(
                           NotificationMessages.GetPnFChart,

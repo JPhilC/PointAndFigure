@@ -1,6 +1,6 @@
-﻿using CommonServiceLocator;
-using PnFData.Model;
+﻿using PnFData.Model;
 using PnFDesktop.Classes;
+using PnFDesktop.DTOs;
 using PnFDesktop.Interfaces;
 using PnFDesktop.Services;
 using PnFDesktop.ViewCharts;
@@ -31,8 +31,6 @@ namespace PnFDesktop.ViewModels
 
         static ViewModelLocator()
         {
-            ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
-
             if (DesignerLibrary.IsInDesignMode)
             {
                 SimpleIoc.Default.Register<IDataService, DesignDataService>();
@@ -51,6 +49,7 @@ namespace PnFDesktop.ViewModels
             SimpleIoc.Default.Register<OpenShareChartViewModel>();
             SimpleIoc.Default.Register<OpenIndexChartViewModel>();
             SimpleIoc.Default.Register<MarketSummaryViewModel>();
+            SimpleIoc.Default.Register<SharesSummaryViewModel>();
         }
 
 
@@ -65,7 +64,7 @@ namespace PnFDesktop.ViewModels
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<MainViewModel>();
+                return SimpleIoc.Default.GetInstance<MainViewModel>();
             }
         }
 
@@ -74,7 +73,7 @@ namespace PnFDesktop.ViewModels
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<MessagesViewModel>();
+                return SimpleIoc.Default.GetInstance<MessagesViewModel>();
             }
         }
 
@@ -88,7 +87,7 @@ namespace PnFDesktop.ViewModels
         {
             get
             {
-                return new PointAndFigureChartViewModel();
+                return SimpleIoc.Default.GetInstance<PointAndFigureChartViewModel>();
             }
         }
 
@@ -108,7 +107,7 @@ namespace PnFDesktop.ViewModels
             if (SimpleIoc.Default.IsRegistered<PointAndFigureChartViewModel>(key))
             {
                 // If the viewmodel is already registered get it.
-                vm = ServiceLocator.Current.GetInstance<PointAndFigureChartViewModel>(key);
+                vm = SimpleIoc.Default.GetInstance<PointAndFigureChartViewModel>(key);
             }
             else
             {
@@ -119,6 +118,26 @@ namespace PnFDesktop.ViewModels
             return vm;
         }
 
+        
+        public static SharesSummaryViewModel GetSharesSummaryViewModel(MarketSummaryDTO marketSummaryDTO)
+        {
+            string key = $"{Constants.SharesSummary}_{marketSummaryDTO.Id}_{marketSummaryDTO.Day.ToString("yyyyMMdd")}";
+            SharesSummaryViewModel vm = null;
+
+            if (SimpleIoc.Default.IsRegistered<SharesSummaryViewModel>(key))
+            {
+                // If the viewmodel is already registered get it.
+                vm = SimpleIoc.Default.GetInstance<SharesSummaryViewModel>(key);
+            }
+            else
+            {
+                // Otherwise create it and register it before returning
+                vm = new SharesSummaryViewModel(SimpleIoc.Default.GetInstance<IDataService>());
+                vm.MarketSummaryDTO = marketSummaryDTO;
+                SimpleIoc.Default.Register(() => vm, key, true);
+            }
+            return vm;
+        }
 
 
         /// <summary>
@@ -128,7 +147,7 @@ namespace PnFDesktop.ViewModels
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<PageLayoutViewModel>();
+                return SimpleIoc.Default.GetInstance<PageLayoutViewModel>();
             }
         }
 
@@ -141,7 +160,7 @@ namespace PnFDesktop.ViewModels
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<UserOptionsViewModel>();
+                return SimpleIoc.Default.GetInstance<UserOptionsViewModel>();
             }
         }
 
@@ -152,7 +171,7 @@ namespace PnFDesktop.ViewModels
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<SplashScreenViewModel>();
+                return SimpleIoc.Default.GetInstance<SplashScreenViewModel>();
             }
         }
 
@@ -163,7 +182,18 @@ namespace PnFDesktop.ViewModels
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<MarketSummaryViewModel>();
+                return SimpleIoc.Default.GetInstance<MarketSummaryViewModel>();
+            }
+        }
+
+                /// <summary>
+        /// Viewmodel for the Shares Summary page
+        /// </summary>
+        public SharesSummaryViewModel SharesSummaryViewModel
+        {
+            get
+            {
+                return SimpleIoc.Default.GetInstance<SharesSummaryViewModel>();
             }
         }
 

@@ -13,12 +13,7 @@ namespace PnFDesktop.Classes
 
         }
 
-        public DataTemplate? PointAndFigureChartViewTemplate
-        {
-            get;
-            set;
-        }
-        public DataTemplate? MarketSummaryViewTemplate
+        public DataTemplate? DocumentViewTemplate
         {
             get;
             set;
@@ -36,12 +31,17 @@ namespace PnFDesktop.Classes
 
             if (item is PointAndFigureChartViewModel)
             {
-                return PointAndFigureChartViewTemplate!;
+                return DocumentViewTemplate!;
             }
 
             if (item is MarketSummaryViewModel)
             {
-                return MarketSummaryViewTemplate!;
+                return DocumentViewTemplate!;
+            }
+
+            if (item is SharesSummaryViewModel)
+            {
+                return DocumentViewTemplate!;
             }
 
             if (item is MessagesViewModel)

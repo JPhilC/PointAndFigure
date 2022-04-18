@@ -1,13 +1,10 @@
-﻿using System;
+﻿using PnFDesktop.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using CommonServiceLocator;
-using PnFDesktop.Interfaces;
 
 namespace PnFDesktop.Classes
 {
@@ -567,7 +564,7 @@ namespace PnFDesktop.Classes
                 {
                     if (!_interfaceToClassMap.ContainsKey(serviceType))
                     {
-                        throw new ActivationException(
+                        throw new Exception(
                                   string.Format(
                                 CultureInfo.InvariantCulture,
                                 "Type not found in cache: {0}.",
@@ -607,7 +604,7 @@ namespace PnFDesktop.Classes
                         }
                         else
                         {
-                            throw new ActivationException(
+                            throw new Exception(
                                        string.Format(
                                     CultureInfo.InvariantCulture,
                                     "Type not found in cache without a key: {0}",
@@ -684,7 +681,7 @@ namespace PnFDesktop.Classes
                 if (first == null
                     || !first.IsPublic)
                 {
-                    throw new ActivationException(
+                    throw new Exception(
                              string.Format(
                             CultureInfo.InvariantCulture,
                             "Cannot register: No public constructor found in {0}.",
@@ -698,7 +695,7 @@ namespace PnFDesktop.Classes
                 || (constructorInfos.Length == 1
                     && !constructorInfos[0].IsPublic))
             {
-                throw new ActivationException(
+                throw new Exception(
                         string.Format(
                         CultureInfo.InvariantCulture,
                         "Cannot register: No public constructor found in {0}.",
@@ -722,7 +719,7 @@ namespace PnFDesktop.Classes
 
             if (preferredConstructorInfo == null)
             {
-                throw new ActivationException(
+                throw new Exception(
                         string.Format(
                         CultureInfo.InvariantCulture,
                         "Cannot register: Multiple constructors found in {0} but none marked with PreferredConstructor.",

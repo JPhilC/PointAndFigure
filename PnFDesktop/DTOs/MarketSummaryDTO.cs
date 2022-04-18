@@ -6,13 +6,19 @@ using System.Threading.Tasks;
 
 namespace PnFDesktop.DTOs
 {
-    public class MarketSummaryValueDTO
+    public class MarketSummaryDTO
     {
         public Guid Id { get; set; }
 
         public DateTime Day { get; set; }
 
-        public string Description {get; set;}
+        public string? ExchangeCode { get; set; }
+
+        public string? ExchangeSubCode { get; set; }
+
+        public string? SuperSector { get; set; }
+
+        public string? Description {get; set;}
 
         public double Value { get; set; }
 

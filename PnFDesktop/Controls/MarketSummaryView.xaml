@@ -25,12 +25,13 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected Date"/>
-        <ComboBox Grid.Row="0" Grid.Column="2" SelectedItem="{Binding SelectedDay, UpdateSourceTrigger=PropertyChanged}" 
+        <ComboBox Grid.Row="0" Grid.Column="2" 
+                      SelectedItem="{Binding SelectedDay, UpdateSourceTrigger=PropertyChanged}" 
                       ItemsSource="{Binding Source={StaticResource cvsDays}}"
                       Width="100" HorizontalAlignment="Left">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Path=., StringFormat=d}"/>
+                    <TextBlock Text="{Binding DayDescription}"/>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
@@ -43,7 +44,21 @@
                   SelectionUnit="FullRow"
                   IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Market/Sector" Binding="{Binding Description}" Width="300" />
+                <DataGridTemplateColumn Header="Market/Sector" Width="300">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="5,0,5,0">
+                                <Hyperlink Command="{Binding DataContext.LoadSharesCommand, RelativeSource={RelativeSource AncestorType=local:MarketSummaryView}}"
+                                           CommandParameter="{Binding}">
+                                     <TextBlock Text="{Binding Description}" />
+                                    <Hyperlink.ToolTip>
+                                        <TextBlock Text="Load rising shares" />
+                                    </Hyperlink.ToolTip>
+                                </Hyperlink>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Value">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

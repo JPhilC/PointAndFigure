@@ -14,12 +14,12 @@ namespace PnFDesktop.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<DateTime>> GetMarketAvailableDates(DateTime cutOff)
+        public Task<IEnumerable<DayDTO>> GetMarketAvailableDates(DateTime cutOff)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<MarketSummaryValueDTO>> GetMarketValuesAsync(DateTime day)
+        public Task<IEnumerable<MarketSummaryDTO>> GetMarketValuesAsync(DateTime day)
         {
             throw new NotImplementedException();
         }
@@ -96,6 +96,11 @@ namespace PnFDesktop.Services
         }
 
         public Task<IEnumerable<ShareDTO>> GetSharesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO)
         {
             throw new NotImplementedException();
         }

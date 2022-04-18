@@ -13,10 +13,13 @@ namespace PnFDesktop.Classes
         public const float DefaultChartHeight = 300f;
         public const string PointAndFigureChart = "PnFChart"; 
         public const string MarketSummary = "MarketSummary";
+        public const string SharesSummary = "SharesSummary";
 
         #region Notifications ...
         public const string OpenIndexChartWindowLoaded = "OpenIndexChartWindowLoaded";
         public const string MarketSummaryUILoaded = "MarketSummaryUILoaded";
+        public const string SharesSummaryUILoaded = "SharesSummaryUILoaded";
+        public const string OpenSharesSummaryPage = "OpenSharesSummaryPage";
 
         #endregion
     }
