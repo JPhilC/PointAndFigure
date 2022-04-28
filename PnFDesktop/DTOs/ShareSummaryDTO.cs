@@ -13,6 +13,8 @@ namespace PnFDesktop.DTOs
 
         public string? Name { get; set; }
 
+        public double MarketCapMillions { get; set; }
+
         public double Close {get; set;}
 
         public double RsValue {get;set;}
@@ -57,6 +59,11 @@ namespace PnFDesktop.DTOs
         public bool PeerRsSell { get; set; }
 
         public bool AboveBullSupport { get; set; }
+
+        public int NewEvents {get;set;}
+
+        public int Score {get;set;}
+
 
     }
 }

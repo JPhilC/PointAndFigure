@@ -78,6 +78,23 @@ namespace PnFDesktop.ViewModels
                 }
             });
 
+            WeakReferenceMessenger.Default.Register<OpenPointAndFigureChartMessage>(this, async (r, message) =>
+            {
+                if (message.Sender != this)
+                {
+                    PnFChart? chart = await _dataService.GetPointAndFigureChartAsync(message.InstrumentId, message.ChartSource);
+                    if (chart != null)
+                    {
+                        MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for {chart.Name} ...");
+                        OpenPointAndFigureChart(chart, true);
+                    }
+                    else
+                    {
+                        MessageLog.LogMessage(this, LogType.Information, "Chart does not exist.");
+                    }
+
+                }
+            });
 
         }
 
@@ -481,14 +498,23 @@ namespace PnFDesktop.ViewModels
                           );
                     if (chart != null)
                     {
-                        ObservableObject pointAndFigureChartViewModel = (ObservableObject)ViewModelLocator.Current.GetPointAndFigureChartViewModel(chart);
+                        PointAndFigureChartViewModel pointAndFigureChartViewModel = ViewModelLocator.Current.GetPointAndFigureChartViewModel(chart);
+                        if (!this.DocumentPanes.Contains(pointAndFigureChartViewModel))
+                        {
+                            this.DocumentPanes.Add(pointAndFigureChartViewModel);
+                        }
                         return pointAndFigureChartViewModel;
                     }
                 }
             }
             else if (splitId[0] == Constants.MarketSummary)
             {
-                return SimpleIoc.Default.GetInstance<MarketSummaryViewModel>();
+                MarketSummaryViewModel vm = SimpleIoc.Default.GetInstance<MarketSummaryViewModel>();
+                if (!this.DocumentPanes.Contains(vm))
+                {
+                    this.DocumentPanes.Add(vm);
+                }
+                return vm;
             }
             return null;
         }

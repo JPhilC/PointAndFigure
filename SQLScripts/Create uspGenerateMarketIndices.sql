@@ -47,19 +47,17 @@ SELECT w.[ExchangeCode], w.[ExchangeSubCode], w.[Day], SUM(w.[Weight] * p.[Close
 	GROUP BY w.[ExchangeCode], w.[ExchangeSubCode], w.[Day]
 	ORDER BY w.[ExchangeCode], w.[ExchangeSubCode], w.[Day] DESC
 
--- Delete existing indexes
-DELETE [Indices]
-WHERE [id] IN
-	(SELECT i.[Id] 
-		FROM [Indices] i
-		WHERE ISNULL(i.[SuperSector], '') = ''
-			AND i.[ExchangeCode] IN (SELECT DISTINCT w.[ExchangeCode] FROM #weights w)
-			AND i.[ExchangeSubCode] IN (SELECT DISTINCT w.[ExchangeSubCode] FROM #weights w)
-			);
 
--- Create new indexes
+---- Create any new indexes
 INSERT INTO [Indices] ([ExchangeCode], [ExchangeSubCode])
-	SELECT DISTINCT [ExchangeCode], [ExchangeSubCode] FROM #newIndex;
+	SELECT DISTINCT 
+		ni.[ExchangeCode], 
+		ni.[ExchangeSubCode]
+	FROM #newIndex ni
+	LEFT JOIN [Indices] i ON i.[ExchangeCode] = ni.[ExchangeCode]
+		AND i.[ExchangeSubCode] = ni.[ExchangeSubCode]
+		AND ISNULL(i.[SuperSector], '') = ''
+	WHERE i.Id IS NULL;
 
 
 INSERT INTO [IndexValues] ([IndexId], [Day], [Value], [Contributors])
@@ -67,7 +65,7 @@ INSERT INTO [IndexValues] ([IndexId], [Day], [Value], [Contributors])
 		FROM #newIndex ni
 		LEFT JOIN [Indices] i ON i.[ExchangeCode] = ni.[ExchangeCode]
 			AND i.[ExchangeSubCode] = ni.[ExchangeSubCode]
-			AND i.[SuperSector] IS NULL
+			AND ISNULL(i.[SuperSector], '') = ''
 
 
 DROP TABLE #totals;

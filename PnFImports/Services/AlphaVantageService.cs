@@ -11,7 +11,7 @@ namespace PnFImports.Services
         private static HttpClient _client;
         private static readonly string ApiKey = "9XSPQTI5MMVQE5OK";
         private static readonly string ApiBaseUrl = @"https://www.alphavantage.co/query?";
-        private static readonly string ApiFunction = "TIME_SERIES_DAILY";
+        private static readonly string ApiFunction = "TIME_SERIES_DAILY_ADJUSTED";
         private static HttpClient Client
         {
             get
@@ -40,41 +40,44 @@ namespace PnFImports.Services
                     {
                         JObject results = (JObject)JsonConvert.DeserializeObject(body)!;
                         IEnumerable<KeyValuePair<string, JToken?>> timeSeriesDaily = (IEnumerable<KeyValuePair<string, JToken?>>)results["Time Series (Daily)"]!;
-                        foreach (var day in timeSeriesDaily)
+                        if (timeSeriesDaily != null)
                         {
-                            string date = day.Key;
-                            DateTime dateValue = DateTime.ParseExact(date, "yyyy-MM-dd",
-                                CultureInfo.InvariantCulture, DateTimeStyles.None);
-                            if (dateValue <= cutoffDate)
+                            foreach (var day in timeSeriesDaily)
                             {
-                                break; // Exist once the cut off date is reached.
-                            }
-
-                            IEnumerable<KeyValuePair<string, JToken>> prices = (IEnumerable<KeyValuePair<string, JToken>>)day.Value;
-                            Eod eod = new Eod() { Day = dateValue };
-                            foreach (var price in prices)
-                            {
-                                switch (price.Key)
+                                string date = day.Key;
+                                DateTime dateValue = DateTime.ParseExact(date, "yyyy-MM-dd",
+                                    CultureInfo.InvariantCulture, DateTimeStyles.None);
+                                if (dateValue <= cutoffDate)
                                 {
-                                    case "1. open":
-                                        eod.Open = (double)price.Value;
-                                        break;
-                                    case "2. high":
-                                        eod.High = (double)price.Value;
-                                        break;
-                                    case "3. low":
-                                        eod.Low = (double)price.Value;
-                                        break;
-                                    case "4. close":
-                                        eod.Close = (double)price.Value;
-                                        break;
-                                    case "5. volume":
-                                        eod.Volume = (double)price.Value;
-                                        break;
+                                    break; // Exist once the cut off date is reached.
                                 }
 
+                                IEnumerable<KeyValuePair<string, JToken>> prices = (IEnumerable<KeyValuePair<string, JToken>>)day.Value;
+                                Eod eod = new Eod() { Day = dateValue };
+                                foreach (var price in prices)
+                                {
+                                    switch (price.Key)
+                                    {
+                                        case "1. open":
+                                            eod.Open = (double)price.Value;
+                                            break;
+                                        case "2. high":
+                                            eod.High = (double)price.Value;
+                                            break;
+                                        case "3. low":
+                                            eod.Low = (double)price.Value;
+                                            break;
+                                        case "5. adjusted close":
+                                            eod.Close = (double)price.Value;
+                                            break;
+                                        case "6. volume":
+                                            eod.Volume = (double)price.Value;
+                                            break;
+                                    }
+
+                                }
+                                data.Add(eod);
                             }
-                            data.Add(eod);
                         }
                     }
                 }

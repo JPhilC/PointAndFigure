@@ -35,6 +35,7 @@ namespace PnFDesktop.Services
                         case PnFChartSource.RSStockVMarket:
                         case PnFChartSource.RSStockVSector:
                             // Get the share
+                            MessageLog.LogMessage(this, LogType.Information, $"Downloading share chart data ...");
                             var share = await db.Shares
                                 .Include(sc => sc.Charts).ThenInclude(s => s.Chart)
                                 .SingleOrDefaultAsync(s => s.Id == itemId);
@@ -65,6 +66,7 @@ namespace PnFDesktop.Services
                             break;
 
                         default:
+                            MessageLog.LogMessage(this, LogType.Information, $"Downloading index chart data ...");
                             // Get the index
                             var index = await db.Indices
                                 .Include(sc => sc.Charts).ThenInclude(s => s.Chart)
@@ -186,6 +188,7 @@ namespace PnFDesktop.Services
                     indices = await (from iv in db.IndexValues
                                      join i in db.Indices on iv.IndexId equals i.Id
                                      join ii in db.IndexIndicators on new { iv.IndexId, iv.Day } equals new { ii.IndexId, ii.Day }
+                                     join irs in db.IndexRSIValues on new { iv.IndexId, iv.Day } equals new { irs.IndexId, irs.Day }
                                      where iv.Day == day
                                      orderby i.SuperSector, i.ExchangeCode, i.ExchangeSubCode
                                      select new MarketSummaryDTO()
@@ -199,6 +202,7 @@ namespace PnFDesktop.Services
                                               $"Market - {i.ExchangeCode}/{i.ExchangeSubCode}" :
                                               $"Sector - {i.ExchangeCode}/{i.ExchangeSubCode}, {i.SuperSector}"),
                                          Value = iv.Value,
+                                         RsValue = irs.Value,
                                          Contributors = iv.Contributors,
                                          BullishPercent = iv.BullishPercent,
                                          PercentAboveEma10 = iv.PercentAboveEma10,
@@ -265,6 +269,7 @@ namespace PnFDesktop.Services
                                         Id = s.Id,
                                         Tidm = s.Tidm,
                                         Name = s.Name,
+                                        MarketCapMillions = s.MarketCapMillions,
                                         Close = q.Close,
                                         RsValue = rs.Value,
                                         PeerRsValue = prs.Value,
@@ -286,7 +291,25 @@ namespace PnFDesktop.Services
                                         RsSell = si.RsSell??false,
                                         PeerRsFalling = si.PeerRsFalling??false,
                                         PeerRsSell = si.PeerRsSell??false,
-                                        AboveBullSupport = si.AboveBullSupport
+                                        AboveBullSupport = si.AboveBullSupport,
+                                        NewEvents = si.NewEvents,
+                                        Score = 0 + (si.Rising==true?1:0)
+                                                  + (si.Falling==true?-1:0)
+                                                  + (si.DoubleTop==true?1:0)
+                                                  + (si.DoubleBottom==true?-1:0)
+                                                  + (si.TripleTop==true?1:0)
+                                                  + (si.TripleBottom==true?-1:0)
+                                                  + (si.RsRising==true?1:0)
+                                                  + (si.RsFalling==true?-1:0)
+                                                  + (si.RsBuy==true?1:0)
+                                                  + (si.RsSell==true?-1:0)
+                                                  + (si.PeerRsRising==true?1:0)
+                                                  + (si.PeerRsFalling==true?-1:0)
+                                                  + (si.PeerRsBuy==true?1:0)
+                                                  + (si.PeerRsSell==true?-1:0)
+                                                  + (si.ClosedAboveEma10==true?1:0)
+                                                  + (si.ClosedAboveEma30==true?1:0)
+                                                  + (si.AboveBullSupport==true?1:0)
                                     }).ToListAsync();
                 }
             }

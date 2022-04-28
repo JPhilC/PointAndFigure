@@ -53,32 +53,27 @@ SELECT w.[ExchangeCode], w.[ExchangeSubCode], w.[SuperSector], w.[Day], SUM(w.[W
 	GROUP BY w.[ExchangeCode], w.[ExchangeSubCode], w.[SuperSector], w.[Day]
 	ORDER BY w.[ExchangeCode], w.[ExchangeSubCode], w.[SuperSector], w.[Day] DESC
 
--- Delete existing indexes
-DELETE [Indices]
-WHERE [id] IN
-	(SELECT i.[Id] 
-		FROM [Indices] i
-		WHERE ISNULL(i.[SuperSector], '') <> ''
-			AND i.[ExchangeCode] IN (SELECT DISTINCT w.[ExchangeCode] FROM #weights w)
-			AND i.[ExchangeSubCode] IN (SELECT DISTINCT w.[ExchangeSubCode] FROM #weights w)
-			AND i.[SuperSector] IN (SELECT DISTINCT w.[SuperSector] FROM #weights w)
-			);
 
----- Create new indexes
+---- Create any new indexes
 INSERT INTO [Indices] ([ExchangeCode], [ExchangeSubCode], [SuperSector])
 	SELECT DISTINCT 
-	[ExchangeCode], 
-	[ExchangeSubCode],
-	[SuperSector]
-	FROM #newIndex;
-
+		ni.[ExchangeCode], 
+		ni.[ExchangeSubCode],
+		ni.[SuperSector]
+	FROM #newIndex ni
+	LEFT JOIN [Indices] i ON i.[ExchangeCode] = ni.[ExchangeCode]
+		AND i.[ExchangeSubCode] = ni.[ExchangeSubCode]
+		AND ISNULL(i.[SuperSector], '') <>''
+		AND i.[SuperSector] = ni.[SuperSector]
+	WHERE i.Id IS NULL;
+	
 
 INSERT INTO [IndexValues] ([IndexId], [Day], [Value], [Contributors])
 	SELECT i.[id], ni.[Day], ni.[Value], ni.[ShareCount]
 		FROM #newIndex ni
 		LEFT JOIN [Indices] i ON i.[ExchangeCode] = ni.[ExchangeCode]
 			AND i.[ExchangeSubCode] = ni.[ExchangeSubCode]
-			AND i.[SuperSector] = NI.[SuperSector]
+			AND i.[SuperSector] = ni.[SuperSector]
 
 
 DROP TABLE #totals;

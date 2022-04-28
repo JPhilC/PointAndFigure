@@ -63,7 +63,7 @@ namespace PnFDesktop
                 });
             }
 
-            WeakReferenceMessenger.Default.Register<NotificationMessageAction<string>>(this, (r,message) =>
+            WeakReferenceMessenger.Default.Register<NotificationMessageAction<string>>(this, (r, message) =>
             {
 
                 // Is this a save workspace layout notification?
@@ -119,12 +119,10 @@ namespace PnFDesktop
             // Signal to anyone who is listening that a document has been closed.
             if (e.Document.Content != null)
             {
-                if (e.Document.Content is PointAndFigureChartViewModel vm)
-                {
-                    WeakReferenceMessenger.Default.Send(new DocumentClosedMessage(this, vm.Chart.Id, e.Document.ContentId));
-                }
+                WeakReferenceMessenger.Default.Send(new DocumentClosedMessage(this, e.Document.ContentId));
             }
         }
+
         /// <summary>
         /// Convert a Avalondock ContentId into a viewmodel instance
         /// that represents a document or tool window. The re-load of

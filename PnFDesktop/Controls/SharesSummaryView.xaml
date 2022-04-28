@@ -1,15 +1,19 @@
 ﻿<UserControl x:Class="PnFDesktop.Controls.SharesSummaryView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:PnFDesktop.Controls"
+             xmlns:model="clr-namespace:PnFData.Model;assembly=PnFData"
+             xmlns:classes="clr-namespace:PnFDesktop.Classes"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="1500"
              d:DataContext="{Binding SharesSummaryViewModel, Source={StaticResource Locator}}"
              Loaded="UserControl_Loaded">
     <UserControl.Resources>
         <CollectionViewSource x:Key="cvsShares" Source="{Binding Shares}"/>
+        <classes:FlagToVisibilityConverter x:Key="FlagConverter"/>
+        <classes:FlagToBooleanConverter x:Key="FlagBooleanConverter"/>
     </UserControl.Resources>
     <Grid Margin="5">
         <Grid.ColumnDefinitions>
@@ -25,15 +29,321 @@
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding SelectedDay, StringFormat={}{0:D}}"/>
         <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding MarketSummaryDTO.Description}"/>
-        
+
         <DataGrid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
                   ItemsSource="{Binding Source={StaticResource cvsShares}}"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
-                  AutoGenerateColumns="True"
+                  AutoGenerateColumns="False"
                   SelectionMode="Single"
                   SelectionUnit="FullRow"
                   IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="TIDM" Binding="{Binding Tidm}"  IsReadOnly="True"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}"  IsReadOnly="True"/>
+                <DataGridTextColumn Header="M Cap" Binding="{Binding MarketCapMillions, StringFormat={}{0:G7}}" IsReadOnly="True"/>
+                <DataGridTemplateColumn Header="Close">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="5,0,5,0">
+                                <Hyperlink Command="{Binding DataContext.LoadShareChartCommand, RelativeSource={RelativeSource AncestorType=local:SharesSummaryView}}"
+                                               CommandParameter="{Binding}">
+                                        <TextBlock Text="{Binding Close, StringFormat={}{0:G6}}"/>
+                                        <Hyperlink.ToolTip>
+                                            <TextBlock Text="Open the share Hi/Lo P &amp; F Chart" />
+                                        </Hyperlink.ToolTip>
+                                </Hyperlink>
+                            </TextBlock>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Rising}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Falling}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Signal">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewDoubleTop}}"/>
+                                <TextBlock Text="↑↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewTripleTop}}"/>
+                                <TextBlock>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DoubleTop}" Value="True">
+                                                    <Setter Property="Text" Value="Buy"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding DoubleBottom}" Value="True">
+                                                    <Setter Property="Text" Value="Sell"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding TripleTop}" Value="True">
+                                                    <Setter Property="Text" Value="Buy"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding TripleBottom}" Value="True">
+                                                    <Setter Property="Text" Value="Sell"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewDoubleBottom}}"/>
+                                <TextBlock Text="↓↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewTripleBottom}}"/>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding DoubleTop}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding DoubleBottom}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding TripleTop}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.6"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding TripleBottom}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.6"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+
+                                </StackPanel.Style>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="ABS">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding AboveBullSupport}" Value="True">
+                                                    <Setter Property="Text" Value="ABS"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding NewEvents, Converter={StaticResource FlagBooleanConverter}, ConverterParameter={x:Static model:ShareEvents.NewBullSupportBreach}}" Value="True">
+                                                    <Setter Property="Text" Value="ABS↓"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AboveBullSupport}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding NewEvents, Converter={StaticResource FlagBooleanConverter}, ConverterParameter={x:Static model:ShareEvents.NewBullSupportBreach}}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Market RS">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewRsBuy}}"/>
+                                <TextBlock Margin="5,0,5,0">
+                                    <Hyperlink Command="{Binding DataContext.LoadShareMarketRsChartCommand, RelativeSource={RelativeSource AncestorType=local:SharesSummaryView}}"
+                                                   CommandParameter="{Binding}">
+                                        <TextBlock Text="{Binding RsValue, StringFormat={}{0:N2}}"/>
+                                        <Hyperlink.ToolTip>
+                                            <TextBlock Text="Open the share Hi/Lo P &amp; F Chart" />
+                                        </Hyperlink.ToolTip>
+                                    </Hyperlink>
+                                </TextBlock>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewRsSell}}"/>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RsRising}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsBuy}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.6"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsFalling}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsSell}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.6"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Peer RS">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewPeerRsBuy}}"/>
+                                <TextBlock Margin="5,0,5,0">
+                                    <Hyperlink Command="{Binding DataContext.LoadSharePeerRsChartCommand, RelativeSource={RelativeSource AncestorType=local:SharesSummaryView}}"
+                                                   CommandParameter="{Binding}">
+                                        <TextBlock Text="{Binding PeerRsValue, StringFormat={}{0:N2}}"/>
+                                        <Hyperlink.ToolTip>
+                                            <TextBlock Text="Open the share Hi/Lo P &amp; F Chart" />
+                                        </Hyperlink.ToolTip>
+                                    </Hyperlink>
+                                </TextBlock>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewPeerRsSell}}"/>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding PeerRsRising}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PeerRsBuy}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.6"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PeerRsFalling}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PeerRsSell}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.6"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="EMA 30">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewCloseAboveEma30}}"/>
+                                <TextBlock Text="{Binding Ema30, StringFormat={}{0:N2}}"/>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewDropBelowEma30}}"/>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ClosedAboveEma30}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="EMA 10" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewCloseAboveEma10}}"/>
+                                <TextBlock Text="{Binding Ema10, StringFormat={}{0:N2}}"/>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewDropBelowEma10}}"/>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ClosedAboveEma10}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Score" Binding="{Binding Score}"  IsReadOnly="True"/>
+            </DataGrid.Columns>
         </DataGrid>
 
     </Grid>

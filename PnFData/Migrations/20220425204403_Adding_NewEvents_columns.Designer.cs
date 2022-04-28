@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220425204403_Adding_NewEvents_columns")]
+    partial class Adding_NewEvents_columns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,12 +160,6 @@ namespace PnFData.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newid()");
-
-                    b.Property<bool?>("BullishPercentDoubleBottom")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("BullishPercentDoubleTop")
-                        .HasColumnType("bit");
 
                     b.Property<bool?>("BullishPercentFalling")
                         .HasColumnType("bit");

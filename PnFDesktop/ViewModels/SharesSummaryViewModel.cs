@@ -1,6 +1,7 @@
 ﻿using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using PnFDesktop.Classes;
+using PnFDesktop.Classes.Messaging;
 using PnFDesktop.Controls;
 using PnFDesktop.DTOs;
 using PnFDesktop.Interfaces;
@@ -66,13 +67,15 @@ namespace PnFDesktop.ViewModels
 
         }
 
+        private bool _dataLoaded = false;
+
         [PreferredConstructor]
         public SharesSummaryViewModel(IDataService dataService) : this()
         {
             _DataService = dataService;
             WeakReferenceMessenger.Default.Register<NotificationMessage>(this, async (r, message) =>
             {
-                if (message.Notification == Constants.SharesSummaryUILoaded)
+                if (message.Notification == Constants.SharesSummaryUILoaded && !_dataLoaded)
                 {
                     System.Diagnostics.Debug.Assert(MarketSummaryDTO != null, "The MarketSummary property needs setting before attempting to load data");
                     await LoadSharesSummaryDataAsync();
@@ -90,7 +93,7 @@ namespace PnFDesktop.ViewModels
                 lock (_ItemsLock)
                 {
                     App.Current.Dispatcher.Invoke(() => Shares.Clear());
-                    foreach (ShareSummaryDTO share in list)
+                    foreach (ShareSummaryDTO share in list.OrderByDescending(s=>s.Score).ThenByDescending(s=>s.MarketCapMillions))
                     {
                         App.Current.Dispatcher.Invoke(() =>
                         {
@@ -98,6 +101,7 @@ namespace PnFDesktop.ViewModels
                         });
                     }
                     App.Current.Dispatcher.Invoke(() => SelectedDay = this.MarketSummaryDTO.Day);
+                    _dataLoaded = true;
                 }
             }
             catch (Exception ex)
@@ -108,22 +112,50 @@ namespace PnFDesktop.ViewModels
 
 
         #region LoadSharesCommand ...
-        private RelayCommand<MarketSummaryDTO> _loadSharesCommand;
+        private RelayCommand<ShareSummaryDTO> _loadShareChartCommand;
 
-        public RelayCommand<MarketSummaryDTO> LoadSharesCommand
+        public RelayCommand<ShareSummaryDTO> LoadShareChartCommand
         {
             get
             {
-                return _loadSharesCommand ?? (_loadSharesCommand = new RelayCommand<MarketSummaryDTO>(currentSector =>
+                return _loadShareChartCommand ?? (_loadShareChartCommand = new RelayCommand<ShareSummaryDTO>(currentShare =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"Signal to load shares for {currentSector.Description}");
-
-
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.Share)
+                        );
                 }));
-
             }
         }
 
+        private RelayCommand<ShareSummaryDTO> _loadShareMarketRsChartCommand;
+
+        public RelayCommand<ShareSummaryDTO> LoadShareMarketRsChartCommand
+        {
+            get
+            {
+                return _loadShareMarketRsChartCommand ?? (_loadShareMarketRsChartCommand = new RelayCommand<ShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.RSStockVMarket)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<ShareSummaryDTO> _loadSharePeerRsChartCommand;
+
+        public RelayCommand<ShareSummaryDTO> LoadSharePeerRsChartCommand
+        {
+            get
+            {
+                return _loadSharePeerRsChartCommand ?? (_loadSharePeerRsChartCommand = new RelayCommand<ShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.RSStockVSector)
+                        );
+                }));
+            }
+        }
         #endregion
     }
 }

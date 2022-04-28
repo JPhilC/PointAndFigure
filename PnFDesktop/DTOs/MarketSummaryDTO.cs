@@ -22,6 +22,8 @@ namespace PnFDesktop.DTOs
 
         public double Value { get; set; }
 
+        public double RsValue {get;set;}
+
         public int Contributors { get; set; }
         
         public double? BullishPercent {get;set;}

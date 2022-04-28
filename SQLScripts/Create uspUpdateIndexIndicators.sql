@@ -124,15 +124,15 @@ left join #falling srsf ON srsf.[IndexId] = s.Id AND srsf.[Source] = 4
 left join #doubleBottom srsSell ON srsSell.[IndexId] = s.Id AND srsSell.[Source] = 4
 order by [SuperSector], [ExchangeSubCode]
 
-UPDATE si
-	SET si.[Rising] = sr.[Rising]
-	,	si.[Buy] = sr.[Buy]
-	,	si.[RsRising] = sr.[RsRising]
-	,	si.[RsBuy] = sr.[RsBuy]
-	,	si.Falling = sr.Falling
-	,	si.[Sell] = sr.[Sell]
-	,	si.[RsFalling] = sr.[RsFalling]
-	,	si.[RsSell] = sr.[RsSell]
+UPDATE [dbo].[IndexIndicators]
+	SET [Rising] = sr.[Rising]
+	,	[Buy] = sr.[Buy]
+	,	[RsRising] = sr.[RsRising]
+	,	[RsBuy] = sr.[RsBuy]
+	,	Falling = sr.Falling
+	,	[Sell] = sr.[Sell]
+	,	[RsFalling] = sr.[RsFalling]
+	,	[RsSell] = sr.[RsSell]
 FROM [dbo].[IndexIndicators] si
 INNER JOIN #IndexResults sr
 ON sr.[IndexId] = si.[IndexId]

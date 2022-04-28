@@ -55,8 +55,8 @@ namespace PnFData.Model
                         maxRetryCount:2,
                         maxRetryDelay:TimeSpan.FromSeconds(5),
                         errorNumbersToAdd:null
-                        );
-                    
+                        )
+                    .CommandTimeout((int)TimeSpan.FromMinutes(1).TotalSeconds);
                 });
         }
 

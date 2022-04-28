@@ -93,22 +93,16 @@ namespace PnFDesktop.Classes.Messaging
     {
         public Object Sender { get; set; }
 
-        public ActiveDocumentType DocumentType { get; set; }
-        public Guid ProcedureId { get; set; }
-
         public string DocumentId { get; set; }
-        public DocumentClosedMessage(object sender, Guid procedureId, string documentId)
+        public DocumentClosedMessage(object sender, string documentId)
         {
             this.Sender = sender;
-            this.DocumentType = ActiveDocumentType.PandFChart;
-            this.ProcedureId = procedureId;
             this.DocumentId = documentId;
         }
 
         public DocumentClosedMessage(object sender, ActiveDocumentType documentType, string documentId)
         {
             this.Sender = sender;
-            this.DocumentType = documentType;
             this.DocumentId = documentId;
         }
     }
@@ -123,6 +117,22 @@ namespace PnFDesktop.Classes.Messaging
             this.Sender = sender;
             this.Column = activeColumn;
         }
+    }
+
+    public class OpenPointAndFigureChartMessage
+    {
+        public Object Sender { get; set; }
+        public Guid InstrumentId { get; set; }
+
+        public PnFChartSource ChartSource { get; set; }
+
+        public OpenPointAndFigureChartMessage(object sender, Guid instrumentId, PnFChartSource chartSource)
+        {
+            this.Sender = sender;
+            this.InstrumentId = instrumentId;
+            this.ChartSource = chartSource;
+        }
+
     }
 
 }

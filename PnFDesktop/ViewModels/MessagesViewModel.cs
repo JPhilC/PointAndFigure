@@ -48,10 +48,14 @@ namespace PnFDesktop.ViewModels
                         prefix = "";
                         break;
                 }
-                builder.AppendLine(prefix + message.Message);
+                App.Current.Dispatcher.Invoke(() =>
+                    builder.AppendLine(prefix + message.Message)
+                );
                 if (message.Exception != null)
                 {
-                    builder.AppendLine("Exception: " + message.Exception.Message);
+                    App.Current.Dispatcher.Invoke(()=>
+                        builder.AppendLine("Exception: " + message.Exception.Message)
+                    );
                 }
                 OnPropertyChanged("Messages");
 

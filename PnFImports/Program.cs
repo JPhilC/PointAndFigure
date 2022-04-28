@@ -103,7 +103,8 @@ namespace PnFImports
                 // Generate charts (HiLo and ShareRS may have concurrency issues so process separately)
                 Task hiLoCharts = Task.Run(() => GenerateAllHiLoCharts());
                 Task indexRsCharts = Task.Run(() => GenerateIndexRSCharts());
-                Task.WaitAll(new Task[] { hiLoCharts, indexRsCharts });
+                Task indexCharts = Task.Run(() => GenerateIndexCharts());
+                Task.WaitAll(new Task[] { hiLoCharts, indexCharts, indexRsCharts });
                 Task.WaitAll(Task.Run(() => GenerateShareRSCharts()));
 
             }
@@ -136,9 +137,13 @@ namespace PnFImports
             }
         }
 
+
         internal static void ImportShares()
         {
             Console.WriteLine("Importing Shares");
+            int adds = 0;
+            int updates = 0;
+            int errors = 0;
             using var db = new PnFDataContext();
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
@@ -174,6 +179,7 @@ namespace PnFImports
 
                     }
                     );
+                    adds++;
                 }
                 else
                 {
@@ -188,6 +194,7 @@ namespace PnFImports
                     share.Sector = data.Sector;
                     share.PricesCurrency = data.Currency;
                     db.Update(share);
+                    updates++;
                 }
 
                 try
@@ -199,9 +206,11 @@ namespace PnFImports
                 {
                     Console.WriteLine(" Error!");
                     Console.WriteLine(ex.Message);
+                    errors++;
                     _LastReturnValue = 1;   // Signal an error.
                 }
             }
+            Console.WriteLine($"Completed. {adds} new records added, {updates} records updated, {errors} errors.");
         }
 
         internal static void ImportEodHistoricPrices()
@@ -280,7 +289,7 @@ namespace PnFImports
                         }
                     }
 
-                    Thread.Sleep(12000);
+                    Thread.Sleep(400);
                 })).Wait();
             }
 
@@ -359,7 +368,7 @@ namespace PnFImports
                             }
                         }
 
-                        Thread.Sleep(12000);
+                        Thread.Sleep(400);  // Throttle to limit to 150 API calls per minute
                     })).Wait();
                 }
             }
@@ -480,9 +489,27 @@ namespace PnFImports
                             share.Charts.Add(newShareChart);
                             db.Update(share);
 
+                            bool saved = false;
+                            while (!saved)
+                            {
+                                try
+                                {
+                                    int saveResult = db.SaveChanges();
+                                    Console.WriteLine($"{saveResult} record saved.");
+                                    saved = true;
+                                }
+                                catch (DbUpdateConcurrencyException updateEx)
+                                {
+                                    foreach (var entry in updateEx.Entries)
+                                    {
+                                        var proposedValues = entry.CurrentValues;
+                                        var databaseValues = entry.GetDatabaseValues();
+                                        proposedValues["Version"] = databaseValues["Version"];
+                                        entry.OriginalValues.SetValues(proposedValues);
+                                    }
+                                }
+                            }
 
-                            int saveResult = db.SaveChanges();
-                            Console.WriteLine($"{saveResult} record saved.");
                         }
 
                     }
@@ -689,8 +716,26 @@ namespace PnFImports
                             db.Update(ndx);
 
 
-                            int saveResult = db.SaveChanges();
-                            Console.WriteLine($"{saveResult} record saved.");
+                            bool saved = false;
+                            while (!saved)
+                            {
+                                try
+                                {
+                                    int saveResult = db.SaveChanges();
+                                    Console.WriteLine($"{saveResult} record saved.");
+                                    saved = true;
+                                }
+                                catch (DbUpdateConcurrencyException updateEx)
+                                {
+                                    foreach (var entry in updateEx.Entries)
+                                    {
+                                        var proposedValues = entry.CurrentValues;
+                                        var databaseValues = entry.GetDatabaseValues();
+                                        proposedValues["Version"] = databaseValues["Version"];
+                                        entry.OriginalValues.SetValues(proposedValues);
+                                    }
+                                }
+                            }
                         }
 
                     }
@@ -833,10 +878,33 @@ namespace PnFImports
                                 };
                                 ndx.Charts.Add(newIndexChart);
                                 db.Update(ndx);
+                                bool saved = false;
+                                while (!saved)
+                                {
+                                    try
+                                    {
+                                        int saveResult = db.SaveChanges();
+                                        Console.WriteLine($"{saveResult} record saved.");
+                                        saved = true;
+                                    }
+                                    catch (DbUpdateConcurrencyException updateEx)
+                                    {
+                                        foreach (var entry in updateEx.Entries)
+                                        {
+                                            var proposedValues = entry.CurrentValues;
+                                            var databaseValues = entry.GetDatabaseValues();
 
-
-                                int saveResult = db.SaveChanges();
-                                Console.WriteLine($"{saveResult} record saved.");
+                                            //foreach (var property in proposedValues.Properties)
+                                            //{
+                                            //    var proposedValue = proposedValues[property];
+                                            //    var databaseValue = databaseValues[property];
+                                            //    Console.WriteLine($"Conflict for {entry.Metadata.Name}.{property.Name}, proposed: {proposedValue}, database: {databaseValue}");
+                                            //}
+                                            proposedValues["Version"] = databaseValues["Version"];
+                                            entry.OriginalValues.SetValues(proposedValues);
+                                        }
+                                    }
+                                }
                             }
 
                         }
@@ -900,8 +968,26 @@ namespace PnFImports
                                 db.Update(share);
 
 
-                                int saveResult = db.SaveChanges();
-                                Console.WriteLine($"{saveResult} record saved.");
+                                bool saved = false;
+                                while (!saved)
+                                {
+                                    try
+                                    {
+                                        int saveResult = db.SaveChanges();
+                                        Console.WriteLine($"{saveResult} record saved.");
+                                        saved = true;
+                                    }
+                                    catch (DbUpdateConcurrencyException updateEx)
+                                    {
+                                        foreach (var entry in updateEx.Entries)
+                                        {
+                                            var proposedValues = entry.CurrentValues;
+                                            var databaseValues = entry.GetDatabaseValues();
+                                            proposedValues["Version"] = databaseValues["Version"];
+                                            entry.OriginalValues.SetValues(proposedValues);
+                                        }
+                                    }
+                                }
                             }
 
                         }
@@ -1102,8 +1188,26 @@ namespace PnFImports
                             db.Update(ndx);
 
 
-                            int saveResult = db.SaveChanges();
-                            Console.WriteLine($"{saveResult} record saved.");
+                            bool saved = false;
+                            while (!saved)
+                            {
+                                try
+                                {
+                                    int saveResult = db.SaveChanges();
+                                    Console.WriteLine($"{saveResult} record saved.");
+                                    saved = true;
+                                }
+                                catch (DbUpdateConcurrencyException updateEx)
+                                {
+                                    foreach (var entry in updateEx.Entries)
+                                    {
+                                        var proposedValues = entry.CurrentValues;
+                                        var databaseValues = entry.GetDatabaseValues();
+                                        proposedValues["Version"] = databaseValues["Version"];
+                                        entry.OriginalValues.SetValues(proposedValues);
+                                    }
+                                }
+                            }
                         }
 
                     }
