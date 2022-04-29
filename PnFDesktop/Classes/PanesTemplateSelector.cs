@@ -44,6 +44,11 @@ namespace PnFDesktop.Classes
                 return DocumentViewTemplate!;
             }
 
+            if (item is FilteredSharesSummaryViewModel)
+            {
+                return DocumentViewTemplate!;
+            }
+
             if (item is MessagesViewModel)
                 return MessagesViewTemplate!;
 

@@ -21,5 +21,7 @@ namespace PnFDesktop.Interfaces
         Task<IEnumerable<MarketSummaryDTO>> GetMarketValuesAsync(DateTime day);
 
         Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO);
+
+        Task<IEnumerable<ShareSummaryDTO>> GetEventFilteredSharesAsync(ShareEvents eventFilter, DateTime day);
     }
 }

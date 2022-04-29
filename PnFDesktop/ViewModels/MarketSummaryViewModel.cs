@@ -25,7 +25,13 @@ namespace PnFDesktop.ViewModels
         public DayDTO SelectedDay
         {
             get => _selectedDay;
-            set => SetProperty(ref _selectedDay, value);
+            set
+            {
+                if (SetProperty(ref _selectedDay, value))
+                {
+                    WeakReferenceMessenger.Default.Send<NotificationMessage>(new NotificationMessage(Constants.RefreshMarketSummary));
+                }
+            }
         }
 
         public ObservableCollection<MarketSummaryDTO> Indices { get; } = new ObservableCollection<MarketSummaryDTO>();
@@ -67,6 +73,10 @@ namespace PnFDesktop.ViewModels
                 if (message.Notification == Constants.MarketSummaryUILoaded && !_dataLoaded)
                 {
                     await LoadMarketSummaryDataAsync();
+                }
+                else if (message.Notification == Constants.RefreshMarketSummary && _dataLoaded)
+                {
+                    await RefreshMarketSummaryDataAsync();
                 }
             });
 
@@ -112,6 +122,29 @@ namespace PnFDesktop.ViewModels
                     MessageLog.LogMessage(this, LogType.Information, "There is no market value data available");
                 }
                 _dataLoaded = true;
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the market value data", ex);
+            }
+        }
+
+        private async Task RefreshMarketSummaryDataAsync()
+        {
+            try
+            {
+                var list = await _DataService!.GetMarketValuesAsync(this.SelectedDay!.Day);
+                lock (_ItemsLock)
+                {
+                    App.Current.Dispatcher.Invoke(() => Indices.Clear());
+                    foreach (MarketSummaryDTO index in list)
+                    {
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            Indices.Add(index);
+                        });
+                    }
+                }
             }
             catch (Exception ex)
             {

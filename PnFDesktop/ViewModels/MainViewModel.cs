@@ -292,6 +292,21 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        public void OpenFilteredSharesSummary()
+        {
+            // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
+            // source for viewpnfCharts.
+           FilteredSharesSummaryViewModel summaryViewModel = SimpleIoc.Default.GetInstance<FilteredSharesSummaryViewModel>();
+            if (summaryViewModel is PaneViewModel paneViewModel)
+            {
+                if (!this.DocumentPanes.Contains(paneViewModel))
+                {
+                    this.DocumentPanes.Add(paneViewModel);
+                }
+                ActiveDocument = paneViewModel;
+            }
+        }
+
         private RelayCommand _userOptionsCommand;
 
         /// <summary>
@@ -406,6 +421,25 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        private RelayCommand _openFilteredSharesSummaryCommand;
+
+        /// <summary>
+        /// Opens the market summary page
+        /// </summary>
+        public RelayCommand OpenFilteredSharesSummaryCommand
+        {
+            get
+            {
+                return _openFilteredSharesSummaryCommand
+                       ?? (_openFilteredSharesSummaryCommand = new RelayCommand(
+                           async () =>
+                           {
+                               MessageLog.LogMessage(this, LogType.Information, $"Opening filtered shares summary page ...");
+                               OpenFilteredSharesSummary();
+                           }));
+            }
+        }
+
         private RelayCommand _printPointAndFigureChartCommand;
 
         /// <summary>
@@ -510,6 +544,15 @@ namespace PnFDesktop.ViewModels
             else if (splitId[0] == Constants.MarketSummary)
             {
                 MarketSummaryViewModel vm = SimpleIoc.Default.GetInstance<MarketSummaryViewModel>();
+                if (!this.DocumentPanes.Contains(vm))
+                {
+                    this.DocumentPanes.Add(vm);
+                }
+                return vm;
+            }
+            else if (splitId[0] == Constants.FilteredSharesSummary)
+            {
+                FilteredSharesSummaryViewModel vm = SimpleIoc.Default.GetInstance<FilteredSharesSummaryViewModel>();
                 if (!this.DocumentPanes.Contains(vm))
                 {
                     this.DocumentPanes.Add(vm);

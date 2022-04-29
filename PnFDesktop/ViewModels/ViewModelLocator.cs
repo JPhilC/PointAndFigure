@@ -26,7 +26,7 @@ namespace PnFDesktop.ViewModels
         }
 
 
-        
+
         public ViewModelLocator() { }
 
         static ViewModelLocator()
@@ -50,6 +50,7 @@ namespace PnFDesktop.ViewModels
             SimpleIoc.Default.Register<OpenIndexChartViewModel>();
             SimpleIoc.Default.Register<MarketSummaryViewModel>();
             SimpleIoc.Default.Register<SharesSummaryViewModel>();
+            SimpleIoc.Default.Register<FilteredSharesSummaryViewModel>();
         }
 
 
@@ -118,7 +119,7 @@ namespace PnFDesktop.ViewModels
             return vm;
         }
 
-        
+
         public static SharesSummaryViewModel GetSharesSummaryViewModel(MarketSummaryDTO marketSummaryDTO)
         {
             string key = $"{Constants.SharesSummary}_{marketSummaryDTO.Id}_{marketSummaryDTO.Day.ToString("yyyyMMdd")}";
@@ -186,7 +187,7 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-                /// <summary>
+        /// <summary>
         /// Viewmodel for the Shares Summary page
         /// </summary>
         public SharesSummaryViewModel SharesSummaryViewModel
@@ -194,6 +195,17 @@ namespace PnFDesktop.ViewModels
             get
             {
                 return SimpleIoc.Default.GetInstance<SharesSummaryViewModel>();
+            }
+        }
+
+        /// <summary>
+        /// Viewmodel for the Filtered Shares Summary page
+        /// </summary>
+        public FilteredSharesSummaryViewModel FilteredSharesSummaryViewModel
+        {
+            get
+            {
+                return SimpleIoc.Default.GetInstance<FilteredSharesSummaryViewModel>();
             }
         }
 

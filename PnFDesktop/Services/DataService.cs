@@ -187,8 +187,8 @@ namespace PnFDesktop.Services
                 {
                     indices = await (from iv in db.IndexValues
                                      join i in db.Indices on iv.IndexId equals i.Id
-                                     join ii in db.IndexIndicators on new { iv.IndexId, iv.Day } equals new { ii.IndexId, ii.Day }
-                                     join irs in db.IndexRSIValues on new { iv.IndexId, iv.Day } equals new { irs.IndexId, irs.Day }
+                                     from ii in db.IndexIndicators.Where(r =>  r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
+                                     from irs in db.IndexRSIValues.Where( r=> r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
                                      where iv.Day == day
                                      orderby i.SuperSector, i.ExchangeCode, i.ExchangeSubCode
                                      select new MarketSummaryDTO()
@@ -229,7 +229,8 @@ namespace PnFDesktop.Services
                                          PercentRsRisingFalling = ii.PercentRsRisingFalling,
                                          PercentPositiveTrendFalling = ii.PercentPositiveTrendFalling,
                                          PercentAbove30EmaFalling = ii.PercentAbove30EmaFalling,
-                                         PercentAbove10EmaFalling = ii.PercentAbove10EmaFalling
+                                         PercentAbove10EmaFalling = ii.PercentAbove10EmaFalling,
+                                         NewEvents = ii.NewEvents
                                      }).ToListAsync();
 
                 }
@@ -269,6 +270,81 @@ namespace PnFDesktop.Services
                                         Id = s.Id,
                                         Tidm = s.Tidm,
                                         Name = s.Name,
+                                        MarketCapMillions = s.MarketCapMillions,
+                                        Close = q.Close,
+                                        RsValue = rs.Value,
+                                        PeerRsValue = prs.Value,
+                                        Ema10 = si.Ema10??0d,
+                                        Ema30 = si.Ema30??0d,
+                                        ClosedAboveEma10 = si.ClosedAboveEma10??false,
+                                        ClosedAboveEma30 = si.ClosedAboveEma30??false,
+                                        Rising = si.Rising??false,
+                                        DoubleTop = si.DoubleTop??false,
+                                        TripleTop = si.TripleTop??false,
+                                        RsRising = si.RsRising??false,
+                                        RsBuy = si.RsBuy??false,
+                                        PeerRsRising = si.PeerRsRising??false,
+                                        PeerRsBuy = si.PeerRsBuy??false,
+                                        Falling = si.Falling??false,
+                                        DoubleBottom = si.DoubleBottom??false,
+                                        TripleBottom = si.TripleBottom??false,
+                                        RsFalling = si.RsFalling??false,
+                                        RsSell = si.RsSell??false,
+                                        PeerRsFalling = si.PeerRsFalling??false,
+                                        PeerRsSell = si.PeerRsSell??false,
+                                        AboveBullSupport = si.AboveBullSupport,
+                                        NewEvents = si.NewEvents,
+                                        Score = 0 + (si.Rising==true?1:0)
+                                                  + (si.Falling==true?-1:0)
+                                                  + (si.DoubleTop==true?1:0)
+                                                  + (si.DoubleBottom==true?-1:0)
+                                                  + (si.TripleTop==true?1:0)
+                                                  + (si.TripleBottom==true?-1:0)
+                                                  + (si.RsRising==true?1:0)
+                                                  + (si.RsFalling==true?-1:0)
+                                                  + (si.RsBuy==true?1:0)
+                                                  + (si.RsSell==true?-1:0)
+                                                  + (si.PeerRsRising==true?1:0)
+                                                  + (si.PeerRsFalling==true?-1:0)
+                                                  + (si.PeerRsBuy==true?1:0)
+                                                  + (si.PeerRsSell==true?-1:0)
+                                                  + (si.ClosedAboveEma10==true?1:0)
+                                                  + (si.ClosedAboveEma30==true?1:0)
+                                                  + (si.AboveBullSupport==true?1:0)
+                                    }).ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the share values data", ex);
+            }
+            return shares;
+
+        }
+
+        public async Task<IEnumerable<ShareSummaryDTO>> GetEventFilteredSharesAsync(ShareEvents eventFilter, DateTime day)
+        {
+            IEnumerable<ShareSummaryDTO> shares = new List<ShareSummaryDTO>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    shares = await (from si in db.ShareIndicators
+                                    join s in db.Shares on si.ShareId equals s.Id
+                                    join rs in db.ShareRSIValues on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Market } equals new { rs.ShareId, rs.Day, rs.RelativeTo }
+                                    join prs in db.ShareRSIValues on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Sector } equals new { prs.ShareId, prs.Day, prs.RelativeTo }
+                                    join q in db.EodPrices on new { si.ShareId, si.Day } equals new { q.ShareId, q.Day }
+                                    where si.Day == day
+                                    where (si.NewEvents&(int)eventFilter) != 0
+                                    orderby s.Tidm
+                                    select new ShareSummaryDTO()
+                                    {
+                                        Id = s.Id,
+                                        Tidm = s.Tidm,
+                                        Name = s.Name,
+                                        ExchangeCode = s.ExchangeCode,
+                                        ExchangeSubCode = s.ExchangeSubCode,
+                                        SuperSector = s.SuperSector,
                                         MarketCapMillions = s.MarketCapMillions,
                                         Close = q.Close,
                                         RsValue = rs.Value,

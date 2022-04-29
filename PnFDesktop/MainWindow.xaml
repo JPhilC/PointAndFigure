@@ -26,6 +26,7 @@
             <MenuItem Header="File">
                 <MenuItem Header="Open">
                     <MenuItem Header="Market Values Summary" Command="{Binding OpenMarketSummaryCommand}" ToolTip="Opens the market and sector summary page"/>
+                    <MenuItem Header="Share New Events Summary" Command="{Binding OpenFilteredSharesSummaryCommand}" ToolTip="Opens a page showing shares with new events."/>
                     <Separator/>
                     <MenuItem Header="Share Point &amp; Figure Chart" Command="{Binding OpenShareChartCommand}" ToolTip="Open a share chart"/>
                     <MenuItem Header="Market/Sector Point &amp; Figure Chart" Command="{Binding OpenIndexChartCommand}" ToolTip="Open a market or sector chart"/>

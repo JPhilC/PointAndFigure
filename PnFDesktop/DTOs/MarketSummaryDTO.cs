@@ -18,25 +18,25 @@ namespace PnFDesktop.DTOs
 
         public string? SuperSector { get; set; }
 
-        public string? Description {get; set;}
+        public string? Description { get; set; }
 
-        public double Value { get; set; }
+        public double? Value { get; set; }
 
-        public double RsValue {get;set;}
+        public double? RsValue { get; set; }
 
-        public int Contributors { get; set; }
-        
-        public double? BullishPercent {get;set;}
+        public int? Contributors { get; set; }
 
-        public double? PercentAboveEma10 {get;set;}
+        public double? BullishPercent { get; set; }
 
-        public double? PercentAboveEma30 {get;set;}
+        public double? PercentAboveEma10 { get; set; }
 
-        public double? PercentRsBuy {get;set;}
+        public double? PercentAboveEma30 { get; set; }
 
-        public double? PercentRsRising {get;set;}
+        public double? PercentRsBuy { get; set; }
 
-        public double? PercentPositiveTrend {get;set;}
+        public double? PercentRsRising { get; set; }
+
+        public double? PercentPositiveTrend { get; set; }
 
         public bool? Rising { get; set; }
 
@@ -66,6 +66,7 @@ namespace PnFDesktop.DTOs
         public bool? PercentPositiveTrendFalling { get; set; }
         public bool? PercentAbove30EmaFalling { get; set; }
         public bool? PercentAbove10EmaFalling { get; set; }
+        public int? NewEvents { get; set; }
 
     }
 }

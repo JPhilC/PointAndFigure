@@ -31,6 +31,9 @@ namespace PnFDesktop.Classes
             if (item is MarketSummaryViewModel)
                 return DocumentStyle;
 
+            if (item is FilteredSharesSummaryViewModel)
+                return DocumentStyle;
+
             if (item is SharesSummaryViewModel)
                 return DocumentStyle;
 

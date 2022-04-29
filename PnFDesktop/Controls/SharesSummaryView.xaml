@@ -42,7 +42,7 @@
                 <DataGridTextColumn Header="TIDM" Binding="{Binding Tidm}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="M Cap" Binding="{Binding MarketCapMillions, StringFormat={}{0:G7}}" IsReadOnly="True"/>
-                <DataGridTemplateColumn Header="Close">
+                <DataGridTemplateColumn Header="Close" SortMemberPath="Close">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -188,11 +188,17 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Market RS">
+                <DataGridTemplateColumn SortMemberPath="RsValue" IsReadOnly="True">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="Market RS" ToolTip="Strength relative to market as a whole.&#x0a;Pale green: rising&#x0a;Dark green: double top buy signal&#x0a;Pale red: falling&#x0a;Dark red: double bottom sell"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewRsBuy}}"/>
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewRsBuy}}"
+                                           ToolTip="New double top buy signal"/>
                                 <TextBlock Margin="5,0,5,0">
                                     <Hyperlink Command="{Binding DataContext.LoadShareMarketRsChartCommand, RelativeSource={RelativeSource AncestorType=local:SharesSummaryView}}"
                                                    CommandParameter="{Binding}">
@@ -202,7 +208,8 @@
                                         </Hyperlink.ToolTip>
                                     </Hyperlink>
                                 </TextBlock>
-                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewRsSell}}"/>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewRsSell}}"
+                                           ToolTip="New double bottom sell signal"/>
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
                                         <Style.Triggers>
@@ -241,7 +248,12 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Peer RS">
+                <DataGridTemplateColumn SortMemberPath="PeerRsValue" IsReadOnly="True">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="Peer RS" ToolTip="Strength relative to others in this sector.&#x0a;Pale green: rising&#x0a;Dark green: double top buy signal&#x0a;Pale red: falling&#x0a;Dark red: double bottom sell"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -294,13 +306,20 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="EMA 30">
+                <DataGridTemplateColumn SortMemberPath="Ema30" IsReadOnly="True">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="EMA 30" ToolTip="30 day exponential moving average.&#x0a;Pale green: closed above MA"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewCloseAboveEma30}}"/>
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewCloseAboveEma30}}"
+                                           ToolTip="Close price moved above 30 MA at last close"/>
                                 <TextBlock Text="{Binding Ema30, StringFormat={}{0:N2}}"/>
-                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewDropBelowEma30}}"/>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewDropBelowEma30}}"
+                                           ToolTip="Close price dropped below 30 MA at last close"/>
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
                                         <Style.Triggers>
@@ -318,13 +337,20 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="EMA 10" IsReadOnly="True">
+                <DataGridTemplateColumn SortMemberPath="Ema10" IsReadOnly="True">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="EMA 10" ToolTip="10 day exponential moving average.&#x0a;Pale green: closed above MA"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewCloseAboveEma10}}"/>
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewCloseAboveEma10}}"
+                                           ToolTip="Close price moved above 10 MA at last close"/>
                                 <TextBlock Text="{Binding Ema10, StringFormat={}{0:N2}}"/>
-                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewDropBelowEma10}}"/>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.NewDropBelowEma10}}"
+                                           ToolTip="Close pice dropped below 10 MA at last close"/>
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
                                         <Style.Triggers>

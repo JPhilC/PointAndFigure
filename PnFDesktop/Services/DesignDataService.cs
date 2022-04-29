@@ -9,6 +9,11 @@ namespace PnFDesktop.Services
 {
     public class DesignDataService : IDataService
     {
+        public Task<IEnumerable<ShareSummaryDTO>> GetEventFilteredSharesAsync(ShareEvents eventFilter, DateTime day)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IEnumerable<IndexDTO>> GetIndicesAsync()
         {
             throw new NotImplementedException();
