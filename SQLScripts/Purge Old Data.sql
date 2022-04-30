@@ -1,4 +1,4 @@
-USE [PnFCharts]
+USE [PnFData]
 GO
 
 SELECT  sc.[ShareId]

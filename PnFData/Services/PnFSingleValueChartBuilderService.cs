@@ -23,7 +23,7 @@ using PnFData.Model;
 namespace PnFData.Services
 {
 
-    public class SimpleDayValue :IDayValue
+    public class SimpleDayValue : IDayValue
     {
         public DateTime Day { get; set; }
 
@@ -160,6 +160,112 @@ namespace PnFData.Services
                 chart.GeneratedDate = dayValue.Day;
             }
             return chart;
+        }
+
+        public override bool UpdateChart(ref PnFChart chart, DateTime uptoDate)
+        {
+            bool errors = false;
+            // Get the chart settings.
+            double boxSize = chart.BoxSize!.Value;
+            this.BoxSize = boxSize;
+            int reversal = chart.Reversal;
+            DateTime lastUpdate = chart.GeneratedDate;
+            int lastMonthRecorded = lastUpdate.Month;
+            int lastYearRecorded = lastUpdate.Year;
+
+            // Get the column settings.
+            int columnIndex = chart.Columns.Max(c => c.Index);
+            PnFColumn currentColumn = chart.Columns.FirstOrDefault(c => c.Index == columnIndex);
+            PnFColumn prevColumnOne = chart.Columns.FirstOrDefault(c => c.Index == columnIndex - 1);
+            PnFColumn prevColumnTwo = chart.Columns.FirstOrDefault(c => c.Index == columnIndex - 2);
+
+
+            if (currentColumn == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Chart has no columns");
+                return true;
+            }
+
+
+            List<IDayValue> sortedList = this._valueList.Where(s => s.Day > lastUpdate && s.Day <= uptoDate).OrderBy(s => s.Day).ToList();
+            if (sortedList.Count == 0)
+            {
+                return true;
+            }
+
+            foreach (IDayValue dayValue in sortedList)
+            {
+                if (currentColumn.ColumnType == PnFColumnType.O)
+                {
+                    // Chart is falling.
+                    double nextBox = GetValue(currentColumn.CurrentBoxIndex - 1);
+                    if (dayValue.Value <= nextBox)
+                    {
+                        // Add the box range.
+                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                        lastMonthRecorded = dayValue.Day.Month;
+                    }
+                    else
+                    {
+                        // Have we reversed!
+                        double reversalBox = GetValue(currentColumn.CurrentBoxIndex + reversal);
+                        if (dayValue.Value >= reversalBox)
+                        {
+                            int newStartIndex = currentColumn.CurrentBoxIndex;
+                            currentColumn = new PnFColumn()
+                            {
+                                PnFChart = chart,
+                                Index = currentColumn.Index + 1,
+                                ColumnType = PnFColumnType.X,
+                                CurrentBoxIndex = newStartIndex
+                            };
+                            currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                            lastMonthRecorded = dayValue.Day.Month;
+                            chart.Columns.Add(currentColumn);
+                        }
+                    }
+                }
+                else
+                {
+                    // Chart is rising.
+                    double nextBox = GetValue(currentColumn.CurrentBoxIndex + 1);
+                    if (dayValue.Value >= nextBox)
+                    {
+                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                        lastMonthRecorded = dayValue.Day.Month;
+                    }
+                    else
+                    {
+                        // Have we reversed.
+                        double reversalBox = GetValue(currentColumn.CurrentBoxIndex - reversal);
+                        if (dayValue.Value <= reversalBox)
+                        {
+                            int newStartIndex = currentColumn.CurrentBoxIndex;
+                            currentColumn = new PnFColumn()
+                            {
+                                PnFChart = chart,
+                                Index = currentColumn.Index + 1,
+                                ColumnType = PnFColumnType.O,
+                                CurrentBoxIndex = newStartIndex
+                            };
+                            currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                            lastMonthRecorded = dayValue.Day.Month;
+                            chart.Columns.Add(currentColumn);
+                        }
+
+                    }
+                }
+
+                // See if we had a year change in the current column.
+                if (dayValue.Day.Year != lastYearRecorded)
+                {
+                    currentColumn.ContainsNewYear = true;
+                }
+
+                lastYearRecorded = dayValue.Day.Year;
+                chart.GeneratedDate = dayValue.Day;
+            }
+            return !errors;
         }
 
         /// <summary>

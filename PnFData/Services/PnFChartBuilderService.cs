@@ -30,6 +30,7 @@ namespace PnFData.Services
 
         public abstract PnFChart? BuildChart(double boxSize, int reversal, DateTime uptoDate);
 
+        public abstract bool UpdateChart(ref PnFChart chart, DateTime uptoDate);
 
 
 #region Helper methods ...
