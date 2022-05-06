@@ -2,7 +2,7 @@
   "profiles": {
     "PnFImports": {
       "commandName": "Project",
-      "commandLineArgs": "indexpercentcharts"
+      "commandLineArgs": "fullrun NYSE"
     }
   }
 }

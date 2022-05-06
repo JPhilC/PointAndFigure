@@ -8,14 +8,21 @@ namespace PnFImports
 {
     internal partial class PnFImports
     {
-        internal static void GenerateIndexCharts()
+        internal static void GenerateIndexCharts(string exchangeCode)
         {
             List<PnFData.Model.Index> indices = null;
             try
             {
                 using (PnFDataContext db = new PnFDataContext())
                 {
-                    indices = db.Indices.Where(s => s.IndexValues.Any()).ToList();
+                    if (exchangeCode == "ALL")
+                    {
+                        indices = db.Indices.Where(s => s.IndexValues.Any()).ToList();
+                    }
+                    else
+                    {
+                        indices = db.Indices.Where(s => s.ExchangeCode == exchangeCode && s.IndexValues.Any()).ToList();
+                    }
                 }
 
             }
@@ -30,7 +37,8 @@ namespace PnFImports
             {
                 DateTime now = DateTime.Now.Date;
                 string indexName = "";
-                foreach (var index in indices)
+                Parallel.ForEach(indices,
+                (index) =>
                 {
                     if (string.IsNullOrEmpty(index.SuperSector))
                     {
@@ -70,7 +78,7 @@ namespace PnFImports
                         Console.WriteLine(ex.Message);
                     }
 
-                };
+                });
             }
 
         }
@@ -259,14 +267,21 @@ namespace PnFImports
         }
 
 
-        internal static void GenerateIndexPercentCharts()
+        internal static void GenerateIndexPercentCharts(string exchangeCode)
         {
             List<PnFData.Model.Index> indices = null;
             try
             {
                 using (PnFDataContext db = new PnFDataContext())
                 {
-                    indices = db.Indices.Where(s => s.IndexValues.Any()).ToList();
+                    if (exchangeCode == "ALL")
+                    {
+                        indices = db.Indices.Where(s => s.IndexValues.Any()).ToList();
+                    }
+                    else
+                    {
+                        indices = db.Indices.Where(s => s.ExchangeCode == exchangeCode && s.IndexValues.Any()).ToList();
+                    }
                 }
 
             }

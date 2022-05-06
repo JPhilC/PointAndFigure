@@ -7,20 +7,24 @@ namespace PnFImports
 {
     internal partial class PnFImports
     {
-        internal static void GenerateAllHiLoCharts()
+        internal static void GenerateAllHiLoCharts(string exchangeCode)
         {
             try
             {
                 List<string> tidms = new();
                 using (PnFDataContext db = new PnFDataContext())
                 {
-                    tidms = db.Shares.Where(s => s.EodPrices.Any()).Select(s => s.Tidm).ToList();
+                    if (exchangeCode == "ALL")
+                    {
+                        tidms = db.Shares.Where(s => s.EodPrices.Any()).Select(s => s.Tidm).ToList();
+                    }
+                    else
+                    {
+                        tidms = db.Shares.Where(s => s.ExchangeCode == exchangeCode && s.EodPrices.Any()).Select(s => s.Tidm).ToList();
+                    }
                 }
                 DateTime now = DateTime.Now.Date;
-                foreach (var tidm in tidms)
-                {
-                    GenerateHiLoChart(tidm, now);
-                };
+                Parallel.ForEach(tidms, (tidm)=>GenerateHiLoChart(tidm, now));
             }
             catch (Exception ex)
             {

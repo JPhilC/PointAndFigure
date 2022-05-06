@@ -81,6 +81,10 @@ namespace PnFImports.Services
                         }
                     }
                 }
+                else
+                {
+                    Debug.WriteLine($"Error: {response.ReasonPhrase}");
+                }
             }
             catch (Exception ex)
             {

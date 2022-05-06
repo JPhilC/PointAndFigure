@@ -15,8 +15,8 @@ namespace PnFImports
             {
                 switch (args[0].ToLower())
                 {
-                    case "shares":
-                        PnFImports.ImportShares();
+                    case "importshares":
+                        PnFImports.ImportShares(args[1]);
                         break;
 
                     case "history":
@@ -26,36 +26,47 @@ namespace PnFImports
                     case "daily":
                         if (args.Length > 1)
                         {
-                            PnFImports.ImportEodDailyPrices(args[1].ToUpper());
+                            if (args.Length > 2)
+                            {
+                                PnFImports.ImportEodDailyPrices(args[1].ToUpper(), args[2].ToUpper());
+                            }
+                            else
+                            {
+                                PnFImports.ImportEodDailyPrices(args[1].ToUpper(), null);
+                            }
                         }
                         else
                         {
-                            PnFImports.ImportEodDailyPrices(null);
+                            PnFImports.ImportEodDailyPrices("LSE", null);
                         }
                         break;
 
                     case "hilocharts":
-                        GenerateAllHiLoCharts();
+                        GenerateAllHiLoCharts(args[1].ToUpper());
                         break;
 
                     case "sharerscharts":
-                        GenerateShareRSCharts();
+                        GenerateShareRSCharts(args[1].ToUpper());
+                        break;
+
+                    case "sharerschart":
+                        GenerateShareRSChart(args[1].ToUpper(), args[2].ToUpper());
                         break;
 
                     case "indexcharts":
-                        GenerateIndexCharts();
+                        GenerateIndexCharts(args[1].ToUpper());
                         break;
 
                     case "indexrscharts":
-                        GenerateIndexRSCharts();
+                        GenerateIndexRSCharts(args[1].ToUpper());
                         break;
 
                     case "indexpercentcharts":
-                        GenerateIndexPercentCharts();
+                        GenerateIndexPercentCharts(args[1].ToUpper());
                         break;
 
                     case "fullrun":
-                        FullRun();
+                        FullRun(args[1].ToUpper());
                         break;
 
                     case "hilochart":
@@ -75,11 +86,11 @@ namespace PnFImports
 
         }
 
-        internal static void FullRun()
+        internal static void FullRun(string exchangeCode)
         {
-            Console.WriteLine("Starting full run ...");
+            Console.WriteLine($"Starting full run ({exchangeCode})...");
             _LastReturnValue = 0;
-            ImportEodDailyPrices(null);
+            ImportEodDailyPrices(exchangeCode, null);
 
             if (_LastReturnValue == 0)
             {
@@ -91,11 +102,11 @@ namespace PnFImports
             if (_LastReturnValue == 0)
             {
                 // Generate charts (HiLo and ShareRS may have concurrency issues so process separately)
-                Task hiLoCharts = Task.Run(() => GenerateAllHiLoCharts());
-                Task indexRsCharts = Task.Run(() => GenerateIndexRSCharts());
-                Task indexCharts = Task.Run(() => GenerateIndexCharts());
+                Task hiLoCharts = Task.Run(() => GenerateAllHiLoCharts(exchangeCode));
+                Task indexRsCharts = Task.Run(() => GenerateIndexRSCharts(exchangeCode));
+                Task indexCharts = Task.Run(() => GenerateIndexCharts(exchangeCode));
                 Task.WaitAll(new Task[] { hiLoCharts, indexCharts, indexRsCharts });
-                Task.WaitAll(Task.Run(() => GenerateShareRSCharts()));
+                Task.WaitAll(Task.Run(() => GenerateShareRSCharts(exchangeCode)));
 
             }
 
@@ -108,7 +119,7 @@ namespace PnFImports
             if (_LastReturnValue == 0)
             {
                 // Generate index percent Charts
-                GenerateIndexPercentCharts();
+                GenerateIndexPercentCharts(exchangeCode);
             }
 
             if (_LastReturnValue == 0)
@@ -119,11 +130,11 @@ namespace PnFImports
 
             if (_LastReturnValue == 0)
             {
-                Console.WriteLine("Full run completed OK.");
+                Console.WriteLine($"Full ({exchangeCode}) run completed OK.");
             }
             else
             {
-                Console.WriteLine("Error! Full run failed.");
+                Console.WriteLine($"Error! Full run ({exchangeCode}) failed.");
             }
         }
 

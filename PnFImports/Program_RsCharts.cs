@@ -8,20 +8,24 @@ namespace PnFImports
 {
     internal partial class PnFImports
     {
-        internal static void GenerateShareRSCharts()
+        internal static void GenerateShareRSCharts(string exchangeCode)
         {
             try
             {
                 List<Share> shares = new();
                 using (PnFDataContext db = new PnFDataContext())
                 {
-                    shares = db.Shares.Where(s => s.EodPrices.Any()).ToList();
+                    if (exchangeCode == "ALL")
+                    {
+                        shares = db.Shares.Where(s => s.EodPrices.Any()).ToList();
+                    }
+                    else
+                    {
+                        shares = db.Shares.Where(s => s.ExchangeCode == exchangeCode && s.EodPrices.Any()).ToList();
+                    }
                 }
                 DateTime now = DateTime.Now.Date;
-                foreach (var s in shares)
-                {
-                    GenerateShareRSChartPair(s.Id, s.Tidm, now);
-                };
+                Parallel.ForEach(shares, (s) => GenerateShareRSChartPair(s.Id, s.Tidm, now));
             }
             catch (Exception ex)
             {
@@ -29,6 +33,44 @@ namespace PnFImports
                 Console.WriteLine("Error! Generate share RS charts failed.");
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        internal static void GenerateShareRSChart(string tidm, string relativeTo)
+        {
+            List<ShareRSI> tickData;
+            DateTime uptoDate = DateTime.Now.Date;
+            try
+            {
+                Console.WriteLine($@"Retrieving RS tick data for {tidm}.");
+                using (PnFDataContext db = new PnFDataContext())
+                {
+                    tickData = db.Shares.Where(s => s.Tidm == tidm)
+                        .Select(s => s.RSIValues).FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($@"Error retrieving tick data for {tidm}.");
+                Console.WriteLine(ex.Message);
+                return;
+            }
+            if (tickData != null)
+            {
+                List<IDayValue> chartData;
+                Guid shareId = tickData.FirstOrDefault()!.ShareId;
+                if (relativeTo == "MARKET")
+                {
+                    chartData = tickData.Where(d => d.RelativeTo == RelativeToEnum.Market).ToList<IDayValue>();
+                    GenerateRSChart(shareId, tidm, uptoDate, chartData, PnFChartSource.RSStockVMarket);
+                }
+                else if (relativeTo == "SECTOR")
+                {
+
+                    chartData = tickData.Where(d => d.RelativeTo == RelativeToEnum.Sector).ToList<IDayValue>();
+                    GenerateRSChart(shareId, tidm, uptoDate, chartData, PnFChartSource.RSStockVSector);
+                }
+            }
+
         }
 
         internal static void GenerateShareRSChartPair(Guid shareId, string tidm, DateTime uptoDate)
@@ -60,20 +102,24 @@ namespace PnFImports
                 GenerateRSChart(shareId, tidm, uptoDate, chartData, PnFChartSource.RSStockVSector);
             }
         }
-        internal static void GenerateIndexRSCharts()
+        internal static void GenerateIndexRSCharts(string exchangeCode)
         {
             try
             {
                 List<PnFData.Model.Index> indices;
                 using (PnFDataContext db = new PnFDataContext())
                 {
-                    indices = db.Indices.Where(s => s.SuperSector != null && s.IndexValues.Any()).ToList();
+                    if (exchangeCode == "ALL")
+                    {
+                        indices = db.Indices.Where(s => s.SuperSector != null && s.IndexValues.Any()).ToList();
+                    }
+                    else
+                    {
+                        indices = db.Indices.Where(s => s.ExchangeCode == exchangeCode && s.SuperSector != null && s.IndexValues.Any()).ToList();
+                    }
                 }
                 DateTime now = DateTime.Now.Date;
-                foreach (var i in indices)
-                {
-                    GenerateIndexRSChart(i.Id, $"{i.ExchangeCode}, {i.ExchangeSubCode}, {i.SuperSector}", now);
-                };
+                Parallel.ForEach(indices,(i)=> GenerateIndexRSChart(i.Id, $"{i.ExchangeCode}, {i.ExchangeSubCode}, {i.SuperSector}", now));
             }
             catch (Exception ex)
             {
