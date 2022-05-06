@@ -24,7 +24,8 @@ namespace PnFImports
                     }
                 }
                 DateTime now = DateTime.Now.Date;
-                Parallel.ForEach(tidms, (tidm)=>GenerateHiLoChart(tidm, now));
+                Parallel.ForEach(tidms,
+                    new ParallelOptions { MaxDegreeOfParallelism = 5 }, (tidm)=>GenerateHiLoChart(tidm, now));
             }
             catch (Exception ex)
             {

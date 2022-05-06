@@ -38,6 +38,7 @@ namespace PnFImports
                 DateTime now = DateTime.Now.Date;
                 string indexName = "";
                 Parallel.ForEach(indices,
+                    new ParallelOptions { MaxDegreeOfParallelism = 5 },
                 (index) =>
                 {
                     if (string.IsNullOrEmpty(index.SuperSector))

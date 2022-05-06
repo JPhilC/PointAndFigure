@@ -25,7 +25,8 @@ namespace PnFImports
                     }
                 }
                 DateTime now = DateTime.Now.Date;
-                Parallel.ForEach(shares, (s) => GenerateShareRSChartPair(s.Id, s.Tidm, now));
+                Parallel.ForEach(shares,
+                    new ParallelOptions { MaxDegreeOfParallelism = 5 }, (s) => GenerateShareRSChartPair(s.Id, s.Tidm, now));
             }
             catch (Exception ex)
             {
@@ -119,7 +120,8 @@ namespace PnFImports
                     }
                 }
                 DateTime now = DateTime.Now.Date;
-                Parallel.ForEach(indices,(i)=> GenerateIndexRSChart(i.Id, $"{i.ExchangeCode}, {i.ExchangeSubCode}, {i.SuperSector}", now));
+                Parallel.ForEach(indices,
+                    new ParallelOptions { MaxDegreeOfParallelism = 5 },(i)=> GenerateIndexRSChart(i.Id, $"{i.ExchangeCode}, {i.ExchangeSubCode}, {i.SuperSector}", now));
             }
             catch (Exception ex)
             {

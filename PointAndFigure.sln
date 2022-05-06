@@ -11,8 +11,32 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PnFImports", "PnFImports\Pn
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLScripts", "SQLScripts", "{865D7ACA-2D82-4C49-A6AF-1D03D74D5996}"
 	ProjectSection(SolutionItems) = preProject
+		SQLScripts\Create uspGenerate10And30WeekEmas.sql = SQLScripts\Create uspGenerate10And30WeekEmas.sql
+		SQLScripts\Create uspGenerateDailyValues.sql = SQLScripts\Create uspGenerateDailyValues.sql
+		SQLScripts\Create uspGenerateIndexRSIValues.sql = SQLScripts\Create uspGenerateIndexRSIValues.sql
+		SQLScripts\Create uspGenerateMarketIndices.sql = SQLScripts\Create uspGenerateMarketIndices.sql
+		SQLScripts\Create uspGenerateRSIValues.sql = SQLScripts\Create uspGenerateRSIValues.sql
+		SQLScripts\Create uspGenerateSectorIndices.sql = SQLScripts\Create uspGenerateSectorIndices.sql
+		SQLScripts\Create uspGetMarketAndSectorStats.sql = SQLScripts\Create uspGetMarketAndSectorStats.sql
+		SQLScripts\Create uspGetRSDataStockVMarket.sql = SQLScripts\Create uspGetRSDataStockVMarket.sql
+		SQLScripts\Create uspGetRSDataStockVSector.sql = SQLScripts\Create uspGetRSDataStockVSector.sql
+		SQLScripts\Create uspGetRSSectorVMarket.sql = SQLScripts\Create uspGetRSSectorVMarket.sql
+		SQLScripts\Create uspGetSectorShareStats.sql = SQLScripts\Create uspGetSectorShareStats.sql
 		SQLScripts\Create uspGetSubCodeIndex.sql = SQLScripts\Create uspGetSubCodeIndex.sql
 		SQLScripts\Create uspGetSubCodeSectorIndex.sql = SQLScripts\Create uspGetSubCodeSectorIndex.sql
+		SQLScripts\Create uspUpdateBullishIndicators.sql = SQLScripts\Create uspUpdateBullishIndicators.sql
+		SQLScripts\Create uspUpdateIndexIndicators.sql = SQLScripts\Create uspUpdateIndexIndicators.sql
+		SQLScripts\Create uspUpdateIndexPercentIndicators.sql = SQLScripts\Create uspUpdateIndexPercentIndicators.sql
+		SQLScripts\Create uspUpdateShareIndicators.sql = SQLScripts\Create uspUpdateShareIndicators.sql
+		SQLScripts\Create uspUpdateSIBIndicators.sql = SQLScripts\Create uspUpdateSIBIndicators.sql
+		SQLScripts\DailyRun.sql = SQLScripts\DailyRun.sql
+		SQLScripts\DetermineBuySignals.sql = SQLScripts\DetermineBuySignals.sql
+		SQLScripts\DetermineSellSignals.sql = SQLScripts\DetermineSellSignals.sql
+		SQLScripts\EOD_Queries.sql = SQLScripts\EOD_Queries.sql
+		SQLScripts\GenerateIndices.sql = SQLScripts\GenerateIndices.sql
+		SQLScripts\PostInitialChartsRun.sql = SQLScripts\PostInitialChartsRun.sql
+		SQLScripts\Purge Old Data.sql = SQLScripts\Purge Old Data.sql
+		SQLScripts\Working on BullishPercent.sql = SQLScripts\Working on BullishPercent.sql
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6A4B9DDD-B96E-4627-A113-5B5D1DE654FC}"
@@ -20,7 +44,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PnFDesktop", "PnFDesktop\PnFDesktop.csproj", "{83DE8C94-D51E-454E-8644-F552230B4D16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PnFDesktop", "PnFDesktop\PnFDesktop.csproj", "{83DE8C94-D51E-454E-8644-F552230B4D16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

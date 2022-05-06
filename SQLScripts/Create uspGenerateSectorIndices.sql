@@ -68,12 +68,27 @@ INSERT INTO [Indices] ([ExchangeCode], [ExchangeSubCode], [SuperSector])
 	WHERE i.Id IS NULL;
 	
 
+UPDATE iv
+	SET iv.[Value] = ni.[Value]
+	,	iv.[Contributors] = ni.[ShareCount]
+	,	iv.[UpdatedAt] = GETDATE()
+FROM [dbo].[IndexValues] iv
+LEFT JOIN [Indices] i ON i.[Id] = iv.[IndexId]
+LEFT JOIN #newIndex ni ON ni.[ExchangeCode] = i.[ExchangeCode]
+	AND ni.[ExchangeSubCode] = i.[ExchangeSubCode]
+	AND ni.[SuperSector] = i.[SuperSector]
+	AND  ni.[Day] = iv.[Day]
+WHERE ni.[Value] IS NOT NULL
+
+
 INSERT INTO [IndexValues] ([IndexId], [Day], [Value], [Contributors])
 	SELECT i.[id], ni.[Day], ni.[Value], ni.[ShareCount]
 		FROM #newIndex ni
 		LEFT JOIN [Indices] i ON i.[ExchangeCode] = ni.[ExchangeCode]
 			AND i.[ExchangeSubCode] = ni.[ExchangeSubCode]
 			AND i.[SuperSector] = ni.[SuperSector]
+		LEFT JOIN [IndexValues] iv ON iv.[IndexId] = i.Id AND iv.[Day] = ni.[Day]
+		WHERE iv.[id] IS NULL
 
 
 DROP TABLE #totals;

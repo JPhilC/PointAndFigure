@@ -25,11 +25,20 @@ namespace PnFImports.Services
             }
         }
 
-        public static async Task<IEnumerable<Eod>> GetTimeSeriesDailyPrices(string symbol, DateTime cutoffDate, bool full = false)
+        public class TimeSeriesDailyResult
+        {
+            public bool InError { get; set; } = false;
+            public string? Reason { get; set; }
+
+            public IEnumerable<Eod> Prices = new List<Eod>();
+        }
+
+        public static async Task<TimeSeriesDailyResult> GetTimeSeriesDailyPrices(string symbol, DateTime cutoffDate, bool full = false)
         {
             string convertedSymbol = symbol.Replace("..", ".");
             string outputSize = full ? "full" : "compact";
-            List<Eod> data = new();
+            TimeSeriesDailyResult result = new TimeSeriesDailyResult();
+            List<Eod> data = new List<Eod>();
             try
             {
                 string url = $"{ApiBaseUrl}function={ApiFunction}&symbol={convertedSymbol}&outputsize={outputSize}&apikey={ApiKey}";
@@ -78,20 +87,24 @@ namespace PnFImports.Services
                                 }
                                 data.Add(eod);
                             }
+                            result.Prices = data;
                         }
                     }
                 }
                 else
                 {
                     Debug.WriteLine($"Error: {response.ReasonPhrase}");
+                    result.InError = true;
+                    result.Reason = response.ReasonPhrase;
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error processing TIDM: {symbol}, {ex.Message}");
+                result.InError = true;
+                result.Reason = $"Error processing TIDM: {symbol}, {ex.Message}";
             }
 
-            return data;
+            return result;
         }
 
     }

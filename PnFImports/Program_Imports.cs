@@ -152,31 +152,33 @@ namespace PnFImports
                     Console.Write($"Processing {shareData.Tidm}: {shareData.Name} ...");
                     using (var db = new PnFDataContext())
                     {
-                        var prices =
-                            await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm, cutOffDate, true);
+                        var result = await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm, cutOffDate, true);
                         Share share = db.Shares.First(s => s.Id == shareData.Id);
-                        var dayPrices = prices as Eod[] ?? prices.ToArray();
-                        if (dayPrices.Any())
-                        {
-                            foreach (Eod dayPrice in dayPrices)
-                            {
-                                dayPrice.ShareId = shareData.Id;
-                                db.EodPrices.Add(dayPrice);
-                            }
-
-                            DateTime maxDay = dayPrices.Max(p => p.Day);
-                            share.LastEodDate = maxDay;
-                            db.Update(share);
-
-                            await db.SaveChangesAsync();
-                            Console.WriteLine(" OK.");
-                        }
-                        else
+                        if (result.InError)
                         {
                             share.EodError = true;
                             db.Update(share);
                             await db.SaveChangesAsync();
-                            Console.WriteLine(" Error!");
+                            Console.WriteLine($" Error! {result.Reason}");
+                        }
+                        else
+                        {
+                            var dayPrices = result.Prices as Eod[] ?? result.Prices.ToArray();
+                            if (dayPrices.Any())
+                            {
+                                foreach (Eod dayPrice in dayPrices)
+                                {
+                                    dayPrice.ShareId = shareData.Id;
+                                    db.EodPrices.Add(dayPrice);
+                                }
+
+                                DateTime maxDay = dayPrices.Max(p => p.Day);
+                                share.LastEodDate = maxDay;
+                                db.Update(share);
+
+                                await db.SaveChangesAsync();
+                                Console.WriteLine(" OK.");
+                            }
                         }
                     }
 
@@ -190,7 +192,7 @@ namespace PnFImports
         private static Stopwatch _stopwatch = new Stopwatch();
         private static long _nextSlot = 400;
         private static long _minInterval = 400;    // Milliseconds.
-        internal static void ImportEodDailyPrices(string exchangeCode, string? tidm)
+        internal static void ImportEodDailyPrices(string exchangeCode, string? tidm, bool retryErrors = false)
         {
             try
             {
@@ -241,11 +243,21 @@ namespace PnFImports
                             //continue;
                             return;
                         }
-                        if (shareData.EodErrors)
+                        if (retryErrors)
                         {
-                            Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ... Skipped, previously in error!");
-                            // continue; // Skip as were no eod prices last time
-                            return;
+                            if (!shareData.EodErrors)
+                            {
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            if (shareData.EodErrors)
+                            {
+                                Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ... Skipped, previously in error!");
+                                // continue; // Skip as were no eod prices last time
+                                return;
+                            }
                         }
 
                         // Check if the current record is up to date.
@@ -277,31 +289,34 @@ namespace PnFImports
                                 }
                                 using (var db = new PnFDataContext())
                                 {
-                                    var prices = await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm,
-                                        (shareData.LastEodDate ?? cutOffDate));
+                                    var result = await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm, (shareData.LastEodDate ?? cutOffDate));
                                     Share share = db.Shares.First(s => s.Id == shareData.Id);
-                                    var dayPrices = prices as Eod[] ?? prices.ToArray();
-                                    if (dayPrices.Any())
-                                    {
-                                        foreach (Eod dayPrice in dayPrices)
-                                        {
-                                            dayPrice.ShareId = shareData.Id;
-                                            db.EodPrices.Add(dayPrice);
-                                        }
-
-                                        DateTime maxDay = dayPrices.Max(p => p.Day);
-                                        share.LastEodDate = maxDay;
-                                        db.Update(share);
-
-                                        await db.SaveChangesAsync();
-                                        Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ...  OK.");
-                                    }
-                                    else
+                                    if (result.InError)
                                     {
                                         share.EodError = true;
                                         db.Update(share);
                                         await db.SaveChangesAsync();
-                                        Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ...  Error!");
+                                        Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ...  Error! {result.Reason}");
+                                    }
+                                    else
+                                    {
+                                        var dayPrices = result.Prices as Eod[] ?? result.Prices.ToArray();
+                                        if (dayPrices.Any())
+                                        {
+                                            foreach (Eod dayPrice in dayPrices)
+                                            {
+                                                dayPrice.ShareId = shareData.Id;
+                                                db.EodPrices.Add(dayPrice);
+                                            }
+
+                                            DateTime maxDay = dayPrices.Max(p => p.Day);
+                                            share.LastEodDate = maxDay;
+                                            share.EodError = false;
+                                            db.Update(share);
+
+                                            await db.SaveChangesAsync();
+                                            Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ...  OK.");
+                                        }
                                     }
                                 }
                             }

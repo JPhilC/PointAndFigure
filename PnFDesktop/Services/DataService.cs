@@ -257,9 +257,9 @@ namespace PnFDesktop.Services
                 {
                     shares = await (from si in db.ShareIndicators
                                     join s in db.Shares on si.ShareId equals s.Id
-                                    join rs in db.ShareRSIValues on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Market } equals new { rs.ShareId, rs.Day, rs.RelativeTo }
-                                    join prs in db.ShareRSIValues on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Sector } equals new { prs.ShareId, prs.Day, prs.RelativeTo }
-                                    join q in db.EodPrices on new { si.ShareId, si.Day } equals new { q.ShareId, q.Day }
+                                    from rs in db.ShareRSIValues.Where(r =>  r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo==RelativeToEnum.Market).DefaultIfEmpty() 
+                                    from prs in db.ShareRSIValues.Where(r =>  r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo==RelativeToEnum.Sector).DefaultIfEmpty()
+                                    from q in db.EodPrices.Where(r=> r.ShareId == si.ShareId && r.Day == si.Day).DefaultIfEmpty()
                                     where si.Day == marketSummaryDTO.Day
                                     where s.ExchangeCode == marketSummaryDTO.ExchangeCode
                                     where s.ExchangeSubCode == marketSummaryDTO.ExchangeSubCode
@@ -331,9 +331,9 @@ namespace PnFDesktop.Services
                 {
                     shares = await (from si in db.ShareIndicators
                                     join s in db.Shares on si.ShareId equals s.Id
-                                    join rs in db.ShareRSIValues on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Market } equals new { rs.ShareId, rs.Day, rs.RelativeTo }
-                                    join prs in db.ShareRSIValues on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Sector } equals new { prs.ShareId, prs.Day, prs.RelativeTo }
-                                    join q in db.EodPrices on new { si.ShareId, si.Day } equals new { q.ShareId, q.Day }
+                                    from rs in db.ShareRSIValues.Where(r=> r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo==RelativeToEnum.Market).DefaultIfEmpty()    // on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Market } equals new { rs.ShareId, rs.Day, rs.RelativeTo }
+                                    from prs in db.ShareRSIValues.Where(r=> r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo==RelativeToEnum.Sector).DefaultIfEmpty()   // on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Sector } equals new { prs.ShareId, prs.Day, prs.RelativeTo }
+                                    from q in db.EodPrices.Where(r=> r.ShareId == si.ShareId && r.Day==si.Day).DefaultIfEmpty()                                                   //  on new { si.ShareId, si.Day } equals new { q.ShareId, q.Day }
                                     where si.Day == day
                                     where (si.NewEvents&(int)eventFilter) != 0
                                     orderby s.Tidm

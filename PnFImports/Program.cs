@@ -28,7 +28,14 @@ namespace PnFImports
                         {
                             if (args.Length > 2)
                             {
-                                PnFImports.ImportEodDailyPrices(args[1].ToUpper(), args[2].ToUpper());
+                                if (args[2].ToUpper() == "RETRYERRORS")
+                                {
+                                    PnFImports.ImportEodDailyPrices(args[1].ToUpper(), null, true);
+                                }
+                                else
+                                {
+                                    PnFImports.ImportEodDailyPrices(args[1].ToUpper(), args[2].ToUpper());
+                                }
                             }
                             else
                             {
@@ -66,7 +73,14 @@ namespace PnFImports
                         break;
 
                     case "fullrun":
-                        FullRun(args[1].ToUpper());
+                        if (args.Length > 2)
+                        {
+                            FullRun(args[1].ToUpper(), args[2].ToUpper());
+                        }
+                        else
+                        {
+                            FullRun(args[1].ToUpper(), null);
+                        }
                         break;
 
                     case "hilochart":
@@ -86,11 +100,18 @@ namespace PnFImports
 
         }
 
-        internal static void FullRun(string exchangeCode)
+        internal static void FullRun(string exchangeCode, string? parameter)
         {
             Console.WriteLine($"Starting full run ({exchangeCode})...");
             _LastReturnValue = 0;
-            ImportEodDailyPrices(exchangeCode, null);
+            if (parameter == "RETRYERRORS")
+            {
+                ImportEodDailyPrices(exchangeCode, null, true);
+            }
+            else
+            {
+                ImportEodDailyPrices(exchangeCode, null);
+            }
 
             if (_LastReturnValue == 0)
             {
@@ -102,11 +123,11 @@ namespace PnFImports
             if (_LastReturnValue == 0)
             {
                 // Generate charts (HiLo and ShareRS may have concurrency issues so process separately)
-                Task hiLoCharts = Task.Run(() => GenerateAllHiLoCharts(exchangeCode));
-                Task indexRsCharts = Task.Run(() => GenerateIndexRSCharts(exchangeCode));
-                Task indexCharts = Task.Run(() => GenerateIndexCharts(exchangeCode));
-                Task.WaitAll(new Task[] { hiLoCharts, indexCharts, indexRsCharts });
-                Task.WaitAll(Task.Run(() => GenerateShareRSCharts(exchangeCode)));
+                GenerateAllHiLoCharts(exchangeCode);
+                GenerateIndexRSCharts(exchangeCode);
+                GenerateIndexRSCharts(exchangeCode);
+                GenerateIndexCharts(exchangeCode);
+                GenerateShareRSCharts(exchangeCode);
 
             }
 
