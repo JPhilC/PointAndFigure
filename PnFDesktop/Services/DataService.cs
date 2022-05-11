@@ -187,8 +187,8 @@ namespace PnFDesktop.Services
                 {
                     indices = await (from iv in db.IndexValues
                                      join i in db.Indices on iv.IndexId equals i.Id
-                                     from ii in db.IndexIndicators.Where(r =>  r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
-                                     from irs in db.IndexRSIValues.Where( r=> r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
+                                     from ii in db.IndexIndicators.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
+                                     from irs in db.IndexRSIValues.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
                                      where iv.Day == day
                                      orderby i.SuperSector, i.ExchangeCode, i.ExchangeSubCode
                                      select new MarketSummaryDTO()
@@ -230,7 +230,13 @@ namespace PnFDesktop.Services
                                          PercentPositiveTrendFalling = ii.PercentPositiveTrendFalling,
                                          PercentAbove30EmaFalling = ii.PercentAbove30EmaFalling,
                                          PercentAbove10EmaFalling = ii.PercentAbove10EmaFalling,
-                                         NewEvents = ii.NewEvents
+                                         NewEvents = ii.NewEvents,
+                                         Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
                                      }).ToListAsync();
 
                 }
@@ -242,11 +248,13 @@ namespace PnFDesktop.Services
             return indices;
         }
 
-                                    //where si.DoubleTop == marketSummaryDTO.BullishPercentRising || marketSummaryDTO.BullishPercentRising == false
-                                    //where si.RsRising == marketSummaryDTO.PercentRsRisingRising || marketSummaryDTO.PercentRsRisingRising == false
-                                    //where si.ClosedAboveEma10 == marketSummaryDTO.PercentAbove10EmaRising || marketSummaryDTO.PercentAbove10EmaRising == false
-                                    //where si.ClosedAboveEma30 == marketSummaryDTO.PercentAbove30EmaRising || marketSummaryDTO.PercentAbove30EmaRising == false
-                                    //where si.AboveBullSupport == marketSummaryDTO.PercentPositiveTrendRising || marketSummaryDTO.PercentPositiveTrendRising == false
+
+        //where si.DoubleTop == marketSummaryDTO.BullishPercentRising || marketSummaryDTO.BullishPercentRising == false
+        //where si.RsRising == marketSummaryDTO.PercentRsRisingRising || marketSummaryDTO.PercentRsRisingRising == false
+        //where si.ClosedAboveEma10 == marketSummaryDTO.PercentAbove10EmaRising || marketSummaryDTO.PercentAbove10EmaRising == false
+        //where si.ClosedAboveEma30 == marketSummaryDTO.PercentAbove30EmaRising || marketSummaryDTO.PercentAbove30EmaRising == false
+        //where si.AboveBullSupport == marketSummaryDTO.PercentPositiveTrendRising || marketSummaryDTO.PercentPositiveTrendRising == false
+
 
         public async Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO)
         {
@@ -257,9 +265,9 @@ namespace PnFDesktop.Services
                 {
                     shares = await (from si in db.ShareIndicators
                                     join s in db.Shares on si.ShareId equals s.Id
-                                    from rs in db.ShareRSIValues.Where(r =>  r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo==RelativeToEnum.Market).DefaultIfEmpty() 
-                                    from prs in db.ShareRSIValues.Where(r =>  r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo==RelativeToEnum.Sector).DefaultIfEmpty()
-                                    from q in db.EodPrices.Where(r=> r.ShareId == si.ShareId && r.Day == si.Day).DefaultIfEmpty()
+                                    from rs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Market).DefaultIfEmpty()
+                                    from prs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Sector).DefaultIfEmpty()
+                                    from q in db.EodPrices.Where(r => r.ShareId == si.ShareId && r.Day == si.Day).DefaultIfEmpty()
                                     where si.Day == marketSummaryDTO.Day
                                         && s.ExchangeCode == marketSummaryDTO.ExchangeCode
                                         && s.ExchangeSubCode == marketSummaryDTO.ExchangeSubCode
@@ -274,43 +282,43 @@ namespace PnFDesktop.Services
                                         Close = q.Close,
                                         RsValue = rs.Value,
                                         PeerRsValue = prs.Value,
-                                        Ema10 = si.Ema10??0d,
-                                        Ema30 = si.Ema30??0d,
-                                        ClosedAboveEma10 = si.ClosedAboveEma10??false,
-                                        ClosedAboveEma30 = si.ClosedAboveEma30??false,
-                                        Rising = si.Rising??false,
-                                        DoubleTop = si.DoubleTop??false,
-                                        TripleTop = si.TripleTop??false,
-                                        RsRising = si.RsRising??false,
-                                        RsBuy = si.RsBuy??false,
-                                        PeerRsRising = si.PeerRsRising??false,
-                                        PeerRsBuy = si.PeerRsBuy??false,
-                                        Falling = si.Falling??false,
-                                        DoubleBottom = si.DoubleBottom??false,
-                                        TripleBottom = si.TripleBottom??false,
-                                        RsFalling = si.RsFalling??false,
-                                        RsSell = si.RsSell??false,
-                                        PeerRsFalling = si.PeerRsFalling??false,
-                                        PeerRsSell = si.PeerRsSell??false,
+                                        Ema10 = si.Ema10 ?? 0d,
+                                        Ema30 = si.Ema30 ?? 0d,
+                                        ClosedAboveEma10 = si.ClosedAboveEma10 ?? false,
+                                        ClosedAboveEma30 = si.ClosedAboveEma30 ?? false,
+                                        Rising = si.Rising ?? false,
+                                        DoubleTop = si.DoubleTop ?? false,
+                                        TripleTop = si.TripleTop ?? false,
+                                        RsRising = si.RsRising ?? false,
+                                        RsBuy = si.RsBuy ?? false,
+                                        PeerRsRising = si.PeerRsRising ?? false,
+                                        PeerRsBuy = si.PeerRsBuy ?? false,
+                                        Falling = si.Falling ?? false,
+                                        DoubleBottom = si.DoubleBottom ?? false,
+                                        TripleBottom = si.TripleBottom ?? false,
+                                        RsFalling = si.RsFalling ?? false,
+                                        RsSell = si.RsSell ?? false,
+                                        PeerRsFalling = si.PeerRsFalling ?? false,
+                                        PeerRsSell = si.PeerRsSell ?? false,
                                         AboveBullSupport = si.AboveBullSupport,
                                         NewEvents = si.NewEvents,
-                                        Score = 0 + (si.Rising==true?1:0)
-                                                  + (si.Falling==true?-1:0)
-                                                  + (si.DoubleTop==true?1:0)
-                                                  + (si.DoubleBottom==true?-1:0)
-                                                  + (si.TripleTop==true?1:0)
-                                                  + (si.TripleBottom==true?-1:0)
-                                                  + (si.RsRising==true?1:0)
-                                                  + (si.RsFalling==true?-1:0)
-                                                  + (si.RsBuy==true?1:0)
-                                                  + (si.RsSell==true?-1:0)
-                                                  + (si.PeerRsRising==true?1:0)
-                                                  + (si.PeerRsFalling==true?-1:0)
-                                                  + (si.PeerRsBuy==true?1:0)
-                                                  + (si.PeerRsSell==true?-1:0)
-                                                  + (si.ClosedAboveEma10==true?1:0)
-                                                  + (si.ClosedAboveEma30==true?1:0)
-                                                  + (si.AboveBullSupport==true?1:0)
+                                        Score = 0 + (si.Rising == true ? 1 : 0)
+                                                  + (si.Falling == true ? -1 : 0)
+                                                  + (si.DoubleTop == true ? 1 : 0)
+                                                  + (si.DoubleBottom == true ? -1 : 0)
+                                                  + (si.TripleTop == true ? 1 : 0)
+                                                  + (si.TripleBottom == true ? -1 : 0)
+                                                  + (si.RsRising == true ? 1 : 0)
+                                                  + (si.RsFalling == true ? -1 : 0)
+                                                  + (si.RsBuy == true ? 1 : 0)
+                                                  + (si.RsSell == true ? -1 : 0)
+                                                  + (si.PeerRsRising == true ? 1 : 0)
+                                                  + (si.PeerRsFalling == true ? -1 : 0)
+                                                  + (si.PeerRsBuy == true ? 1 : 0)
+                                                  + (si.PeerRsSell == true ? -1 : 0)
+                                                  + (si.ClosedAboveEma10 == true ? 1 : 0)
+                                                  + (si.ClosedAboveEma30 == true ? 1 : 0)
+                                                  + (si.AboveBullSupport == true ? 1 : 0)
                                     }).ToListAsync();
                 }
             }
@@ -331,10 +339,12 @@ namespace PnFDesktop.Services
                 {
                     shares = await (from si in db.ShareIndicators
                                     join s in db.Shares on si.ShareId equals s.Id
-                                    from rs in db.ShareRSIValues.Where(r=> r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo==RelativeToEnum.Market).DefaultIfEmpty()    // on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Market } equals new { rs.ShareId, rs.Day, rs.RelativeTo }
-                                    from prs in db.ShareRSIValues.Where(r=> r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo==RelativeToEnum.Sector).DefaultIfEmpty()   // on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Sector } equals new { prs.ShareId, prs.Day, prs.RelativeTo }
-                                    from q in db.EodPrices.Where(r=> r.ShareId == si.ShareId && r.Day==si.Day).DefaultIfEmpty()                                                   //  on new { si.ShareId, si.Day } equals new { q.ShareId, q.Day }
-                                    where si.Day == day && (si.NewEvents&(int)eventFilter) != 0
+                                    from rs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Market).DefaultIfEmpty()    // on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Market } equals new { rs.ShareId, rs.Day, rs.RelativeTo }
+                                    from prs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Sector).DefaultIfEmpty()   // on new { si.ShareId, si.Day, RelativeTo = RelativeToEnum.Sector } equals new { prs.ShareId, prs.Day, prs.RelativeTo }
+                                    from q in db.EodPrices.Where(r => r.ShareId == si.ShareId && r.Day == si.Day).DefaultIfEmpty()                                                   //  on new { si.ShareId, si.Day } equals new { q.ShareId, q.Day }
+                                    from idx in db.Indices.Where(r => r.ExchangeCode == s.ExchangeCode && r.ExchangeSubCode == s.ExchangeSubCode && r.SuperSector == s.SuperSector).DefaultIfEmpty()
+                                    from ii in db.IndexIndicators.Where(r => r.IndexId == idx.Id && r.Day == day)
+                                    where si.Day == day && (si.NewEvents & (int)eventFilter) != 0
                                     orderby s.Tidm
                                     select new ShareSummaryDTO()
                                     {
@@ -348,43 +358,49 @@ namespace PnFDesktop.Services
                                         Close = q.Close,
                                         RsValue = rs.Value,
                                         PeerRsValue = prs.Value,
-                                        Ema10 = si.Ema10??0d,
-                                        Ema30 = si.Ema30??0d,
-                                        ClosedAboveEma10 = si.ClosedAboveEma10??false,
-                                        ClosedAboveEma30 = si.ClosedAboveEma30??false,
-                                        Rising = si.Rising??false,
-                                        DoubleTop = si.DoubleTop??false,
-                                        TripleTop = si.TripleTop??false,
-                                        RsRising = si.RsRising??false,
-                                        RsBuy = si.RsBuy??false,
-                                        PeerRsRising = si.PeerRsRising??false,
-                                        PeerRsBuy = si.PeerRsBuy??false,
-                                        Falling = si.Falling??false,
-                                        DoubleBottom = si.DoubleBottom??false,
-                                        TripleBottom = si.TripleBottom??false,
-                                        RsFalling = si.RsFalling??false,
-                                        RsSell = si.RsSell??false,
-                                        PeerRsFalling = si.PeerRsFalling??false,
-                                        PeerRsSell = si.PeerRsSell??false,
+                                        Ema10 = si.Ema10 ?? 0d,
+                                        Ema30 = si.Ema30 ?? 0d,
+                                        ClosedAboveEma10 = si.ClosedAboveEma10 ?? false,
+                                        ClosedAboveEma30 = si.ClosedAboveEma30 ?? false,
+                                        Rising = si.Rising ?? false,
+                                        DoubleTop = si.DoubleTop ?? false,
+                                        TripleTop = si.TripleTop ?? false,
+                                        RsRising = si.RsRising ?? false,
+                                        RsBuy = si.RsBuy ?? false,
+                                        PeerRsRising = si.PeerRsRising ?? false,
+                                        PeerRsBuy = si.PeerRsBuy ?? false,
+                                        Falling = si.Falling ?? false,
+                                        DoubleBottom = si.DoubleBottom ?? false,
+                                        TripleBottom = si.TripleBottom ?? false,
+                                        RsFalling = si.RsFalling ?? false,
+                                        RsSell = si.RsSell ?? false,
+                                        PeerRsFalling = si.PeerRsFalling ?? false,
+                                        PeerRsSell = si.PeerRsSell ?? false,
                                         AboveBullSupport = si.AboveBullSupport,
                                         NewEvents = si.NewEvents,
-                                        Score = 0 + (si.Rising==true?1:0)
-                                                  + (si.Falling==true?-1:0)
-                                                  + (si.DoubleTop==true?1:0)
-                                                  + (si.DoubleBottom==true?-1:0)
-                                                  + (si.TripleTop==true?1:0)
-                                                  + (si.TripleBottom==true?-1:0)
-                                                  + (si.RsRising==true?1:0)
-                                                  + (si.RsFalling==true?-1:0)
-                                                  + (si.RsBuy==true?1:0)
-                                                  + (si.RsSell==true?-1:0)
-                                                  + (si.PeerRsRising==true?1:0)
-                                                  + (si.PeerRsFalling==true?-1:0)
-                                                  + (si.PeerRsBuy==true?1:0)
-                                                  + (si.PeerRsSell==true?-1:0)
-                                                  + (si.ClosedAboveEma10==true?1:0)
-                                                  + (si.ClosedAboveEma30==true?1:0)
-                                                  + (si.AboveBullSupport==true?1:0)
+                                        Score = 0 + (si.Rising == true ? 1 : 0)
+                                                  + (si.Falling == true ? -1 : 0)
+                                                  + (si.DoubleTop == true ? 1 : 0)
+                                                  + (si.DoubleBottom == true ? -1 : 0)
+                                                  + (si.TripleTop == true ? 1 : 0)
+                                                  + (si.TripleBottom == true ? -1 : 0)
+                                                  + (si.RsRising == true ? 1 : 0)
+                                                  + (si.RsFalling == true ? -1 : 0)
+                                                  + (si.RsBuy == true ? 1 : 0)
+                                                  + (si.RsSell == true ? -1 : 0)
+                                                  + (si.PeerRsRising == true ? 1 : 0)
+                                                  + (si.PeerRsFalling == true ? -1 : 0)
+                                                  + (si.PeerRsBuy == true ? 1 : 0)
+                                                  + (si.PeerRsSell == true ? -1 : 0)
+                                                  + (si.ClosedAboveEma10 == true ? 1 : 0)
+                                                  + (si.ClosedAboveEma30 == true ? 1 : 0)
+                                                  + (si.AboveBullSupport == true ? 1 : 0),
+                                        Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
                                     }).ToListAsync();
                 }
             }

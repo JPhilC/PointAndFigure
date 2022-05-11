@@ -382,6 +382,7 @@
                 <DataGridTextColumn Header="Sector" Binding="{Binding SuperSector}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Market" Binding="{Binding ExchangeSubCode}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Exchange" Binding="{Binding ExchangeCode}"  IsReadOnly="True"/>
+                <DataGridTextColumn Header="Notices" Binding="{Binding Notices}"  IsReadOnly="True"/>
             </DataGrid.Columns>
         </DataGrid>
 

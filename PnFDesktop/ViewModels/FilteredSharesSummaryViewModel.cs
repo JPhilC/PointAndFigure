@@ -18,7 +18,7 @@ namespace PnFDesktop.ViewModels
 {
     public class FilteredSharesSummaryViewModel : PaneViewModel
     {
-        private ShareEvents _eventFilter = ShareEvents.NewDoubleTop | ShareEvents.NewTripleTop;
+        private ShareEvents _eventFilter = ShareEvents.AllShareSignals;
         public ShareEvents EventFilter
         {
             get => _eventFilter;
@@ -76,7 +76,7 @@ namespace PnFDesktop.ViewModels
         public FilteredSharesSummaryViewModel()
         {
             ContentId = Constants.FilteredSharesSummary;
-            Title = "Filtered Shares";
+            Title = "New Shares Events";
             BindingOperations.EnableCollectionSynchronization(Days, _ItemsLock);
             BindingOperations.EnableCollectionSynchronization(Shares, _ItemsLock);
         }

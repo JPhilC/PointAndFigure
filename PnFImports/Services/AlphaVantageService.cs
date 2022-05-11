@@ -9,7 +9,7 @@ namespace PnFImports.Services
     public class AlphaVantageService
     {
         private static HttpClient _client;
-        private static readonly string ApiKey = "9XSPQTI5MMVQE5OK";
+        private static readonly string ApiKey = "demo";
         private static readonly string ApiBaseUrl = @"https://www.alphavantage.co/query?";
         private static readonly string ApiFunction = "TIME_SERIES_DAILY_ADJUSTED";
         private static HttpClient Client
@@ -76,11 +76,20 @@ namespace PnFImports.Services
                                         case "3. low":
                                             eod.Low = (double)price.Value;
                                             break;
-                                        case "5. adjusted close":
+                                        case "4. close":
                                             eod.Close = (double)price.Value;
+                                            break;
+                                        case "5. adjusted close":
+                                            eod.AdjustedClose = (double)price.Value;
                                             break;
                                         case "6. volume":
                                             eod.Volume = (double)price.Value;
+                                            break;
+                                        case "7. dividend amount":
+                                            eod.DividendAmount = (double)price.Value;
+                                            break;
+                                        case "8. split coefficient":
+                                            eod.SplitCoefficient = (double)price.Value;
                                             break;
                                     }
 

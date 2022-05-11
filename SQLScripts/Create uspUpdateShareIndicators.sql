@@ -38,6 +38,7 @@ IF object_id('tempdb..#today','U') is not null
 
 DECLARE @cutoffDate date
 SET @cutoffDate = DATEADD(d, -170, GETDATE())		-- 170 days should clear 30 week EMA
+--SET @cutoffDate = CONVERT(DATETIME, '2018-01-01')	-- Process all
 
 
 SELECT sc.[ShareId]

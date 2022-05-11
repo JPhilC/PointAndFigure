@@ -14,6 +14,12 @@ namespace PnFData.Model
         public double High { get; set; }
         public double Low { get; set; }
         public double Close { get; set; }
+        public double AdjustedClose { get; set; }
+
+        public double DividendAmount {get; set;}
+
+        public double SplitCoefficient {get;set;}
+
 
         public double Volume { get; set; }
 

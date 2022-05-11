@@ -33,7 +33,10 @@ namespace PnFData.Model
         [Description("Dropped Below EMA 30")]
         NewDropBelowEma30 = 0x0800,
         [Description("Breached Bull Support Line")]
-        NewBullSupportBreach = 0x1000
+        NewBullSupportBreach = 0x1000,
+        [Description("All Signals")]
+        AllShareSignals = NewDoubleTop|NewDoubleBottom|NewTripleTop|NewTripleBottom|NewBullSupportBreach
+
     }
 
 

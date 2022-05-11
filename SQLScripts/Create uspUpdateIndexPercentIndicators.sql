@@ -60,6 +60,7 @@ IF object_id('tempdb..#yesterday','U') is not null
 DECLARE @cutoffDate date
 SET @cutoffDate = DATEADD(d, -170, GETDATE())		-- Make sure we clear the 30 week EMA period
 
+-- SET @cutoffDate = CONVERT(DATETIME, '2018-01-01')		-- Make sure we clear the 30 week EMA period
 
 
 SELECT ic.[IndexId]
@@ -70,7 +71,7 @@ SELECT ic.[IndexId]
 	FROM [PnFCharts] c
 	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
-	WHERE c.[Source] = 5
+	WHERE c.[Source] = 5 AND s.[Day] >= @cutoffDate
 
 SELECT ic.[IndexId]
 	,	s.[Day]
@@ -80,7 +81,7 @@ SELECT ic.[IndexId]
 	FROM [PnFCharts] c
 	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
-	WHERE c.[Source] = 6
+	WHERE c.[Source] = 6 AND s.[Day] >= @cutoffDate
 
 SELECT ic.[IndexId]
 	,	s.[Day]
@@ -90,7 +91,7 @@ SELECT ic.[IndexId]
 	FROM [PnFCharts] c
 	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
-	WHERE c.[Source] = 7
+	WHERE c.[Source] = 7 AND s.[Day] >= @cutoffDate
 
 SELECT ic.[IndexId]
 	,	s.[Day]
@@ -100,7 +101,7 @@ SELECT ic.[IndexId]
 	FROM [PnFCharts] c
 	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
-	WHERE c.[Source] = 8
+	WHERE c.[Source] = 8 AND s.[Day] >= @cutoffDate
 
 SELECT ic.[IndexId]
 	,	s.[Day]
@@ -110,7 +111,7 @@ SELECT ic.[IndexId]
 	FROM [PnFCharts] c
 	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
-	WHERE c.[Source] = 9
+	WHERE c.[Source] = 9 AND s.[Day] >= @cutoffDate
 
 SELECT ic.[IndexId]
 	,	s.[Day]
@@ -120,7 +121,7 @@ SELECT ic.[IndexId]
 	FROM [PnFCharts] c
 	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
-	WHERE c.[Source] = 10
+	WHERE c.[Source] = 10 AND s.[Day] >= @cutoffDate
 
 SELECT iv.[IndexId]
 	,	iv.[Day]
@@ -144,6 +145,7 @@ LEFT JOIN #Signals_7 s7 ON s7.IndexId = iv.[IndexId] AND s7.[Day] = iv.[Day]
 LEFT JOIN #Signals_8 s8 ON s8.IndexId = iv.[IndexId] AND s8.[Day] = iv.[Day]		
 LEFT JOIN #Signals_9 s9 ON s9.IndexId = iv.[IndexId] AND s9.[Day] = iv.[Day]		
 LEFT JOIN #Signals_10 s10 ON s10.IndexId = iv.[IndexId] AND s10.[Day] = iv.[Day]		
+WHERE iv.[Day] >= @cutoffDate
 
 DECLARE @IsRising AS INT			= 0x0001; --       // Going up
 DECLARE @IsFalling AS INT			= 0x0002; --       // Going down
@@ -174,6 +176,7 @@ select	[IndexId]
 into #IndexResults
 from #pivot
 
+
 UPDATE [dbo].[IndexIndicators]
 	SET [BullishPercentRising] = sr.[BullishPercentRising]
 	,	[BullishPercentDoubleTop] = sr.[BullishPercentDoubleTop]
@@ -190,7 +193,8 @@ UPDATE [dbo].[IndexIndicators]
 	,	[PercentAbove30EmaFalling] = sr.[PercentAbove30EmaFalling]
 	,	[PercentAbove10EmaFalling] = sr.[PercentAbove10EmaFalling]
 FROM [dbo].[IndexIndicators] si
-INNER JOIN #IndexResults sr ON sr.[IndexId] = si.[IndexId] AND sr.[Day] = si.[Day];
+INNER JOIN #IndexResults sr ON sr.[IndexId] = si.[IndexId] AND sr.[Day] = si.[Day]
+WHERE si.[Day] >= @cutoffDate;
 
 
 INSERT INTO [dbo].[IndexIndicators] ([Id], [IndexId], [Day] 
@@ -251,7 +255,8 @@ SELECT ii.[IndexId], ii.[Day]
 	INTO #today
 	FROM [dbo].[IndexIndicators] ii
 	LEFT JOIN [dbo].[IndexValues] iv ON iv.IndexId = ii.IndexId and iv.[Day] = ii.[Day]
-	-- WHERE ii.[Day] >= @cutOffDate;
+	WHERE ii.[Day] >= @cutOffDate;
+
 
 DECLARE @BullAlert AS INT			= 0x0001;
 DECLARE @BearAlert AS INT			= 0x0002;
@@ -260,9 +265,10 @@ DECLARE @BearConfirmed AS INT		= 0x0008;
 DECLARE @BullConfirmedLt30 AS INT	= 0x0010;
 DECLARE @BearConfirmedGt70 AS INT	= 0x0020;
 
+
 UPDATE [dbo].[IndexIndicators]
 		SET [NewEvents] 
-		= iif(td.[BullishPercentRising]^yd.[BullishPercentRising]=1 and td.[BullishPercentRising]=1 and p.s5Value<30 and yd.[BullishPercentDoubleButtom]=1, @BullAlert, 0)
+		= iif(td.[BullishPercentRising]^yd.[BullishPercentRising]=1 and td.[BullishPercentRising]=1 and p.s5Value<30 and yd.[BullishPercentDoubleBottom]=1, @BullAlert, 0)
 		+ iif(td.[BullishPercentFalling]^yd.[BullishPercentFalling]=1 and td.[BullishPercentFalling]=1 and p.s5Value>70 and yd.[BullishPercentDoubleTop]=1, @BearAlert, 0)
 		+ iif(td.[BullishPercentDoubleTop]^yd.[BullishPercentDoubleTop]=1 and td.[BullishPercentDoubleTop]=1, @BullConfirmed, 0)	-- Bull Confirmed
 		+ iif(td.[BullishPercentDoubleBottom]^yd.[BullishPercentDoubleBottom]=1 and td.[BullishPercentDoubleBottom]=1, @BearConfirmed, 0)			-- Bear Confirmed
@@ -272,8 +278,7 @@ UPDATE [dbo].[IndexIndicators]
 	LEFT JOIN #today td ON td.[IndexId] = ii.[IndexId]
 	LEFT JOIN #today yd ON yd.[IndexId] = td.[IndexId] and yd.[Ordinal#] = td.[Ordinal#]-1
 	LEFT JOIN #Pivot p ON p.[IndexId] = yd.[IndexId] AND p.[Day]=yd.[Day]
-	WHERE td.[Ordinal#] > 1
-	-- WHERE ii.[Day] >= @cutoffDate AND td.[Ordinal#] > 1
+	WHERE ii.[Day] >= @cutoffDate AND td.[Ordinal#] > 1
 
 
 RAISERROR (N'Done.', 0, 0) WITH NOWAIT;

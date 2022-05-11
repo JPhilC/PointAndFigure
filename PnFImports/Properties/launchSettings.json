@@ -2,7 +2,7 @@
   "profiles": {
     "PnFImports": {
       "commandName": "Project",
-      "commandLineArgs": "indexpercentcharts ALL"
+      "commandLineArgs": "history ALL"
     }
   }
 }

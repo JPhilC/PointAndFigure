@@ -390,6 +390,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Notices" MinWidth="100" Binding="{Binding Notices}" />
             </DataGrid.Columns>
 
         </DataGrid>

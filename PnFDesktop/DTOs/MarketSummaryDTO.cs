@@ -68,5 +68,7 @@ namespace PnFDesktop.DTOs
         public bool? PercentAbove10EmaFalling { get; set; }
         public int? NewEvents { get; set; }
 
+        public string? Notices {get; set;}
+
     }
 }

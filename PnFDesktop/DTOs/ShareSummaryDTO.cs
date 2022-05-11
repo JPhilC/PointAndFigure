@@ -70,6 +70,8 @@ namespace PnFDesktop.DTOs
 
         public int? Score {get;set;}
 
+        public string? Notices {get;set;}
+
 
     }
 }
