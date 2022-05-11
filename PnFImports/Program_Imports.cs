@@ -109,94 +109,15 @@ namespace PnFImports
             Console.WriteLine($"Completed. {adds} new records added, {updates} records updated, {errors} errors.");
         }
 
-        internal static void ImportEodHistoricPrices()
-        {
-            DateTime cutOffDate = new(2016, 12, 31);
-            List<ShareSummary> shareIds = new List<ShareSummary>();
-            using (var db = new PnFDataContext())
-            {
-                shareIds = db.Shares.Select(s => new ShareSummary()
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    Tidm = s.Tidm,
-                    EodErrors = s.EodError,
-                    LastEodDate = s.LastEodDate,
-                    HasPrices = s.EodPrices.Any()
-                }).OrderBy(s => s.Tidm).ToList();
-            }
-
-            foreach (var shareData in shareIds)
-            {
-                // Catch up code to update LastEodDate
-                if (shareData.HasPrices)
-                {
-                    if (shareData.LastEodDate == null)
-                    {
-                        using (var db = new PnFDataContext())
-                        {
-                            Console.WriteLine($"Updating {shareData.Tidm}: {shareData.Name}");
-                            Share share = db.Shares.First(s => s.Id == shareData.Id);
-                            share.LastEodDate = db.EodPrices.Where(p => p.ShareId == share.Id).Max(p => p.Day);
-                            db.Update(share);
-                            db.SaveChanges();
-                        }
-                    }
-
-                    continue;
-                }
-
-                // Get the prices
-                Task.Run((async () =>
-                {
-                    Console.Write($"Processing {shareData.Tidm}: {shareData.Name} ...");
-                    using (var db = new PnFDataContext())
-                    {
-                        var result = await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm, cutOffDate, true);
-                        Share share = db.Shares.First(s => s.Id == shareData.Id);
-                        if (result.InError)
-                        {
-                            share.EodError = true;
-                            db.Update(share);
-                            await db.SaveChangesAsync();
-                            Console.WriteLine($" Error! {result.Reason}");
-                        }
-                        else
-                        {
-                            var dayPrices = result.Prices as Eod[] ?? result.Prices.ToArray();
-                            if (dayPrices.Any())
-                            {
-                                foreach (Eod dayPrice in dayPrices)
-                                {
-                                    dayPrice.ShareId = shareData.Id;
-                                    db.EodPrices.Add(dayPrice);
-                                }
-
-                                DateTime maxDay = dayPrices.Max(p => p.Day);
-                                share.LastEodDate = maxDay;
-                                db.Update(share);
-
-                                await db.SaveChangesAsync();
-                                Console.WriteLine(" OK.");
-                            }
-                        }
-                    }
-
-                    Thread.Sleep(400);
-                })).Wait();
-            }
-
-        }
-
         private static object _lock = new object();
         private static Stopwatch _stopwatch = new Stopwatch();
         private static long _nextSlot = 400;
         private static long _minInterval = 400;    // Milliseconds.
-        internal static void ImportEodDailyPrices(string exchangeCode, string? tidm, bool retryErrors = false)
+        internal static void ImportEodDailyPrices(string exchangeCode, string? tidm, bool retryErrors = false, bool fullImport = false)
         {
             try
             {
-                DateTime cutOffDate = new(2016, 12, 31);
+                DateTime cutOffDate = new(2016, 01, 01);
                 DateTime lastClose = PreviousWorkDay(DateTime.Now.Date);
                 List<ShareSummary> shareIds = new List<ShareSummary>();
                 using (var db = new PnFDataContext())
@@ -289,7 +210,7 @@ namespace PnFImports
                                 }
                                 using (var db = new PnFDataContext())
                                 {
-                                    var result = await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm, (shareData.LastEodDate ?? cutOffDate));
+                                    var result = await AlphaVantageService.GetTimeSeriesDailyPrices(shareData.Tidm, (shareData.LastEodDate ?? cutOffDate), fullImport);
                                     Share share = db.Shares.First(s => s.Id == shareData.Id);
                                     if (result.InError)
                                     {

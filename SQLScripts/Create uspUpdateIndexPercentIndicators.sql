@@ -16,25 +16,28 @@ CREATE PROCEDURE [dbo].[uspUpdateIndexPercentIndicators]
 SET NOCOUNT ON	
 RAISERROR (N'Updating index indicators ...', 0, 0) WITH NOWAIT;
 
-IF object_id('tempdb..#LatestCharts','U') is not null
-	DROP TABLE #LatestCharts;
 
-IF object_id('tempdb..#SortedByIndex','U') is not null
-	DROP TABLE #SortedByIndex;
+IF object_id('tempdb..#Signals_5','U') is not null
+	DROP TABLE #Signals_5;
 
-IF object_id('tempdb..#rising','U') is not null
-	DROP TABLE #rising;
+IF object_id('tempdb..#Signals_6','U') is not null
+	DROP TABLE #Signals_6;
 
-IF object_id('tempdb..#doubleTop','U') is not null
-	DROP TABLE #doubleTop;
+IF object_id('tempdb..#Signals_7','U') is not null
+	DROP TABLE #Signals_7;
+
+IF object_id('tempdb..#Signals_8','U') is not null
+	DROP TABLE #Signals_8;
+
+IF object_id('tempdb..#Signals_9','U') is not null
+	DROP TABLE #Signals_9;
+
+IF object_id('tempdb..#Signals_10','U') is not null
+	DROP TABLE #Signals_10;
 
 
-IF object_id('tempdb..#falling','U') is not null
-	DROP TABLE #falling;
-
-IF object_id('tempdb..#doubleBottom','U') is not null
-	DROP TABLE #doubleBottom;
-
+IF object_id('tempdb..#Pivot','U') is not null
+	DROP TABLE #Pivot;
 
 IF object_id('tempdb..#IndexResults','U') is not null
 	DROP TABLE #IndexResults;
@@ -45,15 +48,6 @@ IF object_id('tempdb..#today','U') is not null
 IF object_id('tempdb..#yesterday','U') is not null
 	DROP TABLE #yesterday;
 
--- Get the latest day from EodPrices
-DECLARE @today Date
-DECLARE @yesterday DATE
-SELECT @today = CONVERT(date, MAX([Day]))
-	FROM [EodPrices]
-SELECT @yesterday = CONVERT(date, MAX([Day]))
-	FROM [EodPrices]
-	WHERE [Day] <> @today
-
 -- Get the latest charts for each type
 -- Chart sources
 --		5 - Index Bullish Percent
@@ -62,95 +56,123 @@ SELECT @yesterday = CONVERT(date, MAX([Day]))
 --		8 - Index Percent Positive Trend
 --		9 - Index Percent Above 30 ema
 --	   10 - Index Percent Above 10 ema
-SELECT sc.[IndexId]
-	, c.[Source]
-	, ROW_NUMBER() OVER(PARTITION BY sc.[IndexId], c.[Source] ORDER BY c.GeneratedDate DESC) as Ordinal# 
-	, sc.[ChartId]
-	, c.[GeneratedDate]
-	, c.[CreatedAt]
-	INTO #LatestCharts
-	FROM IndexCharts sc
-	LEFT JOIN PnFCharts c on c.Id = sc.ChartId
-	WHERE c.[Source] IN (5, 6, 7, 8, 9, 10)
+
+DECLARE @cutoffDate date
+SET @cutoffDate = DATEADD(d, -170, GETDATE())		-- Make sure we clear the 30 week EMA period
 
 
-SELECT col.[Id]
-      ,col.[PnFChartId]
-      ,col.[ColumnType]
-      ,col.[CurrentBoxIndex]
-      ,col.[Index]
-	  ,ROW_NUMBER() OVER(PARTITION BY [PnfChartId] ORDER BY [Index] DESC) AS Ordinal#
-	  ,c.[Source]
-	  ,sc.[IndexId]
-  INTO #SortedByIndex
-  FROM [PnFColumns] col
-  LEFT JOIN [PnFCharts] c ON c.Id = col.PnFChartId
-  LEFT JOIN [IndexCharts] sc ON sc.ChartId = col.PnFChartId
-  WHERE col.[PnFChartId] IN (SELECT ChartId FROM #LatestCharts WHERE Ordinal# = 1) 
-  ORDER BY [PnfChartId], [Index] DESC
 
--- The Bulls
-SELECT sbi.[PnfChartId], sbi.[IndexId], sbi.[Source], [CurrentBoxIndex] AS H1
-	INTO #rising
-	FROM #SortedByIndex sbi
-	WHERE sbi.[Ordinal#] = 1 AND sbi.[ColumnType]=1;
+SELECT ic.[IndexId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #Signals_5
+	FROM [PnFCharts] c
+	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 5
 
-SELECT sbi.[PnfChartId], sbi.[IndexId], sbi.[Source], sbi.[CurrentBoxIndex] AS H3, c1.H1  
-	INTO #doubleTop
-	FROM #SortedByIndex AS sbi
-	JOIN #rising AS c1 ON c1.[PnFChartId] = sbi.[PnFChartId]
-	WHERE sbi.[Ordinal#] = 3 AND sbi.[ColumnType]=1
-		AND sbi.[CurrentBoxIndex] < c1.H1;
+SELECT ic.[IndexId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #Signals_6
+	FROM [PnFCharts] c
+	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 6
 
--- The Bears
-SELECT sbi.[PnfChartId], sbi.[IndexId], sbi.[Source], [CurrentBoxIndex] AS L1
-	INTO #falling
-	FROM #SortedByIndex sbi
-	WHERE sbi.[Ordinal#] = 1 AND sbi.[ColumnType]=0;
+SELECT ic.[IndexId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #Signals_7
+	FROM [PnFCharts] c
+	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 7
 
-SELECT sbi.[PnfChartId], sbi.[IndexId], sbi.[Source], sbi.[CurrentBoxIndex] AS L3, f.L1  
-	INTO #doubleBottom
-	FROM #SortedByIndex AS sbi
-	JOIN #falling AS f ON f.[PnFChartId] = sbi.[PnFChartId]
-	WHERE sbi.[Ordinal#] = 3 AND sbi.[ColumnType]=0
-		AND sbi.[CurrentBoxIndex] > f.L1;
+SELECT ic.[IndexId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #Signals_8
+	FROM [PnFCharts] c
+	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 8
 
-select s.[Id] as [IndexId]
-	, s.[ExchangeCode]
-	, s.[ExchangeSubCode]
-	, s.[SuperSector]
-	, @today as [Day]
-	, CONVERT(bit, IIF(r5.[IndexId] IS NOT NULL, 1, 0)) AS BullishPercentRising
-	, CONVERT(bit, IIF(r5dt.[IndexId] IS NOT NULL, 1, 0)) AS BullishPercentDoubleTop
-	, CONVERT(bit, IIF(r6.[IndexId] IS NOT NULL, 1, 0)) AS PercentRSBuyRising
-	, CONVERT(bit, IIF(r7.[IndexId] IS NOT NULL, 1, 0)) AS PercentRsRisingRising
-	, CONVERT(bit, IIF(r8.[IndexId] IS NOT NULL, 1, 0)) AS PercentPositiveTrendRising
-	, CONVERT(bit, IIF(r9.[IndexId] IS NOT NULL, 1, 0)) AS PercentAbove30EmaRising
-	, CONVERT(bit, IIF(r10.[IndexId] IS NOT NULL, 1, 0)) AS PercentAbove10EmaRising
-	, CONVERT(bit, IIF(f5.[IndexId] IS NOT NULL, 1, 0)) AS BullishPercentFalling
-	, CONVERT(bit, IIF(f5db.[IndexId] IS NOT NULL, 1, 0)) AS BullishPercentDoubleBottom
-	, CONVERT(bit, IIF(f6.[IndexId] IS NOT NULL, 1, 0)) AS PercentRSBuyFalling
-	, CONVERT(bit, IIF(f7.[IndexId] IS NOT NULL, 1, 0)) AS PercentRsRisingFalling
-	, CONVERT(bit, IIF(f8.[IndexId] IS NOT NULL, 1, 0)) AS PercentPositiveTrendFalling
-	, CONVERT(bit, IIF(f9.[IndexId] IS NOT NULL, 1, 0)) AS PercentAbove30EmaFalling
-	, CONVERT(bit, IIF(f10.[IndexId] IS NOT NULL, 1, 0)) AS PercentAbove10EmaFalling
+SELECT ic.[IndexId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #Signals_9
+	FROM [PnFCharts] c
+	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 9
+
+SELECT ic.[IndexId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #Signals_10
+	FROM [PnFCharts] c
+	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 10
+
+SELECT iv.[IndexId]
+	,	iv.[Day]
+	,	s5.[Signals] S5Signals
+	,	s5.[Value] S5Value
+	,	s6.[Signals] S6Signals
+	,	s6.[Value] S6Value
+	,	s7.[Signals] S7Signals
+	,	s7.[Value] S7Value
+	,	s8.[Signals] S8Signals
+	,	s8.[Value] S8Value
+	,	s9.[Signals] S9Signals
+	,	s9.[Value] S9Value
+	,	s10.[Signals] S10Signals
+	,	s10.[Value] S10Value
+INTO #pivot
+FROM IndexValues iv 		
+LEFT JOIN #Signals_5 s5 ON s5.IndexId = iv.[IndexId] AND s5.[Day] = iv.[Day]		
+LEFT JOIN #Signals_6 s6 ON s6.IndexId = iv.[IndexId] AND s6.[Day] = iv.[Day]		
+LEFT JOIN #Signals_7 s7 ON s7.IndexId = iv.[IndexId] AND s7.[Day] = iv.[Day]		
+LEFT JOIN #Signals_8 s8 ON s8.IndexId = iv.[IndexId] AND s8.[Day] = iv.[Day]		
+LEFT JOIN #Signals_9 s9 ON s9.IndexId = iv.[IndexId] AND s9.[Day] = iv.[Day]		
+LEFT JOIN #Signals_10 s10 ON s10.IndexId = iv.[IndexId] AND s10.[Day] = iv.[Day]		
+
+DECLARE @IsRising AS INT			= 0x0001; --       // Going up
+DECLARE @IsFalling AS INT			= 0x0002; --       // Going down
+DECLARE @DoubleTop AS INT			= 0x0004; --       // Double Bottom
+DECLARE @DoubleBottom AS INT		= 0x0008; --       // Double Bottom
+DECLARE @TripleTop AS INT			= 0x0010; --       // Triple Top
+DECLARE @TripleBottom AS INT		= 0x0020; --       // Triple Bottom
+DECLARE @AboveBullSupport AS INT	= 0x0040; --       // Current box is abobe bullish support level
+
+
+
+select	[IndexId]
+	,	[Day]
+	, CONVERT(bit, IIF(S5Signals&@IsRising=@IsRising, 1, 0)) AS BullishPercentRising
+	, CONVERT(bit, IIF(S5Signals&@DoubleTop=@DoubleTop, 1, 0)) AS BullishPercentDoubleTop
+	, CONVERT(bit, IIF(S6Signals&@IsRising=@IsRising, 1, 0)) AS PercentRSBuyRising
+	, CONVERT(bit, IIF(S7Signals&@IsRising=@IsRising, 1, 0)) AS PercentRsRisingRising
+	, CONVERT(bit, IIF(S8Signals&@IsRising=@IsRising, 1, 0)) AS PercentPositiveTrendRising
+	, CONVERT(bit, IIF(S9Signals&@IsRising=@IsRising, 1, 0)) AS PercentAbove30EmaRising
+	, CONVERT(bit, IIF(S10Signals&@IsRising=@IsRising, 1, 0)) AS PercentAbove10EmaRising
+	, CONVERT(bit, IIF(S5Signals&@IsFalling=@IsFalling, 1, 0)) AS BullishPercentFalling
+	, CONVERT(bit, IIF(S5Signals&@DoubleBottom=@DoubleBottom, 1, 0)) AS BullishPercentDoubleBottom
+	, CONVERT(bit, IIF(S6Signals&@IsFalling=@IsFalling, 1, 0)) AS PercentRSBuyFalling
+	, CONVERT(bit, IIF(S7Signals&@IsFalling=@IsFalling, 1, 0)) AS PercentRsRisingFalling
+	, CONVERT(bit, IIF(S8Signals&@IsFalling=@IsFalling, 1, 0)) AS PercentPositiveTrendFalling
+	, CONVERT(bit, IIF(S9Signals&@IsFalling=@IsFalling, 1, 0)) AS PercentAbove30EmaFalling
+	, CONVERT(bit, IIF(S10Signals&@IsFalling=@IsFalling, 1, 0)) AS PercentAbove10EmaFalling
 into #IndexResults
-from [Indices] s
-left join #rising r5 ON r5.[IndexId] = s.Id AND r5.[Source] = 5
-left join #doubleTop r5dt ON r5dt.[IndexId] = s.Id AND r5dt.[Source] = 5
-left join #rising r6 ON r6.[IndexId] = s.Id AND r6.[Source] = 6
-left join #rising r7 ON r7.[IndexId] = s.Id AND r7.[Source] = 7
-left join #rising r8 ON r8.[IndexId] = s.Id AND r8.[Source] = 8
-left join #rising r9 ON r9.[IndexId] = s.Id AND r9.[Source] = 9
-left join #rising r10 ON r10.[IndexId] = s.Id AND r10.[Source] = 10
-left join #falling f5 ON f5.[IndexId] = s.Id AND f5.[Source] = 5
-left join #doubleBottom f5db ON f5db.[IndexId] = s.Id AND f5db.[Source] = 5
-left join #falling f6 ON f6.[IndexId] = s.Id AND f6.[Source] = 6
-left join #falling f7 ON f7.[IndexId] = s.Id AND f7.[Source] = 7
-left join #falling f8 ON f8.[IndexId] = s.Id AND f8.[Source] = 8
-left join #falling f9 ON f9.[IndexId] = s.Id AND f9.[Source] = 9
-left join #falling f10 ON f10.[IndexId] = s.Id AND f10.[Source] = 10
-order by [SuperSector], [ExchangeSubCode]
+from #pivot
 
 UPDATE [dbo].[IndexIndicators]
 	SET [BullishPercentRising] = sr.[BullishPercentRising]
@@ -168,9 +190,7 @@ UPDATE [dbo].[IndexIndicators]
 	,	[PercentAbove30EmaFalling] = sr.[PercentAbove30EmaFalling]
 	,	[PercentAbove10EmaFalling] = sr.[PercentAbove10EmaFalling]
 FROM [dbo].[IndexIndicators] si
-INNER JOIN #IndexResults sr
-ON sr.[IndexId] = si.[IndexId]
-	AND sr.[Day] = si.[Day];
+INNER JOIN #IndexResults sr ON sr.[IndexId] = si.[IndexId] AND sr.[Day] = si.[Day];
 
 
 INSERT INTO [dbo].[IndexIndicators] ([Id], [IndexId], [Day] 
@@ -209,8 +229,14 @@ INSERT INTO [dbo].[IndexIndicators] ([Id], [IndexId], [Day]
 	LEFT JOIN [IndexIndicators] si ON si.[IndexId] = sr.[IndexId] AND si.[Day] = sr.[Day]
 	WHERE si.[Id] IS NULL
 
+
 -- Now process the new event triggers.
-SELECT ii.[IndexId], iv.[BullishPercent], ii.[BullishPercentRising], ii.[BullishPercentDoubleTop], ii.[BullishPercentFalling], ii.[BullishPercentDoubleBottom]
+SELECT ii.[IndexId], ii.[Day]
+		, iv.[BullishPercent]
+		, ii.[BullishPercentRising]
+		, ii.[BullishPercentDoubleTop]
+		, ii.[BullishPercentFalling]
+		, ii.[BullishPercentDoubleBottom]
 		, ii.[PercentRSBuyRising]
 		, ii.[PercentRsRisingRising]
 		, ii.[PercentPositiveTrendRising]
@@ -221,36 +247,33 @@ SELECT ii.[IndexId], iv.[BullishPercent], ii.[BullishPercentRising], ii.[Bullish
 		, ii.[PercentPositiveTrendFalling]
 		, ii.[PercentAbove30EmaFalling]
 		, ii.[PercentAbove10EmaFalling]
+		, ROW_NUMBER() OVER(PARTITION BY ii.[IndexId] ORDER BY ii.[Day] ASC) as Ordinal#
 	INTO #today
 	FROM [dbo].[IndexIndicators] ii
 	LEFT JOIN [dbo].[IndexValues] iv ON iv.IndexId = ii.IndexId and iv.[Day] = ii.[Day]
-	WHERE ii.[Day] = @today;
+	-- WHERE ii.[Day] >= @cutOffDate;
 
-SELECT ii.[IndexId], iv.[BullishPercent], ii.[BullishPercentRising], ii.[BullishPercentDoubleTop], ii.[BullishPercentFalling], ii.[BullishPercentDoubleBottom]
-		, ii.[PercentRSBuyRising]
-		, ii.[PercentRsRisingRising]
-		, ii.[PercentPositiveTrendRising]
-		, ii.[PercentAbove30EmaRising]
-		, ii.[PercentAbove10EmaRising]
-		, ii.[PercentRSBuyFalling]
-		, ii.[PercentRsRisingFalling]
-		, ii.[PercentPositiveTrendFalling]
-		, ii.[PercentAbove30EmaFalling]
-		, ii.[PercentAbove10EmaFalling]
-	INTO #yesterday
-	FROM [dbo].[IndexIndicators] ii
-	LEFT JOIN [dbo].[IndexValues] iv ON iv.IndexId = ii.IndexId and iv.[Day] = ii.[Day]
-	WHERE ii.[Day] = @yesterday;
+DECLARE @BullAlert AS INT			= 0x0001;
+DECLARE @BearAlert AS INT			= 0x0002;
+DECLARE @BullConfirmed AS INT		= 0x0004;
+DECLARE @BearConfirmed AS INT		= 0x0008;
+DECLARE @BullConfirmedLt30 AS INT	= 0x0010;
+DECLARE @BearConfirmedGt70 AS INT	= 0x0020;
 
 UPDATE [dbo].[IndexIndicators]
-		SET [NewEvents] = iif(td.[BullishPercentDoubleTop]^yd.[BullishPercentDoubleTop]=1 and td.[BullishPercentDoubleTop]=1, 0x0001, 0)	-- Bull Confirmed
-		+ iif(td.[BullishPercentDoubleBottom]^yd.[BullishPercentDoubleBottom]=1 and td.[BullishPercentDoubleBottom]=1, 0x0002, 0)			-- Bear Confirmed
-		+ iif(td.[BullishPercentDoubleTop]^yd.[BullishPercentDoubleTop]=1 and td.[BullishPercentDoubleTop]=1 and yd.[BullishPercent]<30, 0x0004, 0)	-- Bull Confirmed below 30
-		+ iif(td.[BullishPercentDoubleBottom]^yd.[BullishPercentDoubleBottom]=1 and td.[BullishPercentDoubleBottom]=1 and yd.[BullishPercent]>70, 0x0008, 0)	-- Bear Confirmed above 70
+		SET [NewEvents] 
+		= iif(td.[BullishPercentRising]^yd.[BullishPercentRising]=1 and td.[BullishPercentRising]=1 and p.s5Value<30 and yd.[BullishPercentDoubleButtom]=1, @BullAlert, 0)
+		+ iif(td.[BullishPercentFalling]^yd.[BullishPercentFalling]=1 and td.[BullishPercentFalling]=1 and p.s5Value>70 and yd.[BullishPercentDoubleTop]=1, @BearAlert, 0)
+		+ iif(td.[BullishPercentDoubleTop]^yd.[BullishPercentDoubleTop]=1 and td.[BullishPercentDoubleTop]=1, @BullConfirmed, 0)	-- Bull Confirmed
+		+ iif(td.[BullishPercentDoubleBottom]^yd.[BullishPercentDoubleBottom]=1 and td.[BullishPercentDoubleBottom]=1, @BearConfirmed, 0)			-- Bear Confirmed
+		+ iif(td.[BullishPercentDoubleTop]^yd.[BullishPercentDoubleTop]=1 and td.[BullishPercentDoubleTop]=1 and yd.[BullishPercent]<30, @BullConfirmedLt30, 0)	-- Bull Confirmed below 30
+		+ iif(td.[BullishPercentDoubleBottom]^yd.[BullishPercentDoubleBottom]=1 and td.[BullishPercentDoubleBottom]=1 and yd.[BullishPercent]>70, @BearConfirmedGt70, 0)	-- Bear Confirmed above 70
 	FROM [dbo].[IndexIndicators] ii
 	LEFT JOIN #today td ON td.[IndexId] = ii.[IndexId]
-	LEFT JOIN #yesterday yd ON yd.[IndexId] = td.[IndexId]
-	WHERE ii.[Day] = @today
+	LEFT JOIN #today yd ON yd.[IndexId] = td.[IndexId] and yd.[Ordinal#] = td.[Ordinal#]-1
+	LEFT JOIN #Pivot p ON p.[IndexId] = yd.[IndexId] AND p.[Day]=yd.[Day]
+	WHERE td.[Ordinal#] > 1
+	-- WHERE ii.[Day] >= @cutoffDate AND td.[Ordinal#] > 1
 
 
 RAISERROR (N'Done.', 0, 0) WITH NOWAIT;

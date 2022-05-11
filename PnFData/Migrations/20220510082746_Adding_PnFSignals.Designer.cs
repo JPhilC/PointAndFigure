@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220510082746_Adding_PnFSignals")]
+    partial class Adding_PnFSignals
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,8 +253,6 @@ namespace PnFData.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Day");
-
                     b.HasIndex("IndexId");
 
                     b.ToTable("IndexIndicators");
@@ -290,8 +290,6 @@ namespace PnFData.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Day");
 
                     b.HasIndex("IndexId");
 
@@ -809,8 +807,6 @@ namespace PnFData.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Day");
 
                     b.HasIndex("ShareId");
 

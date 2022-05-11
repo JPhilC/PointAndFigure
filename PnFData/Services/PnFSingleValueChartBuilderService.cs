@@ -156,8 +156,14 @@ namespace PnFData.Services
                         currentColumn.ContainsNewYear = true;
                     }
                 }
+
+                // Update signal states
+                UpdateSignals(ref chart, currentColumn.Index, dayValue.Day);
+                
                 lastYearRecorded = dayValue.Day.Year;
                 chart.GeneratedDate = dayValue.Day;
+
+
             }
             return chart;
         }
@@ -264,6 +270,10 @@ namespace PnFData.Services
 
                 lastYearRecorded = dayValue.Day.Year;
                 chart.GeneratedDate = dayValue.Day;
+
+                // Update signal states
+                UpdateSignals(ref chart, currentColumn.Index, dayValue.Day);
+
             }
             return !errors;
         }

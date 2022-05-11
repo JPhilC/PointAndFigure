@@ -17,32 +17,18 @@ CREATE PROCEDURE [dbo].[uspUpdateShareIndicators]
 RAISERROR (N'Updating share indicators ...', 0, 0) WITH NOWAIT;
 
 SET NOCOUNT ON
-IF object_id('tempdb..#LatestCharts','U') is not null
-	DROP TABLE #LatestCharts;
 
-IF object_id('tempdb..#SortedByIndex','U') is not null
-	DROP TABLE #SortedByIndex;
+IF object_id('tempdb..#PriceSignals','U') is not null
+	DROP TABLE #PriceSignals;
 
-IF object_id('tempdb..#rising','U') is not null
-	DROP TABLE #rising;
+IF object_id('tempdb..#RsSignals','U') is not null
+DROP TABLE #RsSignals;
 
-IF object_id('tempdb..#aboveBullishSupport','U') is not null
-	DROP TABLE #aboveBullishSupport;
+IF object_id('tempdb..#PeerRsSignals','U') is not null
+	DROP TABLE #PeerRsSignals;
 
-IF object_id('tempdb..#doubleTop','U') is not null
-	DROP TABLE #doubleTop;
-
-IF object_id('tempdb..#tripleTop','U') is not null
-	DROP TABLE #tripleTop;
-
-	IF object_id('tempdb..#falling','U') is not null
-	DROP TABLE #falling;
-
-IF object_id('tempdb..#doubleBottom','U') is not null
-	DROP TABLE #doubleBottom;
-
-IF object_id('tempdb..#tripleBottom','U') is not null
-	DROP TABLE #tripleBottom;
+IF object_id('tempdb..#Pivot','U') is not null
+	DROP TABLE #Pivot;
 
 IF object_id('tempdb..#ShareResults','U') is not null
 	DROP TABLE #ShareResults;
@@ -50,133 +36,86 @@ IF object_id('tempdb..#ShareResults','U') is not null
 IF object_id('tempdb..#today','U') is not null
 	DROP TABLE #today;
 
-IF object_id('tempdb..#yesterday','U') is not null
-	DROP TABLE #yesterday;
+DECLARE @cutoffDate date
+SET @cutoffDate = DATEADD(d, -170, GETDATE())		-- 170 days should clear 30 week EMA
 
--- Get the latest day from EodPrices
-DECLARE @today Date
-DECLARE @yesterday DATE
-SELECT @today = CONVERT(date, MAX([Day]))
-	FROM [EodPrices]
-SELECT @yesterday = CONVERT(date, MAX([Day]))
-	FROM [EodPrices]
-	WHERE [Day] <> @today
 
--- Get the latest charts for each type
--- Chart sources
---		0 - Stock
---		2 - Stock RS
---		3 - Peer RS
 SELECT sc.[ShareId]
-	, c.[Source]
-	, ROW_NUMBER() OVER(PARTITION BY sc.[ShareId], c.[Source] ORDER BY c.GeneratedDate DESC) as Ordinal# 
-	, sc.[ChartId]
-	, c.[GeneratedDate]
-	, c.[CreatedAt]
-	INTO #LatestCharts
-	FROM ShareCharts sc
-	LEFT JOIN PnFCharts c on c.Id = sc.ChartId
-	WHERE c.[Source] IN (0, 2, 3)
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #PriceSignals
+	FROM [PnFCharts] c
+	JOIN [ShareCharts] sc ON sc.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 0 and s.[Day] >= @cutoffDate
+
+SELECT sc.[ShareId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #RsSignals
+	FROM [PnFCharts] c
+	JOIN [ShareCharts] sc ON sc.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 2 and s.[Day] >= @cutoffDate
+
+SELECT sc.[ShareId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #PeerRsSignals
+	FROM [PnFCharts] c
+	INNER JOIN [ShareCharts] sc ON sc.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 3 and s.[Day] >= @cutoffDate
 
 
-SELECT col.[Id]
-      ,col.[PnFChartId]
-      ,col.[ColumnType]
-      ,col.[CurrentBoxIndex]
-	  ,col.[ShowBullishSupport]
-      ,col.[Index]
-	  ,ROW_NUMBER() OVER(PARTITION BY [PnfChartId] ORDER BY [Index] DESC) AS Ordinal#
-	  ,c.[Source]
-	  ,sc.[ShareId]
-  INTO #SortedByIndex
-  FROM [PnFColumns] col
-  LEFT JOIN [PnFCharts] c ON c.Id = col.PnFChartId
-  LEFT JOIN [ShareCharts] sc ON sc.ChartId = col.PnFChartId
-  WHERE col.[PnFChartId] IN (SELECT ChartId FROM #LatestCharts WHERE Ordinal# = 1) 
-  ORDER BY [PnfChartId], [Index] DESC
+SELECT q.[ShareId]
+	,	q.[Day]
+	,	vs.[Signals] PriceSignals
+	,	vs.[Value] PriceValue
+	,	rs.[Signals] RsSignals
+	,	rs.[Value] RsValue
+	,	prs.[Signals] PrsSignals
+	,	prs.[Value] PrsValue
+INTO #pivot
+FROM [EodPrices] q
+LEFT JOIN #PriceSignals vs ON vs.ShareId = q.[ShareId] AND vs.[Day] = q.[Day]		
+LEFT JOIN #RsSignals rs ON rs.ShareId = q.[ShareId] AND rs.[Day] = q.[Day]		
+LEFT JOIN #PeerRsSignals prs ON prs.ShareId = q.[ShareId] AND prs.[Day] = q.[Day]		
+WHERE q.[Day] >= @cutoffDate
 
--- The Bulls
-SELECT sbi.[PnfChartId], sbi.[ShareId], sbi.[Source], [CurrentBoxIndex] AS H1
-	INTO #rising
-	FROM #SortedByIndex sbi
-	WHERE sbi.[Ordinal#] = 1 AND sbi.[ColumnType]=1;
-
-SELECT sbi.[PnfChartId], sbi.[ShareId], sbi.[Source], sbi.[CurrentBoxIndex] AS H3, c1.H1  
-	INTO #doubleTop
-	FROM #SortedByIndex AS sbi
-	JOIN #rising AS c1 ON c1.[PnFChartId] = sbi.[PnFChartId]
-	WHERE sbi.[Ordinal#] = 3 AND sbi.[ColumnType]=1
-		AND sbi.[CurrentBoxIndex] < c1.H1;
-
-SELECT sbi.[PnfChartId], sbi.[ShareId], sbi.[Source]  
-	INTO #TripleTop
-	FROM #SortedByIndex AS sbi
-	JOIN #doubleTop AS c3 ON c3.[PnFChartId] = sbi.[PnFChartId]
-	WHERE sbi.[Ordinal#] = 5 AND sbi.[ColumnType]=1
-		AND sbi.[CurrentBoxIndex] < c3.H3;
-
--- Trading above bullish support
-SELECT sbi.[PnfChartId], sbi.[ShareId], sbi.[Source], sbi.[ShowBullishSupport] AS PT
-	INTO #aboveBullishSupport
-	FROM #SortedByIndex sbi
-	WHERE sbi.[Ordinal#] = 1 AND sbi.[ShowBullishSupport]=1;
-
--- The Bears
-SELECT sbi.[PnfChartId], sbi.[ShareId], sbi.[Source], [CurrentBoxIndex] AS L1
-	INTO #falling
-	FROM #SortedByIndex sbi
-	WHERE sbi.[Ordinal#] = 1 AND sbi.[ColumnType]=0;
-
-SELECT sbi.[PnfChartId], sbi.[ShareId], sbi.[Source], sbi.[CurrentBoxIndex] AS L3, f.L1  
-	INTO #doubleBottom
-	FROM #SortedByIndex AS sbi
-	JOIN #falling AS f ON f.[PnFChartId] = sbi.[PnFChartId]
-	WHERE sbi.[Ordinal#] = 3 AND sbi.[ColumnType]=0
-		AND sbi.[CurrentBoxIndex] > f.L1;
+DECLARE @IsRising AS INT			= 0x0001; --       // Going up
+DECLARE @IsFalling AS INT			= 0x0002; --       // Going down
+DECLARE @DoubleTop AS INT			= 0x0004; --       // Double Bottom
+DECLARE @DoubleBottom AS INT		= 0x0008; --       // Double Bottom
+DECLARE @TripleTop AS INT			= 0x0010; --       // Triple Top
+DECLARE @TripleBottom AS INT		= 0x0020; --       // Triple Bottom
+DECLARE @AboveBullSupport AS INT	= 0x0040; --       // Current box is abobe bullish support level
 
 
-SELECT sbi.[PnfChartId], sbi.[ShareId], sbi.[Source]  
-	INTO #TripleBottom
-	FROM #SortedByIndex AS sbi
-	JOIN #doubleBottom AS db ON db.[PnFChartId] = sbi.[PnFChartId]
-	WHERE sbi.[Ordinal#] = 5 AND sbi.[ColumnType]=0
-		AND sbi.[CurrentBoxIndex] > db.L3;
 
 
-select s.[Id] as [ShareId]
-	, CONVERT(DATE, @today) as [Day]
-	, CONVERT(bit, IIF(sh.[ShareId] IS NOT NULL, 1, 0)) AS Rising
-	, CONVERT(bit, IIF(shdt.[ShareId] IS NOT NULL, 1, 0)) AS DoubleTop
-	, CONVERT(bit, IIF(shtt.[ShareId] IS NOT NULL, 1, 0)) AS TripleTop
-	, CONVERT(bit, IIF(srs.[ShareId] IS NOT NULL, 1, 0)) AS RsRising
-	, CONVERT(bit, IIF(srsBuy.[ShareId] IS NOT NULL, 1, 0)) AS RsBuy
-	, CONVERT(bit, IIF(prs.[ShareId] IS NOT NULL, 1, 0)) AS PeerRsRising
-	, CONVERT(bit, IIF(prsBuy.[ShareId] IS NOT NULL, 1, 0)) AS PeerRsBuy
-	, CONVERT(bit, IIF(f.[ShareId] IS NOT NULL, 1, 0)) AS Falling
-	, CONVERT(bit, IIF(fdb.[ShareId] IS NOT NULL, 1, 0)) AS DoubleBottom
-	, CONVERT(bit, IIF(ftb.[ShareId] IS NOT NULL, 1, 0)) AS TripleBottom
-	, CONVERT(bit, IIF(srsf.[ShareId] IS NOT NULL, 1, 0)) AS RsFalling
-	, CONVERT(bit, IIF(srsSell.[ShareId] IS NOT NULL, 1, 0)) AS RsSell
-	, CONVERT(bit, IIF(prsf.[ShareId] IS NOT NULL, 1, 0)) AS PeerRsFalling
-	, CONVERT(bit, IIF(prsSell.[ShareId] IS NOT NULL, 1, 0)) AS PeerRsSell
-	, CONVERT(bit, IIF(pt.[ShareId] IS NOT NULL, 1, 0)) AS AboveBullSupport
+select [ShareId]
+	, [Day]
+	, CONVERT(bit, IIF(PriceSignals&@IsRising=@IsRising, 1, 0)) AS Rising
+	, CONVERT(bit, IIF(PriceSignals&@DoubleTop=@DoubleTop, 1, 0)) AS DoubleTop
+	, CONVERT(bit, IIF(PriceSignals&@TripleTop=@TripleTop, 1, 0)) AS TripleTop
+	, CONVERT(bit, IIF(RsSignals&@IsRising=@IsRising, 1, 0)) AS RsRising
+	, CONVERT(bit, IIF(RsSignals&@DoubleTop=@DoubleTop, 1, 0)) AS RsBuy
+	, CONVERT(bit, IIF(PrsSignals&@IsRising=@IsRising, 1, 0)) AS PeerRsRising
+	, CONVERT(bit, IIF(PrsSignals&@DoubleTop=@DoubleTop, 1, 0)) AS PeerRsBuy
+	, CONVERT(bit, IIF(PriceSignals&@IsFalling=@IsFalling, 1, 0)) AS Falling
+	, CONVERT(bit, IIF(PriceSignals&@DoubleBottom=@DoubleBottom, 1, 0)) AS DoubleBottom
+	, CONVERT(bit, IIF(PriceSignals&@TripleBottom=@TripleBottom, 1, 0)) AS TripleBottom
+	, CONVERT(bit, IIF(RsSignals&@IsFalling=@IsFalling, 1, 0)) AS RsFalling
+	, CONVERT(bit, IIF(RsSignals&@DoubleBottom=@DoubleBottom, 1, 0)) AS RsSell
+	, CONVERT(bit, IIF(PrsSignals&@IsFalling=@IsFalling, 1, 0)) AS PeerRsFalling
+	, CONVERT(bit, IIF(PrsSignals&@DoubleBottom=@DoubleBottom, 1, 0)) AS PeerRsSell
+	, CONVERT(bit, IIF(PriceSignals&@AboveBullSupport=@AboveBullSupport, 1, 0)) AS AboveBullSupport
 into #ShareResults
-from [Shares] s
-left join #rising sh ON sh.[ShareId] = s.Id AND sh.[Source] = 0
-left join #aboveBullishSupport pt ON pt.[ShareId] = s.Id AND sh.[Source] = 0
-left join #doubleTop shdt ON shdt.[ShareId] = s.Id AND shdt.[Source] = 0
-left join #tripleTop shtt ON shtt.[ShareId] = s.Id AND shtt.[Source] = 0
-left join #rising srs ON srs.[ShareId] = s.Id AND srs.[Source] = 2
-left join #doubleTop srsBuy ON srsBuy.[ShareId] = s.Id AND srsBuy.[Source] = 2
-left join #rising prs ON prs.[ShareId] = s.Id AND prs.[Source] = 3
-left join #doubleTop prsBuy ON prsBuy.[ShareId] = s.Id AND prsBuy.[Source] = 3
-left join #falling f ON f.[ShareId] = s.Id AND f.[Source] = 0
-left join #doubleBottom fdb ON fdb.[ShareId] = s.Id AND fdb.[Source] = 0
-left join #tripleBottom ftb ON ftb.[ShareId] = s.Id AND ftb.[Source] = 0
-left join #falling srsf ON srsf.[ShareId] = s.Id AND srsf.[Source] = 2
-left join #doubleBottom srsSell ON srsSell.[ShareId] = s.Id AND srsSell.[Source] = 2
-left join #falling prsf ON prsf.[ShareId] = s.Id AND prsf.[Source] = 3
-left join #doublebottom prsSell ON prsSell.[ShareId] = s.Id AND prsSell.[Source] = 3
+from #pivot
 
 UPDATE [dbo].[ShareIndicators]
 	SET [Rising] = sr.[Rising]
@@ -195,9 +134,8 @@ UPDATE [dbo].[ShareIndicators]
 	,	[PeerRsSell] = sr.[PeerRsSell]
 	,	[AboveBullSupport] = sr.[AboveBullSupport]
 FROM [dbo].[ShareIndicators] si
-INNER JOIN #ShareResults sr
-ON sr.[ShareId] = si.[ShareId]
-	AND sr.[Day] = si.[Day];
+INNER JOIN #ShareResults sr ON sr.[ShareId] = si.[ShareId] AND sr.[Day] = si.[Day]
+WHERE si.[Day] >= @cutoffDate
 
 INSERT INTO [dbo].[ShareIndicators] ([Id], [ShareId], [Day], [Rising], [DoubleTop], [TripleTop],[RsRising],[RsBuy],[PeerRsRising],[PeerRsBuy]
 		, [Falling], [DoubleBottom], [TripleBottom], [RsFalling], [RsSell], [PeerRsFalling], [PeerRsSell], [AboveBullSupport])
@@ -223,11 +161,8 @@ INSERT INTO [dbo].[ShareIndicators] ([Id], [ShareId], [Day], [Rising], [DoubleTo
 	LEFT JOIN [ShareIndicators] si ON si.[ShareId] = sr.[ShareId] AND si.[Day] = sr.[Day]
 	WHERE si.[Id] IS NULL
 
-	-- Update the closed above EMA columns for any records created in the past 5 days.
-	DECLARE @cutoffDate date
-	SET @cutoffDate = DATEADD(d, -5, GETDATE())
 
-	UPDATE si
+UPDATE si
 		SET si.[ClosedAboveEma10] = IIF(p.[Close] > si.[Ema10], 1, 0)
 		,	si.[ClosedAboveEma30] = IIF(p.[Close] > si.[Ema30], 1, 0)
 		FROM [dbo].[ShareIndicators] si
@@ -237,18 +172,16 @@ INSERT INTO [dbo].[ShareIndicators] ([Id], [ShareId], [Day], [Rising], [DoubleTo
 		WHERE si.[CreatedAt] > @cutoffDate
 
 -- Now update the Events code with notifications of new events.
-SELECT ShareId, DoubleTop, TripleTop, RsBuy, PeerRsBuy, DoubleBottom, TripleBottom, RsSell, PeerRsSell, ClosedAboveEma10, ClosedAboveEma30, [AboveBullSupport]
+SELECT ShareId, [Day], DoubleTop, TripleTop, RsBuy, PeerRsBuy, DoubleBottom, TripleBottom, RsSell, PeerRsSell, ClosedAboveEma10, ClosedAboveEma30, [AboveBullSupport]
+		, ROW_NUMBER() OVER(PARTITION BY [ShareId] ORDER BY [Day] ASC) as Ordinal#
 	INTO #today
 	FROM [dbo].[ShareIndicators]
-	WHERE [Day] = @today;
+	WHERE [Day] >= @cutoffDate;
 
-SELECT ShareId, DoubleTop, TripleTop, RsBuy, PeerRsBuy, DoubleBottom, TripleBottom, RsSell, PeerRsSell, ClosedAboveEma10, ClosedAboveEma30, [AboveBullSupport]
-	INTO #yesterday
-	FROM [dbo].[ShareIndicators]
-	WHERE [Day] = @yesterday
 
 UPDATE [dbo].[ShareIndicators]
-		SET [NewEvents] = iif(td.[DoubleTop]^yd.[DoubleTop]=1 and td.[DoubleTop]=1, 0x0001, 0)
+		SET [UpdatedAt] = GETDATE()
+		,	[NewEvents] = iif(td.[DoubleTop]^yd.[DoubleTop]=1 and td.[DoubleTop]=1, 0x0001, 0)
 		+ iif(td.[TripleTop]^yd.[TripleTop]=1 and td.[TripleTop]=1, 0x0002, 0)
 		+ iif(td.[RsBuy]^yd.[RsBuy]=1 and td.[RsBuy]=1, 0x0004, 0) 
 		+ iif(td.[PeerRsBuy]^yd.[PeerRsBuy]=1 and td.[PeerRsBuy]=1, 0x0008, 0)
@@ -262,9 +195,9 @@ UPDATE [dbo].[ShareIndicators]
 		+ iif(td.[ClosedAboveEma30]^yd.[ClosedAboveEma30]=1 and yd.[ClosedAboveEma30]=1, 0x0800, 0) 
 		+ iif(td.[AboveBullSupport]^yd.[AboveBullSupport]=1 and yd.[AboveBullSupport]=1, 0x1000, 0)
 	FROM [dbo].[ShareIndicators] si
-	LEFT JOIN #today td ON td.[ShareId] = si.[ShareId]
-	LEFT JOIN #yesterday yd ON yd.[ShareId] = td.[ShareId]
-	WHERE si.[Day] = @today
+	LEFT JOIN #today td ON td.[ShareId] = si.[ShareId] AND td.[Day] = si.[Day]
+	LEFT JOIN #today yd ON yd.[ShareId] = td.[ShareId] AND yd.Ordinal# = td.Ordinal#-1
+	WHERE si.[Day] >= @cutoffDate and td.[Ordinal#] > 1
 
 RAISERROR (N'Done.', 0, 0) WITH NOWAIT;
 

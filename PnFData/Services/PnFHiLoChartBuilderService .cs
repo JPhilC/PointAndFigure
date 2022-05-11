@@ -106,6 +106,9 @@ namespace PnFData.Services
                         firstBox = false;
                         //System.Diagnostics.Debug.WriteLine($"First box X {eod.Day} - {eod.High}\t{eod.Low}, Col Index = {currentColumn.Index}");
                     }
+
+                    // Update signal states
+                    UpdateSignals(ref chart, columnIndex, eod.Day);
                 }
                 else
                 {
@@ -220,6 +223,9 @@ namespace PnFData.Services
                         }
                     }
 
+                    // Update signal states
+                    UpdateSignals(ref chart, columnIndex, eod.Day);
+
                     // See if we had a year change in the current column.
                     if (eod.Day.Year != lastYearRecorded)
                     {
@@ -229,9 +235,11 @@ namespace PnFData.Services
                 currentColumn.Volume += eod.Volume;
                 lastYearRecorded = eod.Day.Year;
                 chart.GeneratedDate = eod.Day;
+
             }
             return chart;
         }
+
 
         /// <summary>
         /// 
@@ -249,14 +257,14 @@ namespace PnFData.Services
             DateTime lastUpdate = chart.GeneratedDate;
             int lastMonthRecorded = lastUpdate.Month;
             int lastYearRecorded = lastUpdate.Year;
-            
+
             // Get the column settings.
             int columnIndex = chart.Columns.Max(c => c.Index);
             PnFColumn currentColumn = chart.Columns.FirstOrDefault(c => c.Index == columnIndex);
-            PnFColumn prevColumnOne = chart.Columns.FirstOrDefault(c => c.Index == columnIndex-1);
-            PnFColumn prevColumnTwo = chart.Columns.FirstOrDefault(c => c.Index == columnIndex-2);
+            PnFColumn prevColumnOne = chart.Columns.FirstOrDefault(c => c.Index == columnIndex - 1);
+            PnFColumn prevColumnTwo = chart.Columns.FirstOrDefault(c => c.Index == columnIndex - 2);
 
-            
+
             if (currentColumn == null)
             {
                 System.Diagnostics.Debug.WriteLine("Chart has no columns");
@@ -389,6 +397,10 @@ namespace PnFData.Services
                 currentColumn.Volume += eod.Volume;
                 lastYearRecorded = eod.Day.Year;
                 chart.GeneratedDate = eod.Day;
+
+                // Update signal states
+                UpdateSignals(ref chart, columnIndex, eod.Day);
+
             }
             return !errors;
         }

@@ -8,16 +8,21 @@ namespace PnFData.Model
     [Flags]
     public enum IndexEvents
     {
+        [Description("Bull Alert")]
+        BullAlert = 0x0001,
+        [Description("Bear Alert")]
+        BearAlert = 0x0002,
         [Description("Bull Confirmed")]
-        BullConfirmed = 0x0001,
+        BullConfirmed = 0x0004,
         [Description("Bear Confirmed")]
-        BearConfirmed = 0x0002,
+        BearConfirmed = 0x0008,
         [Description("Bull Confirmed < 30")]
-        BullConfirmedLt30 = 0x0004,
+        BullConfirmedLt30 = 0x0010,
         [Description("Bear Confirmed > 70")]
-        BearConfirmedGt70 = 0x0008,
+        BearConfirmedGt70 = 0x0020,
     }
 
+    [Index(nameof(Day))]
     public class IndexIndicator : EntityData
     {
         public DateTime Day { get; set; }

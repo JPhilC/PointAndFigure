@@ -34,7 +34,10 @@ SELECT [ShareId],
 	CAST(NULL AS FLOAT) AS Ema
 INTO #TBL_EMA_RT
 FROM [EodPrices]
+WHERE [Close] < 1000000.00		
 ORDER BY [ShareId], [QuoteId]
+
+--- The large value comparison is to filter out rubbish data coming from AlphaVantage
 
  
 CREATE UNIQUE CLUSTERED INDEX EMA_IDX_RT ON #TBL_EMA_RT (ShareId, QuoteId)
@@ -69,7 +72,12 @@ ON
     T1.[ShareId] = T2.[ShareId]
 OPTION (MAXDOP 1)
 
-SELECT t.[ShareId], t.[Day], CAST(Ema AS NUMERIC(10,2)) As Ema
+IF OBJECT_ID('tempdb..#TBL_EMA_50') IS NOT NULL BEGIN
+    DROP TABLE #TBL_EMA_50
+END
+ 
+
+SELECT t.[ShareId], t.[Day], CONVERT(NUMERIC(10,2), Ema) As Ema
 	INTO #TBL_EMA_50
 	FROM #TBL_EMA_RT AS t
 	ORDER BY t.[ShareId], t.[Day] DESC;
@@ -109,7 +117,11 @@ ON
     T1.[ShareId] = T2.[ShareId]
 OPTION (MAXDOP 1)
 
-SELECT t.[ShareId], t.[Day], CAST(Ema AS NUMERIC(10,2)) As Ema
+IF OBJECT_ID('tempdb..#TBL_EMA_150') IS NOT NULL BEGIN
+    DROP TABLE #TBL_EMA_150
+END
+
+SELECT t.[ShareId], t.[Day], CONVERT(NUMERIC(10,2), Ema) As Ema
 	INTO #TBL_EMA_150
 	FROM #TBL_EMA_RT AS t
 	ORDER BY t.[ShareId], t.[Day] DESC;
@@ -120,6 +132,7 @@ SELECT q.[ShareId], q.[Day], q.[Close], ema10.[Ema] As Ema10, ema30.[Ema] AS Ema
 	FROM [EodPrices] q
 	LEFT JOIN #TBL_EMA_50 ema10 ON ema10.ShareId = q.ShareId and ema10.[Day] = q.[Day]
 	LEFT JOIN #TBL_EMA_150 ema30 ON ema30.ShareId = q.ShareId and ema30.[Day] = q.[Day]
+	WHERE q.[Close] < 1000000.00
 	ORDER BY q.[ShareId], q.[Day]
 
 UPDATE si

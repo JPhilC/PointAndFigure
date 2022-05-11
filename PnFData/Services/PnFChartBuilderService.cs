@@ -33,8 +33,81 @@ namespace PnFData.Services
         public abstract bool UpdateChart(ref PnFChart chart, DateTime uptoDate);
 
 
-#region Helper methods ...
+        protected void UpdateSignals(ref PnFChart chart, int columnIndex, DateTime day)
+        {
+            if (chart.Columns.Count == 0 || chart.Columns.Count < columnIndex + 1)
+            {
+                return;
+            }
+            PnFSignalEnum signals = PnFSignalEnum.NotSet;
+            PnFColumn currentColumn = chart.Columns[columnIndex];
+            double currentValue = GetValue(currentColumn.CurrentBoxIndex);
+            if (currentColumn.ShowBullishSupport)
+            {
+                signals |= PnFSignalEnum.AboveBullishSupport;
+            }
+            if (currentColumn.ColumnType == PnFColumnType.O)
+            {
+                // Falling
+                signals |= PnFSignalEnum.IsFalling;
+                // Double Bottom
+                if (currentColumn.Index > 1)
+                {
+                    if (currentValue < GetValue(chart.Columns[columnIndex - 2].EndAtIndex))
+                    {
+                        signals |= PnFSignalEnum.DoubleBottom;
+                    }
+                }
+                // Triple Bottom
+                if (currentColumn.Index > 3)
+                {
+                    if (currentValue < GetValue(chart.Columns[columnIndex - 4].EndAtIndex))
+                    {
+                        signals |= PnFSignalEnum.TripleBottom;
+                    }
+                }
+            }
+            else
+            {
+                // Rising
+                signals |= PnFSignalEnum.IsRising;
+                // Double Top
+                if (currentColumn.Index > 1)
+                {
+                    if (currentValue > GetValue(chart.Columns[columnIndex - 2].EndAtIndex))
+                    {
+                        signals |= PnFSignalEnum.DoubleTop;
+                    }
+                }
+                // Triple Top
+                if (currentColumn.Index > 3)
+                {
+                    if (currentValue > GetValue(chart.Columns[columnIndex - 4].EndAtIndex))
+                    {
+                        signals |= PnFSignalEnum.TripleTop;
+                    }
+                }
+            }
+            chart.Signals.Add(new PnFSignal()
+            {
+                PnFChart = chart,
+                Day = day,
+                Signals = signals,
+                Value = currentValue
+            });
+        }
 
+        #region Helper methods ...
+
+        /// <summary>
+        /// Returns a random integer between 1000 and 5000
+        /// </summary>
+        /// <returns></returns>
+        public static int GetRandomDelay()
+        {
+            Random r = new Random();
+            return r.Next(1000, 5000);
+        }
 
         /// <summary>
         /// 

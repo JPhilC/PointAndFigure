@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using PnFData.Interfaces;
 using PnFData.Model;
 using PnFData.Services;
@@ -8,7 +9,7 @@ namespace PnFImports
 {
     internal partial class PnFImports
     {
-        internal static void GenerateIndexCharts(string exchangeCode)
+        internal static void GenerateIndexCharts(string exchangeCode, DateTime toDate)
         {
             List<PnFData.Model.Index> indices = null;
             try
@@ -35,10 +36,9 @@ namespace PnFImports
             }
             if (indices != null)
             {
-                DateTime now = DateTime.Now.Date;
                 string indexName = "";
                 Parallel.ForEach(indices,
-                    new ParallelOptions { MaxDegreeOfParallelism = 5 },
+                    new ParallelOptions { MaxDegreeOfParallelism = 10 },
                 (index) =>
                 {
                     if (string.IsNullOrEmpty(index.SuperSector))
@@ -67,11 +67,13 @@ namespace PnFImports
                                     Value = r.Value
                                 }
                                 ).ToList<IDayValue>();
-
-                                GenerateIndexChart(index.Id, indexName, now, tickData, PnFChartSource.Index);
-
                             }
                         }
+                        if (tickData != null)
+                        {
+                            GenerateIndexChart(index.Id, indexName, toDate, tickData, PnFChartSource.Index);
+                        }
+
                     }
                     catch (Exception ex)
                     {
@@ -133,7 +135,8 @@ namespace PnFImports
                                 db.Update(chart);
 
                                 bool saved = false;
-                                while (!saved)
+                                int trys = 0;
+                                while (!saved && trys < 5)
                                 {
                                     try
                                     {
@@ -151,6 +154,13 @@ namespace PnFImports
                                             entry.OriginalValues.SetValues(proposedValues);
                                         }
                                     }
+                                    catch (SqlException sqex)
+                                    {
+                                        trys++;
+                                        System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                        Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                    }
+
                                 }
 
                             }
@@ -225,22 +235,32 @@ namespace PnFImports
 
 
                                 bool saved = false;
-                                while (!saved)
+                                int trys = 0;
+                                while (!saved && trys < 5)
                                 {
-                                    try
+                                    while (!saved)
                                     {
-                                        int saveResult = db.SaveChanges();
-                                        Console.WriteLine($"{saveResult} record saved.");
-                                        saved = true;
-                                    }
-                                    catch (DbUpdateConcurrencyException updateEx)
-                                    {
-                                        foreach (var entry in updateEx.Entries)
+                                        try
                                         {
-                                            var proposedValues = entry.CurrentValues;
-                                            var databaseValues = entry.GetDatabaseValues();
-                                            proposedValues["Version"] = databaseValues["Version"];
-                                            entry.OriginalValues.SetValues(proposedValues);
+                                            int saveResult = db.SaveChanges();
+                                            Console.WriteLine($"{saveResult} record saved.");
+                                            saved = true;
+                                        }
+                                        catch (DbUpdateConcurrencyException updateEx)
+                                        {
+                                            foreach (var entry in updateEx.Entries)
+                                            {
+                                                var proposedValues = entry.CurrentValues;
+                                                var databaseValues = entry.GetDatabaseValues();
+                                                proposedValues["Version"] = databaseValues["Version"];
+                                                entry.OriginalValues.SetValues(proposedValues);
+                                            }
+                                        }
+                                        catch (SqlException sqex)
+                                        {
+                                            trys++;
+                                            System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                            Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
                                         }
                                     }
                                 }
@@ -268,7 +288,7 @@ namespace PnFImports
         }
 
 
-        internal static void GenerateIndexPercentCharts(string exchangeCode)
+        internal static void GenerateIndexPercentCharts(string exchangeCode, DateTime uptoDate)
         {
             List<PnFData.Model.Index> indices = null;
             try
@@ -295,9 +315,10 @@ namespace PnFImports
             }
             if (indices != null)
             {
-                DateTime now = DateTime.Now.Date;
                 string indexName = "";
-                foreach (var index in indices)
+                Parallel.ForEach(indices,
+                    new ParallelOptions { MaxDegreeOfParallelism = 5 },
+                (index) =>
                 {
                     if (string.IsNullOrEmpty(index.SuperSector))
                     {
@@ -313,67 +334,68 @@ namespace PnFImports
                     try
                     {
                         Console.WriteLine($@"Retrieving RS tick data for {indexName}.");
+                        IEnumerable<IndexValue> rawTickData = null;
                         using (PnFDataContext db = new PnFDataContext())
                         {
-                            var rawTickData = db.IndexValues.Where(i => i.IndexId == index.Id);
-
-                            if (rawTickData != null)
-                            {
-                                tickData = rawTickData.Where(r => r.BullishPercent.HasValue).Select(r => new SimpleDayValue()
-                                {
-                                    Day = r.Day,
-                                    Value = r.BullishPercent.Value
-                                }
-                                ).ToList<IDayValue>();
-
-                                GeneratePercentChart(index.Id, indexName, now, tickData, PnFChartSource.IndexBullishPercent);
-
-                                tickData = rawTickData.Where(r => r.PercentAboveEma10.HasValue).Select(r => new SimpleDayValue()
-                                {
-                                    Day = r.Day,
-                                    Value = r.PercentAboveEma10.Value
-                                }
-                                ).ToList<IDayValue>();
-
-                                GeneratePercentChart(index.Id, indexName, now, tickData, PnFChartSource.IndexPercentShareAbove10);
-
-                                tickData = rawTickData.Where(r => r.PercentAboveEma30.HasValue).Select(r => new SimpleDayValue()
-                                {
-                                    Day = r.Day,
-                                    Value = r.PercentAboveEma30.Value
-                                }
-                                ).ToList<IDayValue>();
-
-                                GeneratePercentChart(index.Id, indexName, now, tickData, PnFChartSource.IndexPercentShareAbove30);
-
-                                tickData = rawTickData.Where(r => r.PercentPositiveTrend.HasValue).Select(r => new SimpleDayValue()
-                                {
-                                    Day = r.Day,
-                                    Value = r.PercentPositiveTrend.Value
-                                }
-                                ).ToList<IDayValue>();
-
-                                GeneratePercentChart(index.Id, indexName, now, tickData, PnFChartSource.IndexPercentSharePT);
-
-                                tickData = rawTickData.Where(r => r.PercentRsBuy.HasValue).Select(r => new SimpleDayValue()
-                                {
-                                    Day = r.Day,
-                                    Value = r.PercentRsBuy.Value
-                                }
-                                ).ToList<IDayValue>();
-
-                                GeneratePercentChart(index.Id, indexName, now, tickData, PnFChartSource.IndexPercentShareRsBuy);
-
-                                tickData = rawTickData.Where(r => r.PercentRsRising.HasValue).Select(r => new SimpleDayValue()
-                                {
-                                    Day = r.Day,
-                                    Value = r.PercentRsRising.Value
-                                }
-                                ).ToList<IDayValue>();
-
-                                GeneratePercentChart(index.Id, indexName, now, tickData, PnFChartSource.IndexPercentShareRsX);
-                            }
+                            rawTickData = db.IndexValues.Where(i => i.IndexId == index.Id).ToList();
                         }
+                        if (rawTickData != null)
+                        {
+                            tickData = rawTickData.Where(r => r.BullishPercent.HasValue).Select(r => new SimpleDayValue()
+                            {
+                                Day = r.Day,
+                                Value = r.BullishPercent.Value
+                            }
+                            ).ToList<IDayValue>();
+
+                            GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexBullishPercent);
+
+                            tickData = rawTickData.Where(r => r.PercentAboveEma10.HasValue).Select(r => new SimpleDayValue()
+                            {
+                                Day = r.Day,
+                                Value = r.PercentAboveEma10.Value
+                            }
+                            ).ToList<IDayValue>();
+
+                            GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentShareAbove10);
+
+                            tickData = rawTickData.Where(r => r.PercentAboveEma30.HasValue).Select(r => new SimpleDayValue()
+                            {
+                                Day = r.Day,
+                                Value = r.PercentAboveEma30.Value
+                            }
+                            ).ToList<IDayValue>();
+
+                            GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentShareAbove30);
+
+                            tickData = rawTickData.Where(r => r.PercentPositiveTrend.HasValue).Select(r => new SimpleDayValue()
+                            {
+                                Day = r.Day,
+                                Value = r.PercentPositiveTrend.Value
+                            }
+                            ).ToList<IDayValue>();
+
+                            GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentSharePT);
+
+                            tickData = rawTickData.Where(r => r.PercentRsBuy.HasValue).Select(r => new SimpleDayValue()
+                            {
+                                Day = r.Day,
+                                Value = r.PercentRsBuy.Value
+                            }
+                            ).ToList<IDayValue>();
+
+                            GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentShareRsBuy);
+
+                            tickData = rawTickData.Where(r => r.PercentRsRising.HasValue).Select(r => new SimpleDayValue()
+                            {
+                                Day = r.Day,
+                                Value = r.PercentRsRising.Value
+                            }
+                            ).ToList<IDayValue>();
+
+                            GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentShareRsX);
+                        }
+
                     }
                     catch (Exception ex)
                     {
@@ -381,7 +403,7 @@ namespace PnFImports
                         Console.WriteLine(ex.Message);
                     }
 
-                };
+                });
             }
 
         }
@@ -433,7 +455,8 @@ namespace PnFImports
                                     db.Update(ndx);
 
                                     bool saved = false;
-                                    while (!saved)
+                                    int trys = 0;
+                                    while (!saved && trys < 5)
                                     {
                                         try
                                         {
@@ -451,6 +474,13 @@ namespace PnFImports
                                                 entry.OriginalValues.SetValues(proposedValues);
                                             }
                                         }
+                                        catch (SqlException sqex)
+                                        {
+                                            trys++;
+                                            System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                            Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                        }
+
                                     }
                                 }
                             }
@@ -527,7 +557,8 @@ namespace PnFImports
 
 
                                 bool saved = false;
-                                while (!saved)
+                                int trys = 0;
+                                while (!saved && trys < 5)
                                 {
                                     try
                                     {
@@ -544,6 +575,12 @@ namespace PnFImports
                                             proposedValues["Version"] = databaseValues["Version"];
                                             entry.OriginalValues.SetValues(proposedValues);
                                         }
+                                    }
+                                    catch (SqlException sqex)
+                                    {
+                                        trys++;
+                                        System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                        Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
                                     }
                                 }
                             }

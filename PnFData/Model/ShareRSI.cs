@@ -1,11 +1,7 @@
-﻿using PnFData.Interfaces;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using PnFData.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PnFData.Model
 {
@@ -14,6 +10,8 @@ namespace PnFData.Model
         Market,     // RSI relative to Market
         Sector      // RSI relative to Sector
     }
+
+    [Index(nameof(Day))]
     public class ShareRSI : EntityData, IDayValue
     {
 

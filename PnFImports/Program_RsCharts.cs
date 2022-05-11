@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using PnFData.Interfaces;
 using PnFData.Model;
 using PnFData.Services;
@@ -8,7 +9,7 @@ namespace PnFImports
 {
     internal partial class PnFImports
     {
-        internal static void GenerateShareRSCharts(string exchangeCode)
+        internal static void GenerateShareRSCharts(string exchangeCode, DateTime toDate)
         {
             try
             {
@@ -24,9 +25,8 @@ namespace PnFImports
                         shares = db.Shares.Where(s => s.ExchangeCode == exchangeCode && s.EodPrices.Any()).ToList();
                     }
                 }
-                DateTime now = DateTime.Now.Date;
                 Parallel.ForEach(shares,
-                    new ParallelOptions { MaxDegreeOfParallelism = 5 }, (s) => GenerateShareRSChartPair(s.Id, s.Tidm, now));
+                    new ParallelOptions { MaxDegreeOfParallelism = 5 }, (s) => GenerateShareRSChartPair(s.Id, s.Tidm, toDate));
             }
             catch (Exception ex)
             {
@@ -36,10 +36,9 @@ namespace PnFImports
             }
         }
 
-        internal static void GenerateShareRSChart(string tidm, string relativeTo)
+        internal static void GenerateShareRSChart(string tidm, string relativeTo, DateTime uptoDate)
         {
             List<ShareRSI> tickData;
-            DateTime uptoDate = DateTime.Now.Date;
             try
             {
                 Console.WriteLine($@"Retrieving RS tick data for {tidm}.");
@@ -103,7 +102,7 @@ namespace PnFImports
                 GenerateRSChart(shareId, tidm, uptoDate, chartData, PnFChartSource.RSStockVSector);
             }
         }
-        internal static void GenerateIndexRSCharts(string exchangeCode)
+        internal static void GenerateIndexRSCharts(string exchangeCode, DateTime toDate)
         {
             try
             {
@@ -119,9 +118,8 @@ namespace PnFImports
                         indices = db.Indices.Where(s => s.ExchangeCode == exchangeCode && s.SuperSector != null && s.IndexValues.Any()).ToList();
                     }
                 }
-                DateTime now = DateTime.Now.Date;
                 Parallel.ForEach(indices,
-                    new ParallelOptions { MaxDegreeOfParallelism = 5 },(i)=> GenerateIndexRSChart(i.Id, $"{i.ExchangeCode}, {i.ExchangeSubCode}, {i.SuperSector}", now));
+                    new ParallelOptions { MaxDegreeOfParallelism = 10 }, (i) => GenerateIndexRSChart(i.Id, $"{i.ExchangeCode}, {i.ExchangeSubCode}, {i.SuperSector}", toDate));
             }
             catch (Exception ex)
             {
@@ -244,7 +242,8 @@ namespace PnFImports
                                 db.Update(chart);
 
                                 bool saved = false;
-                                while (!saved)
+                                int trys = 0;
+                                while (!saved && trys < 5)
                                 {
                                     try
                                     {
@@ -262,8 +261,14 @@ namespace PnFImports
                                             entry.OriginalValues.SetValues(proposedValues);
                                         }
                                     }
-                                }
+                                    catch (SqlException sqex)
+                                    {
+                                        trys++;
+                                        System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                        Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                    }
 
+                                }
                             }
                         }
                     }
@@ -338,7 +343,8 @@ namespace PnFImports
                                     ndx.Charts.Add(newIndexChart);
                                     db.Update(ndx);
                                     bool saved = false;
-                                    while (!saved)
+                                    int trys = 0;
+                                    while (!saved && trys < 5)
                                     {
                                         try
                                         {
@@ -352,17 +358,17 @@ namespace PnFImports
                                             {
                                                 var proposedValues = entry.CurrentValues;
                                                 var databaseValues = entry.GetDatabaseValues();
-
-                                                //foreach (var property in proposedValues.Properties)
-                                                //{
-                                                //    var proposedValue = proposedValues[property];
-                                                //    var databaseValue = databaseValues[property];
-                                                //    Console.WriteLine($"Conflict for {entry.Metadata.Name}.{property.Name}, proposed: {proposedValue}, database: {databaseValue}");
-                                                //}
                                                 proposedValues["Version"] = databaseValues["Version"];
                                                 entry.OriginalValues.SetValues(proposedValues);
                                             }
                                         }
+                                        catch (SqlException sqex)
+                                        {
+                                            trys++;
+                                            System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                            Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                        }
+
                                     }
                                 }
 
@@ -428,7 +434,8 @@ namespace PnFImports
 
 
                                     bool saved = false;
-                                    while (!saved)
+                                    int trys = 0;
+                                    while (!saved && trys < 5)
                                     {
                                         try
                                         {
@@ -446,7 +453,15 @@ namespace PnFImports
                                                 entry.OriginalValues.SetValues(proposedValues);
                                             }
                                         }
+                                        catch (SqlException sqex)
+                                        {
+                                            trys++;
+                                            System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                            Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                        }
+
                                     }
+
                                 }
 
                             }

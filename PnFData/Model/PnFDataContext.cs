@@ -34,6 +34,8 @@ namespace PnFData.Model
 
         public DbSet<PnFBox> PnFBoxes { get; set; }
 
+        public DbSet<PnFSignal> PnFSignals { get; set; }
+
         public DbSet<ShareChart> ShareCharts { get; set; }
 
         public DbSet<IndexChart> IndexCharts { get; set; }
@@ -90,6 +92,9 @@ namespace PnFData.Model
             modelBuilder.Entity<PnFBox>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("newid()");
+            modelBuilder.Entity<PnFSignal>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("newid()");
             modelBuilder.Entity<ShareChart>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("newid()");
@@ -129,6 +134,9 @@ namespace PnFData.Model
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("getdate()");
             modelBuilder.Entity<PnFBox>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<PnFSignal>()
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("getdate()");
             modelBuilder.Entity<ShareChart>()
@@ -178,6 +186,11 @@ namespace PnFData.Model
             modelBuilder.Entity<PnFColumn>()
                 .HasOne(p => p.PnFChart)
                 .WithMany(b => b.Columns)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PnFSignal>()
+                .HasOne(p => p.PnFChart)
+                .WithMany(b => b.Signals)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<ShareChart>()

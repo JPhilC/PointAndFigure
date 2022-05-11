@@ -1,14 +1,11 @@
-﻿using PnFData.Interfaces;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using PnFData.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PnFData.Model
 {
+    [Index(nameof(Day))]
     public class IndexRSI : EntityData, IDayValue
     {
 

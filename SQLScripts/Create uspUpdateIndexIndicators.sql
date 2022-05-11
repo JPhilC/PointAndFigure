@@ -16,113 +16,71 @@ CREATE PROCEDURE [dbo].[uspUpdateIndexIndicators]
 SET NOCOUNT ON	
 RAISERROR (N'Updating index indicators ...', 0, 0) WITH NOWAIT;
 
-	IF object_id('tempdb..#LatestCharts','U') is not null
-	DROP TABLE #LatestCharts;
+IF object_id('tempdb..#IndexSignals','U') is not null
+	DROP TABLE #IndexSignals;
 
-IF object_id('tempdb..#SortedByIndex','U') is not null
-	DROP TABLE #SortedByIndex;
+IF object_id('tempdb..#RsSignals','U') is not null
+	DROP TABLE #RsSignals;
 
-IF object_id('tempdb..#rising','U') is not null
-	DROP TABLE #rising;
-
-IF object_id('tempdb..#doubleTop','U') is not null
-	DROP TABLE #doubleTop;
-
-	IF object_id('tempdb..#falling','U') is not null
-	DROP TABLE #falling;
-
-IF object_id('tempdb..#doubleBottom','U') is not null
-	DROP TABLE #doubleBottom;
+IF object_id('tempdb..#Pivot','U') is not null
+	DROP TABLE #Pivot;
 
 IF object_id('tempdb..#IndexResults','U') is not null
 	DROP TABLE #IndexResults;
 
--- Get the latest day from EodPrices
-DECLARE @Day Datetime2(7)
-SELECT @Day = MAX([Day])
-	FROM [EodPrices]
+SELECT ic.[IndexId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #IndexSignals
+	FROM [PnFCharts] c
+	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 1
 
--- Get the latest charts for each type
--- Chart sources
---		1 - Index
---		4 - Index (Sector) RS
-SELECT sc.[IndexId]
-	, c.[Source]
-	, ROW_NUMBER() OVER(PARTITION BY sc.[IndexId], c.[Source] ORDER BY c.GeneratedDate DESC) as Ordinal# 
-	, sc.[ChartId]
-	, c.[GeneratedDate]
-	, c.[CreatedAt]
-	INTO #LatestCharts
-	FROM IndexCharts sc
-	LEFT JOIN PnFCharts c on c.Id = sc.ChartId
-	WHERE c.[Source] IN (1, 4)
+SELECT ic.[IndexId]
+	,	s.[Day]
+	,	s.[Signals]
+	,	s.[Value]
+	INTO #RsSignals
+	FROM [PnFCharts] c
+	JOIN [IndexCharts] ic ON ic.[ChartId] = c.[Id]
+	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
+	WHERE c.[Source] = 4
 
 
-SELECT col.[Id]
-      ,col.[PnFChartId]
-      ,col.[ColumnType]
-      ,col.[CurrentBoxIndex]
-      ,col.[Index]
-	  ,ROW_NUMBER() OVER(PARTITION BY [PnfChartId] ORDER BY [Index] DESC) AS Ordinal#
-	  ,c.[Source]
-	  ,sc.[IndexId]
-  INTO #SortedByIndex
-  FROM [PnFColumns] col
-  LEFT JOIN [PnFCharts] c ON c.Id = col.PnFChartId
-  LEFT JOIN [IndexCharts] sc ON sc.ChartId = col.PnFChartId
-  WHERE col.[PnFChartId] IN (SELECT ChartId FROM #LatestCharts WHERE Ordinal# = 1) 
-  ORDER BY [PnfChartId], [Index] DESC
+SELECT ixs.[IndexId]
+	,	ixs.[Day]
+	,	ixs.[Signals] IndexSignals
+	,	ixs.[Value] IndexValue
+	,	rs.[Signals] RsSignals
+	,	rs.[Value] RsValue
+INTO #pivot
+FROM #IndexSignals ixs 		
+LEFT JOIN #RsSignals rs ON rs.IndexId = ixs.[IndexId] AND rs.[Day] = ixs.[Day]		
 
--- The Bulls
-SELECT sbi.[PnfChartId], sbi.[IndexId], sbi.[Source], [CurrentBoxIndex] AS H1
-	INTO #rising
-	FROM #SortedByIndex sbi
-	WHERE sbi.[Ordinal#] = 1 AND sbi.[ColumnType]=1;
+DECLARE @IsRising AS INT			= 0x0001; --       // Going up
+DECLARE @IsFalling AS INT			= 0x0002; --       // Going down
+DECLARE @DoubleTop AS INT			= 0x0004; --       // Double Bottom
+DECLARE @DoubleBottom AS INT		= 0x0008; --       // Double Bottom
+DECLARE @TripleTop AS INT			= 0x0010; --       // Triple Top
+DECLARE @TripleBottom AS INT		= 0x0020; --       // Triple Bottom
+DECLARE @AboveBullSupport AS INT	= 0x0040; --       // Current box is abobe bullish support level
 
-SELECT sbi.[PnfChartId], sbi.[IndexId], sbi.[Source], sbi.[CurrentBoxIndex] AS H3, c1.H1  
-	INTO #doubleTop
-	FROM #SortedByIndex AS sbi
-	JOIN #rising AS c1 ON c1.[PnFChartId] = sbi.[PnFChartId]
-	WHERE sbi.[Ordinal#] = 3 AND sbi.[ColumnType]=1
-		AND sbi.[CurrentBoxIndex] < c1.H1;
-
--- The Bears
-SELECT sbi.[PnfChartId], sbi.[IndexId], sbi.[Source], [CurrentBoxIndex] AS L1
-	INTO #falling
-	FROM #SortedByIndex sbi
-	WHERE sbi.[Ordinal#] = 1 AND sbi.[ColumnType]=0;
-
-SELECT sbi.[PnfChartId], sbi.[IndexId], sbi.[Source], sbi.[CurrentBoxIndex] AS L3, f.L1  
-	INTO #doubleBottom
-	FROM #SortedByIndex AS sbi
-	JOIN #falling AS f ON f.[PnFChartId] = sbi.[PnFChartId]
-	WHERE sbi.[Ordinal#] = 3 AND sbi.[ColumnType]=0
-		AND sbi.[CurrentBoxIndex] > f.L1;
-
-select s.[Id] as [IndexId]
-	, s.[ExchangeCode]
-	, s.[ExchangeSubCode]
-	, s.[SuperSector]
-	, @Day as [Day]
-	, CONVERT(bit, IIF(sh.[IndexId] IS NOT NULL, 1, 0)) AS Rising
-	, CONVERT(bit, IIF(shdt.[IndexId] IS NOT NULL, 1, 0)) AS Buy
-	, CONVERT(bit, IIF(srs.[IndexId] IS NOT NULL, 1, 0)) AS RsRising
-	, CONVERT(bit, IIF(srsBuy.[IndexId] IS NOT NULL, 1, 0)) AS RsBuy
-	, CONVERT(bit, IIF(f.[IndexId] IS NOT NULL, 1, 0)) AS Falling
-	, CONVERT(bit, IIF(fdb.[IndexId] IS NOT NULL, 1, 0)) AS Sell
-	, CONVERT(bit, IIF(srsf.[IndexId] IS NOT NULL, 1, 0)) AS RsFalling
-	, CONVERT(bit, IIF(srsSell.[IndexId] IS NOT NULL, 1, 0)) AS RsSell
+select [IndexId]
+	, [Day]
+	, CONVERT(bit, IIF(IndexSignals&@IsRising=@IsRising, 1, 0)) AS Rising
+	, CONVERT(bit, IIF(IndexSignals&@DoubleTop=@DoubleTop, 1, 0)) AS Buy
+	, CONVERT(bit, IIF(RsSignals&@IsRising=@IsRising, 1, 0)) AS RsRising
+	, CONVERT(bit, IIF(RsSignals&@DoubleTop=@DoubleTop, 1, 0)) AS RsBuy
+	, CONVERT(bit, IIF(IndexSignals&@IsFalling=@IsFalling, 1, 0)) AS Falling
+	, CONVERT(bit, IIF(IndexSignals&@DoubleBottom=@DoubleBottom, 1, 0)) AS Sell
+	, CONVERT(bit, IIF(RsSignals&@IsFalling=@IsFalling, 1, 0)) AS RsFalling
+	, CONVERT(bit, IIF(RsSignals&@DoubleBottom=@DoubleBottom, 1, 0)) AS RsSell
 into #IndexResults
-from [Indices] s
-left join #rising sh ON sh.[IndexId] = s.Id AND sh.[Source] = 1
-left join #doubleTop shdt ON shdt.[IndexId] = s.Id AND shdt.[Source] = 1
-left join #rising srs ON srs.[IndexId] = s.Id AND srs.[Source] = 4
-left join #doubleTop srsBuy ON srsBuy.[IndexId] = s.Id AND srsBuy.[Source] = 4
-left join #falling f ON f.[IndexId] = s.Id AND f.[Source] = 1
-left join #doubleBottom fdb ON fdb.[IndexId] = s.Id AND fdb.[Source] = 1
-left join #falling srsf ON srsf.[IndexId] = s.Id AND srsf.[Source] = 4
-left join #doubleBottom srsSell ON srsSell.[IndexId] = s.Id AND srsSell.[Source] = 4
-order by [SuperSector], [ExchangeSubCode]
+from #pivot
+
+
 
 UPDATE [dbo].[IndexIndicators]
 	SET [Rising] = sr.[Rising]

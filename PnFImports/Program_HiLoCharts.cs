@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using PnFData.Model;
 using PnFData.Services;
 using System.Data;
@@ -7,7 +8,7 @@ namespace PnFImports
 {
     internal partial class PnFImports
     {
-        internal static void GenerateAllHiLoCharts(string exchangeCode)
+        internal static void GenerateAllHiLoCharts(string exchangeCode, DateTime toDate)
         {
             try
             {
@@ -23,9 +24,8 @@ namespace PnFImports
                         tidms = db.Shares.Where(s => s.ExchangeCode == exchangeCode && s.EodPrices.Any()).Select(s => s.Tidm).ToList();
                     }
                 }
-                DateTime now = DateTime.Now.Date;
                 Parallel.ForEach(tidms,
-                    new ParallelOptions { MaxDegreeOfParallelism = 5 }, (tidm)=>GenerateHiLoChart(tidm, now));
+                    new ParallelOptions { MaxDegreeOfParallelism = 10 }, (tidm) => GenerateHiLoChart(tidm, toDate));
             }
             catch (Exception ex)
             {
@@ -102,7 +102,8 @@ namespace PnFImports
                                 db.Update(chart);
 
                                 bool saved = false;
-                                while (!saved)
+                                int trys = 0;
+                                while (!saved && trys < 5)
                                 {
                                     try
                                     {
@@ -120,8 +121,13 @@ namespace PnFImports
                                             entry.OriginalValues.SetValues(proposedValues);
                                         }
                                     }
+                                    catch (SqlException sqex)
+                                    {
+                                        trys++;
+                                        System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                        Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                    }
                                 }
-
                             }
                         }
                     }
@@ -195,7 +201,8 @@ namespace PnFImports
                                 db.Update(share);
 
                                 bool saved = false;
-                                while (!saved)
+                                int trys = 0;
+                                while (!saved && trys < 5)
                                 {
                                     try
                                     {
@@ -213,8 +220,13 @@ namespace PnFImports
                                             entry.OriginalValues.SetValues(proposedValues);
                                         }
                                     }
+                                    catch (SqlException sqex)
+                                    {
+                                        trys++;
+                                        System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                        Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                    }
                                 }
-
                             }
 
                         }

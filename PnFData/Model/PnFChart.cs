@@ -48,6 +48,8 @@ namespace PnFData.Model
 
         public List<PnFColumn> Columns { get; } = new List<PnFColumn>();
 
+        public List<PnFSignal> Signals { get; } = new List<PnFSignal>();
+
         public ShareChart? ShareChart { get; set; }
 
         public IndexChart? IndexChart { get; set; }
