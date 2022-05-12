@@ -41,7 +41,7 @@ namespace PnFData.Services
             }
             PnFSignalEnum signals = PnFSignalEnum.NotSet;
             PnFColumn currentColumn = chart.Columns[columnIndex];
-            double currentValue = GetValue(currentColumn.CurrentBoxIndex);
+            int currentIndex = currentColumn.CurrentBoxIndex;
             if (currentColumn.ShowBullishSupport)
             {
                 signals |= PnFSignalEnum.AboveBullishSupport;
@@ -53,17 +53,17 @@ namespace PnFData.Services
                 // Double Bottom
                 if (currentColumn.Index > 1)
                 {
-                    if (currentValue < GetValue(chart.Columns[columnIndex - 2].EndAtIndex))
+                    if (currentIndex < chart.Columns[columnIndex - 2].CurrentBoxIndex)
                     {
                         signals |= PnFSignalEnum.DoubleBottom;
-                    }
-                }
-                // Triple Bottom
-                if (currentColumn.Index > 3)
-                {
-                    if (currentValue < GetValue(chart.Columns[columnIndex - 4].EndAtIndex))
-                    {
-                        signals |= PnFSignalEnum.TripleBottom;
+                        // Triple Bottom
+                        if (currentColumn.Index > 3)
+                        {
+                            if (currentIndex < chart.Columns[columnIndex - 4].CurrentBoxIndex)
+                            {
+                                signals |= PnFSignalEnum.TripleBottom;
+                            }
+                        }
                     }
                 }
             }
@@ -74,17 +74,17 @@ namespace PnFData.Services
                 // Double Top
                 if (currentColumn.Index > 1)
                 {
-                    if (currentValue > GetValue(chart.Columns[columnIndex - 2].EndAtIndex))
+                    if (currentIndex > chart.Columns[columnIndex - 2].CurrentBoxIndex)
                     {
                         signals |= PnFSignalEnum.DoubleTop;
-                    }
-                }
-                // Triple Top
-                if (currentColumn.Index > 3)
-                {
-                    if (currentValue > GetValue(chart.Columns[columnIndex - 4].EndAtIndex))
-                    {
-                        signals |= PnFSignalEnum.TripleTop;
+                        // Triple Top
+                        if (currentColumn.Index > 3)
+                        {
+                            if (currentIndex > chart.Columns[columnIndex - 4].CurrentBoxIndex)
+                            {
+                                signals |= PnFSignalEnum.TripleTop;
+                            }
+                        }
                     }
                 }
             }
@@ -93,7 +93,7 @@ namespace PnFData.Services
                 PnFChart = chart,
                 Day = day,
                 Signals = signals,
-                Value = currentValue
+                Value = GetValue(currentIndex)
             });
         }
 

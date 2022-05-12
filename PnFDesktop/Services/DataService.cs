@@ -35,7 +35,6 @@ namespace PnFDesktop.Services
                         case PnFChartSource.RSStockVMarket:
                         case PnFChartSource.RSStockVSector:
                             // Get the share
-                            MessageLog.LogMessage(this, LogType.Information, $"Downloading share chart data ...");
                             var share = await db.Shares
                                 .Include(sc => sc.Charts).ThenInclude(s => s.Chart)
                                 .SingleOrDefaultAsync(s => s.Id == itemId);
@@ -56,6 +55,8 @@ namespace PnFDesktop.Services
                                         && c.Chart.CreatedAt == maxDay).FirstOrDefault();
                                     if (shareChart != null)
                                     {
+                                        MessageLog.LogMessage(this, LogType.Information, $"Downloading share chart data for '{shareChart.ChartId}' ...");
+
                                         chart = await db.PnFCharts
                                             .Include(cc => cc.Columns).ThenInclude(cb => cb.Boxes)
                                             .SingleOrDefaultAsync(c => c.Id == shareChart.ChartId);
@@ -66,7 +67,6 @@ namespace PnFDesktop.Services
                             break;
 
                         default:
-                            MessageLog.LogMessage(this, LogType.Information, $"Downloading index chart data ...");
                             // Get the index
                             var index = await db.Indices
                                 .Include(sc => sc.Charts).ThenInclude(s => s.Chart)
@@ -86,6 +86,7 @@ namespace PnFDesktop.Services
                                         && c.Chart.GeneratedDate == maxDay).FirstOrDefault();
                                     if (indexChart != null)
                                     {
+                                        MessageLog.LogMessage(this, LogType.Information, $"Downloading index chart data for '{indexChart.ChartId}' ...");
                                         chart = await db.PnFCharts
                                             .Include(cc => cc.Columns).ThenInclude(cb => cb.Boxes)
                                             .SingleOrDefaultAsync(c => c.Id == indexChart.ChartId);

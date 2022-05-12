@@ -36,11 +36,11 @@ namespace PnFImports
             }
             if (indices != null)
             {
-                string indexName = "";
                 Parallel.ForEach(indices,
                     new ParallelOptions { MaxDegreeOfParallelism = 10 },
                 (index) =>
                 {
+                    string indexName = "";
                     if (string.IsNullOrEmpty(index.SuperSector))
                     {
                         indexName = $"{index.ExchangeCode}, {index.ExchangeSubCode}";
@@ -315,11 +315,11 @@ namespace PnFImports
             }
             if (indices != null)
             {
-                string indexName = "";
                 Parallel.ForEach(indices,
                     new ParallelOptions { MaxDegreeOfParallelism = 5 },
                 (index) =>
                 {
+                    string indexName = "";
                     if (string.IsNullOrEmpty(index.SuperSector))
                     {
                         indexName = $"{index.ExchangeCode}, {index.ExchangeSubCode}";

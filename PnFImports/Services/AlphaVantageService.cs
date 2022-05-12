@@ -9,7 +9,7 @@ namespace PnFImports.Services
     public class AlphaVantageService
     {
         private static HttpClient _client;
-        private static readonly string ApiKey = "demo";
+        private static string ApiKey = "DEMO";  // This is now taken from the USER environment variable "AlphaVantageAPIKey"
         private static readonly string ApiBaseUrl = @"https://www.alphavantage.co/query?";
         private static readonly string ApiFunction = "TIME_SERIES_DAILY_ADJUSTED";
         private static HttpClient Client
@@ -31,6 +31,12 @@ namespace PnFImports.Services
             public string? Reason { get; set; }
 
             public IEnumerable<Eod> Prices = new List<Eod>();
+        }
+
+        static AlphaVantageService()
+        {
+            ApiKey = (string)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User)["AlphaVantageAPIKey"];
+            System.Diagnostics.Debug.WriteLine($"ApiKey = {ApiKey}");
         }
 
         public static async Task<TimeSeriesDailyResult> GetTimeSeriesDailyPrices(string symbol, DateTime cutoffDate, bool full = false)

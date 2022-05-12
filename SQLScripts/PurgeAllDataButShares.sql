@@ -1,7 +1,7 @@
 USE [PnFData]
 GO
 
-truncate table EodPrices
+-- truncate table EodPrices
 truncate table ShareCharts
 truncate table ShareRSIValues
 

@@ -58,9 +58,9 @@ IF object_id('tempdb..#yesterday','U') is not null
 --	   10 - Index Percent Above 10 ema
 
 DECLARE @cutoffDate date
-SET @cutoffDate = DATEADD(d, -170, GETDATE())		-- Make sure we clear the 30 week EMA period
+-- SET @cutoffDate = DATEADD(d, -170, GETDATE())		-- Make sure we clear the 30 week EMA period
 
--- SET @cutoffDate = CONVERT(DATETIME, '2018-01-01')		-- Make sure we clear the 30 week EMA period
+SET @cutoffDate = CONVERT(DATETIME, '2018-01-01')		-- Make sure we clear the 30 week EMA period
 
 
 SELECT ic.[IndexId]
@@ -275,7 +275,7 @@ UPDATE [dbo].[IndexIndicators]
 		+ iif(td.[BullishPercentDoubleTop]^yd.[BullishPercentDoubleTop]=1 and td.[BullishPercentDoubleTop]=1 and yd.[BullishPercent]<30, @BullConfirmedLt30, 0)	-- Bull Confirmed below 30
 		+ iif(td.[BullishPercentDoubleBottom]^yd.[BullishPercentDoubleBottom]=1 and td.[BullishPercentDoubleBottom]=1 and yd.[BullishPercent]>70, @BearConfirmedGt70, 0)	-- Bear Confirmed above 70
 	FROM [dbo].[IndexIndicators] ii
-	LEFT JOIN #today td ON td.[IndexId] = ii.[IndexId]
+	LEFT JOIN #today td ON td.[IndexId] = ii.[IndexId] AND td.[Day] = ii.[Day]
 	LEFT JOIN #today yd ON yd.[IndexId] = td.[IndexId] and yd.[Ordinal#] = td.[Ordinal#]-1
 	LEFT JOIN #Pivot p ON p.[IndexId] = yd.[IndexId] AND p.[Day]=yd.[Day]
 	WHERE ii.[Day] >= @cutoffDate AND td.[Ordinal#] > 1

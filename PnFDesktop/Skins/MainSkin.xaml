@@ -2,6 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Default values for common controls -->
+    
+    
     <!-- Buttons -->
     <Style TargetType="{x:Type Button}">
         <Setter Property="MinWidth" Value="80" />
@@ -16,6 +18,15 @@
                         Path=(Validation.Errors)[0].ErrorContent}"/>
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <SolidColorBrush x:Key="WaterMarkBrush" Color="{DynamicResource {x:Static SystemColors.ControlDarkDarkColorKey}}"/>
+        <!-- Textblock -->
+    <Style TargetType="{x:Type TextBlock}" x:Key="WatermarkText">
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Margin" Value="10,10,0,0"/>
+        <Setter Property="Foreground" Value="{StaticResource WaterMarkBrush}" />
+        <Setter Property="FontSize" Value="24"/>
     </Style>
 
     <!-- Textboxes -->

@@ -244,21 +244,22 @@
                 />-->
 
         </Grid>
-        <!-- 
+        <Grid>
+            <!-- 
         The ScrollViewer displays scrollbars when the content is too big to fit in the viewport. 
         Focusable is set to False because it is only that NetworkView that I want to be focusable.
         -->
-        <ScrollViewer 
+            <ScrollViewer
             CanContentScroll="True"
             VerticalScrollBarVisibility="Visible"
             HorizontalScrollBarVisibility="Visible"
             Focusable="False"
             ScrollChanged="ScrollViewer_ScrollChanged">
-            <!-- 
+                <!-- 
             The ZoomAndPanControl displays the NetworkView as its content.
             We can use the mouse to zoom and pan about the NetworkView.
             -->
-            <controls:ZoomAndPanControl
+                <controls:ZoomAndPanControl
                 x:Name="ZoomAndPanControl"
                 MinContentScale="{Binding MinViewportScale, Mode=OneWay}"
                 ContentScale="{Binding ContentScale, Mode=TwoWay}"
@@ -268,20 +269,20 @@
                 ContentViewportHeight="{Binding ContentViewportHeight, Mode=OneWayToSource}"
                 Focusable="False">
 
-                <!--
+                    <!--
                 We need to nest our NetworkView in an AdornerDecorator so that adorners work correct when
                 we zoom in and out using the ZoomAndPanControl
                 -->
-                <AdornerDecorator  x:Name="PrintControl">
-                    <!--
+                    <AdornerDecorator  x:Name="PrintControl">
+                        <!--
                     This grid specifies the size of the ZoomAndPanControl's content.
                     It wraps up both the NetworkView and drag-zooming Canvas.
                     -->
-                    <Grid
+                        <Grid
                         Width="{Binding ContentWidth}"
                         Height="{Binding ContentHeight}"
                     >
-                        <controls:PointAndFigureChartControl  x:Name="PointAndFigureChartControl"
+                            <controls:PointAndFigureChartControl  x:Name="PointAndFigureChartControl"
                                          ColumnsSource="{Binding Columns}"
                                          SelectedColumn="{Binding SelectedColumn, Mode=TwoWay}"      
                             
@@ -294,19 +295,19 @@
                                          LeftPadding="{Binding LeftPadding}"
                                          IsClearSelectionOnEmptySpaceClickEnabled="True"
                         >
-                            <controls:PointAndFigureChartControl.Background>
-                                <SolidColorBrush Color="Azure"/>
-                            </controls:PointAndFigureChartControl.Background>
-                        </controls:PointAndFigureChartControl>
-                        <!--
+                                <controls:PointAndFigureChartControl.Background>
+                                    <SolidColorBrush Color="Azure"/>
+                                </controls:PointAndFigureChartControl.Background>
+                            </controls:PointAndFigureChartControl>
+                            <!--
                         This Canvas and Border are used as a very simple way to render a drag rectangle that the user
                         uses to specify an area to zoom in on.
                         -->
-                        <Canvas
+                            <Canvas
                             x:Name="dragZoomCanvas"
                             Visibility="Collapsed"
                         >
-                            <Border 
+                                <Border 
                                 x:Name="dragZoomBorder"
                                 BorderBrush="Black"
                                 BorderThickness="1"
@@ -314,11 +315,15 @@
                                 CornerRadius="1"
                                 Opacity="0"
                             />
-                        </Canvas>
-                    </Grid>
-                </AdornerDecorator>
-            </controls:ZoomAndPanControl>
+                            </Canvas>
+                        </Grid>
+                    </AdornerDecorator>
+                </controls:ZoomAndPanControl>
 
-        </ScrollViewer>
+            </ScrollViewer>
+            <!-- Watermark text-->
+            <TextBlock Text="{Binding Chart.Name}" Style="{StaticResource WatermarkText}"/>
+
+        </Grid>
     </DockPanel>
 </UserControl>
