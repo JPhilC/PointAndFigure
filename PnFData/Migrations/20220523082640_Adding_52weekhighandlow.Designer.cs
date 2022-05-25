@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220523082640_Adding_52weekhighandlow")]
+    partial class Adding_52weekhighandlow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,12 +59,6 @@ namespace PnFData.Migrations
 
                     b.Property<double?>("Low52Week")
                         .HasColumnType("float");
-
-                    b.Property<bool?>("New52WeekHigh")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("New52WeekLow")
-                        .HasColumnType("bit");
 
                     b.Property<double>("Open")
                         .HasColumnType("float");
@@ -206,12 +202,6 @@ namespace PnFData.Migrations
                     b.Property<bool?>("Falling")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("HighLowIndexRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("HighLowIndexfalling")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("IndexId")
                         .HasColumnType("uniqueidentifier");
 
@@ -346,9 +336,6 @@ namespace PnFData.Migrations
                     b.Property<DateTime>("Day")
                         .HasColumnType("datetime2");
 
-                    b.Property<double?>("HighLowEma10")
-                        .HasColumnType("float");
-
                     b.Property<Guid>("IndexId")
                         .HasColumnType("uniqueidentifier");
 
@@ -356,9 +343,6 @@ namespace PnFData.Migrations
                         .HasColumnType("float");
 
                     b.Property<double?>("PercentAboveEma30")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("PercentHighLow")
                         .HasColumnType("float");
 
                     b.Property<double?>("PercentPositiveTrend")

@@ -23,6 +23,12 @@ namespace PnFData.Model
 
         public double Volume { get; set; }
 
+        public double? High52Week {get; set;}
+        public double? Low52Week {get; set;}
+
+        public bool? New52WeekHigh {get; set;}
+        public bool? New52WeekLow {get; set;}
+
         [Required]
         public Guid ShareId { get; set; }
 

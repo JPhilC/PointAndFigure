@@ -12,6 +12,7 @@ GO
 
 
 CREATE PROCEDURE [dbo].[uspUpdateShareIndicators] 
+		@CutOffDate DATE
 	AS
 
 RAISERROR (N'Updating share indicators ...', 0, 0) WITH NOWAIT;
@@ -36,8 +37,8 @@ IF object_id('tempdb..#ShareResults','U') is not null
 IF object_id('tempdb..#today','U') is not null
 	DROP TABLE #today;
 
-DECLARE @cutoffDate date
-SET @cutoffDate = DATEADD(d, -170, GETDATE())		-- 170 days should clear 30 week EMA
+DECLARE @fromDate date
+SET @fromDate = DATEADD(d, -170, GETDATE())		-- 170 days should clear 30 week EMA
 --SET @cutoffDate = CONVERT(DATETIME, '2018-01-01')	-- Process all
 
 
@@ -49,7 +50,7 @@ SELECT sc.[ShareId]
 	FROM [PnFCharts] c
 	JOIN [ShareCharts] sc ON sc.[ChartId] = c.[Id]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
-	WHERE c.[Source] = 0 and s.[Day] >= @cutoffDate
+	WHERE c.[Source] = 0 and s.[Day] >= @fromDate
 
 SELECT sc.[ShareId]
 	,	s.[Day]
@@ -59,7 +60,7 @@ SELECT sc.[ShareId]
 	FROM [PnFCharts] c
 	JOIN [ShareCharts] sc ON sc.[ChartId] = c.[Id]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
-	WHERE c.[Source] = 2 and s.[Day] >= @cutoffDate
+	WHERE c.[Source] = 2 and s.[Day] >= @fromDate
 
 SELECT sc.[ShareId]
 	,	s.[Day]
@@ -69,7 +70,7 @@ SELECT sc.[ShareId]
 	FROM [PnFCharts] c
 	INNER JOIN [ShareCharts] sc ON sc.[ChartId] = c.[Id]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
-	WHERE c.[Source] = 3 and s.[Day] >= @cutoffDate
+	WHERE c.[Source] = 3 and s.[Day] >= @fromDate
 
 
 SELECT q.[ShareId]
@@ -85,7 +86,7 @@ FROM [EodPrices] q
 LEFT JOIN #PriceSignals vs ON vs.ShareId = q.[ShareId] AND vs.[Day] = q.[Day]		
 LEFT JOIN #RsSignals rs ON rs.ShareId = q.[ShareId] AND rs.[Day] = q.[Day]		
 LEFT JOIN #PeerRsSignals prs ON prs.ShareId = q.[ShareId] AND prs.[Day] = q.[Day]		
-WHERE q.[Day] >= @cutoffDate
+WHERE q.[Day] >= @fromDate AND q.[Day] <= @CutOffDate
 
 DECLARE @IsRising AS INT			= 0x0001; --       // Going up
 DECLARE @IsFalling AS INT			= 0x0002; --       // Going down
@@ -136,7 +137,7 @@ UPDATE [dbo].[ShareIndicators]
 	,	[AboveBullSupport] = sr.[AboveBullSupport]
 FROM [dbo].[ShareIndicators] si
 INNER JOIN #ShareResults sr ON sr.[ShareId] = si.[ShareId] AND sr.[Day] = si.[Day]
-WHERE si.[Day] >= @cutoffDate
+WHERE si.[Day] >= @fromDate AND si.[Day] <= @CutOffDate
 
 INSERT INTO [dbo].[ShareIndicators] ([Id], [ShareId], [Day], [Rising], [DoubleTop], [TripleTop],[RsRising],[RsBuy],[PeerRsRising],[PeerRsBuy]
 		, [Falling], [DoubleBottom], [TripleBottom], [RsFalling], [RsSell], [PeerRsFalling], [PeerRsSell], [AboveBullSupport])
@@ -164,20 +165,20 @@ INSERT INTO [dbo].[ShareIndicators] ([Id], [ShareId], [Day], [Rising], [DoubleTo
 
 
 UPDATE si
-		SET si.[ClosedAboveEma10] = IIF(p.[Close] > si.[Ema10], 1, 0)
-		,	si.[ClosedAboveEma30] = IIF(p.[Close] > si.[Ema30], 1, 0)
+		SET si.[ClosedAboveEma10] = IIF(p.[AdjustedClose] > si.[Ema10], 1, 0)
+		,	si.[ClosedAboveEma30] = IIF(p.[AdjustedClose] > si.[Ema30], 1, 0)
 		FROM [dbo].[ShareIndicators] si
 		LEFT JOIN [dbo].[EodPrices] p 
 		ON p.[ShareId] = si.[ShareId]
 			AND p.[Day] = si.[Day]
-		WHERE si.[CreatedAt] > @cutoffDate
+		WHERE si.[CreatedAt] > @fromDate
 
 -- Now update the Events code with notifications of new events.
-SELECT ShareId, [Day], DoubleTop, TripleTop, RsBuy, PeerRsBuy, DoubleBottom, TripleBottom, RsSell, PeerRsSell, ClosedAboveEma10, ClosedAboveEma30, [AboveBullSupport]
-		, ROW_NUMBER() OVER(PARTITION BY [ShareId] ORDER BY [Day] ASC) as Ordinal#
+SELECT si.[ShareId], si.[Day], si.DoubleTop, si.TripleTop, si.RsBuy, si.PeerRsBuy, si.DoubleBottom, si.TripleBottom, si.RsSell, si.PeerRsSell, si.ClosedAboveEma10, si.ClosedAboveEma30, si.[AboveBullSupport]
+		, ROW_NUMBER() OVER(PARTITION BY si.[ShareId] ORDER BY si.[Day] ASC) as Ordinal#
 	INTO #today
-	FROM [dbo].[ShareIndicators]
-	WHERE [Day] >= @cutoffDate;
+	FROM [dbo].[ShareIndicators] si
+	WHERE si.[Day] >= @fromDate;
 
 
 UPDATE [dbo].[ShareIndicators]
@@ -198,7 +199,7 @@ UPDATE [dbo].[ShareIndicators]
 	FROM [dbo].[ShareIndicators] si
 	LEFT JOIN #today td ON td.[ShareId] = si.[ShareId] AND td.[Day] = si.[Day]
 	LEFT JOIN #today yd ON yd.[ShareId] = td.[ShareId] AND yd.Ordinal# = td.Ordinal#-1
-	WHERE si.[Day] >= @cutoffDate and td.[Ordinal#] > 1
+	WHERE si.[Day] >= @fromDate and td.[Ordinal#] > 1
 
 RAISERROR (N'Done.', 0, 0) WITH NOWAIT;
 

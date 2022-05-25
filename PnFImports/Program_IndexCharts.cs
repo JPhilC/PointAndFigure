@@ -36,6 +36,8 @@ namespace PnFImports
             }
             if (indices != null)
             {
+                _progress = 0;
+                _total = indices.Count;
                 Parallel.ForEach(indices,
                     new ParallelOptions { MaxDegreeOfParallelism = 10 },
                 (index) =>
@@ -80,7 +82,7 @@ namespace PnFImports
                         Console.WriteLine($@"Error retrieving tick data for {indexName}.");
                         Console.WriteLine(ex.Message);
                     }
-
+                    UpdateProgress();
                 });
             }
 
@@ -121,7 +123,7 @@ namespace PnFImports
                                 .Select(c => c.Chart.Id)
                                 .FirstOrDefault();
                                 chart = db.PnFCharts
-                                    .Include(c => c.Columns).ThenInclude(l => l.Boxes)
+                                    .Include(c => c.Columns.OrderBy(c=>c.Index)).ThenInclude(l => l.Boxes.OrderBy(b=>b.Index))
                                     .SingleOrDefault(c => c.Id == chartId);
                             }
 
@@ -141,7 +143,6 @@ namespace PnFImports
                                     try
                                     {
                                         int saveResult = db.SaveChanges();
-                                        Console.WriteLine($"{saveResult} record saved.");
                                         saved = true;
                                     }
                                     catch (DbUpdateConcurrencyException updateEx)
@@ -243,7 +244,6 @@ namespace PnFImports
                                         try
                                         {
                                             int saveResult = db.SaveChanges();
-                                            Console.WriteLine($"{saveResult} record saved.");
                                             saved = true;
                                         }
                                         catch (DbUpdateConcurrencyException updateEx)
@@ -315,6 +315,8 @@ namespace PnFImports
             }
             if (indices != null)
             {
+                _progress = 0;
+                _total = indices.Count * 6.0;
                 Parallel.ForEach(indices,
                     new ParallelOptions { MaxDegreeOfParallelism = 5 },
                 (index) =>
@@ -349,6 +351,7 @@ namespace PnFImports
                             ).ToList<IDayValue>();
 
                             GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexBullishPercent);
+                            UpdateProgress();
 
                             tickData = rawTickData.Where(r => r.PercentAboveEma10.HasValue).Select(r => new SimpleDayValue()
                             {
@@ -358,6 +361,7 @@ namespace PnFImports
                             ).ToList<IDayValue>();
 
                             GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentShareAbove10);
+                            UpdateProgress();
 
                             tickData = rawTickData.Where(r => r.PercentAboveEma30.HasValue).Select(r => new SimpleDayValue()
                             {
@@ -367,6 +371,7 @@ namespace PnFImports
                             ).ToList<IDayValue>();
 
                             GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentShareAbove30);
+                            UpdateProgress();
 
                             tickData = rawTickData.Where(r => r.PercentPositiveTrend.HasValue).Select(r => new SimpleDayValue()
                             {
@@ -376,6 +381,7 @@ namespace PnFImports
                             ).ToList<IDayValue>();
 
                             GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentSharePT);
+                            UpdateProgress();
 
                             tickData = rawTickData.Where(r => r.PercentRsBuy.HasValue).Select(r => new SimpleDayValue()
                             {
@@ -385,6 +391,7 @@ namespace PnFImports
                             ).ToList<IDayValue>();
 
                             GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentShareRsBuy);
+                            UpdateProgress();
 
                             tickData = rawTickData.Where(r => r.PercentRsRising.HasValue).Select(r => new SimpleDayValue()
                             {
@@ -394,6 +401,17 @@ namespace PnFImports
                             ).ToList<IDayValue>();
 
                             GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.IndexPercentShareRsX);
+                            UpdateProgress();
+
+                            tickData = rawTickData.Where(r => r.HighLowEma10.HasValue).Select(r => new SimpleDayValue()
+                            {
+                                Day = r.Day,
+                                Value = r.HighLowEma10.Value
+                            }
+                            ).ToList<IDayValue>();
+
+                            GeneratePercentChart(index.Id, indexName, uptoDate, tickData, PnFChartSource.HighLowIndex);
+                            UpdateProgress();
                         }
 
                     }
@@ -443,7 +461,7 @@ namespace PnFImports
                                     .Select(c => c.Chart.Id)
                                     .FirstOrDefault();
                                 chart = db.PnFCharts
-                                    .Include(c => c.Columns).ThenInclude(l => l.Boxes)
+                                    .Include(c => c.Columns.OrderBy(c=>c.Index)).ThenInclude(l => l.Boxes.OrderBy(b=>b.Index))
                                     .SingleOrDefault(c => c.Id == chartId);
                             }
 
@@ -461,7 +479,6 @@ namespace PnFImports
                                         try
                                         {
                                             int saveResult = db.SaveChanges();
-                                            Console.WriteLine($"{saveResult} record saved.");
                                             saved = true;
                                         }
                                         catch (DbUpdateConcurrencyException updateEx)
@@ -563,7 +580,6 @@ namespace PnFImports
                                     try
                                     {
                                         int saveResult = db.SaveChanges();
-                                        Console.WriteLine($"{saveResult} record saved.");
                                         saved = true;
                                     }
                                     catch (DbUpdateConcurrencyException updateEx)

@@ -58,7 +58,7 @@ namespace PnFDesktop.Services
                                         MessageLog.LogMessage(this, LogType.Information, $"Downloading share chart data for '{shareChart.ChartId}' ...");
 
                                         chart = await db.PnFCharts
-                                            .Include(cc => cc.Columns).ThenInclude(cb => cb.Boxes)
+                                            .Include(cc => cc.Columns.OrderBy(c => c.Index)).ThenInclude(cb => cb.Boxes.OrderBy(b => b.Index))
                                             .SingleOrDefaultAsync(c => c.Id == shareChart.ChartId);
                                     }
                                 }
@@ -88,7 +88,7 @@ namespace PnFDesktop.Services
                                     {
                                         MessageLog.LogMessage(this, LogType.Information, $"Downloading index chart data for '{indexChart.ChartId}' ...");
                                         chart = await db.PnFCharts
-                                            .Include(cc => cc.Columns).ThenInclude(cb => cb.Boxes)
+                                            .Include(cc => cc.Columns.OrderBy(c => c.Index)).ThenInclude(cb => cb.Boxes.OrderBy(b => b.Index))
                                             .SingleOrDefaultAsync(c => c.Id == indexChart.ChartId);
                                     }
                                 }
@@ -179,7 +179,7 @@ namespace PnFDesktop.Services
             return dates;
         }
 
-        public async Task<IEnumerable<MarketSummaryDTO>> GetMarketValuesAsync(DateTime day)
+        public async Task<IEnumerable<MarketSummaryDTO>> GetMarketValuesAsync(DateTime day, string exchangeCode)
         {
             IEnumerable<MarketSummaryDTO> indices = new List<MarketSummaryDTO>();
             try
@@ -190,7 +190,7 @@ namespace PnFDesktop.Services
                                      join i in db.Indices on iv.IndexId equals i.Id
                                      from ii in db.IndexIndicators.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
                                      from irs in db.IndexRSIValues.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
-                                     where iv.Day == day
+                                     where iv.Day == day && i.ExchangeCode == exchangeCode
                                      orderby i.SuperSector, i.ExchangeCode, i.ExchangeSubCode
                                      select new MarketSummaryDTO()
                                      {
@@ -410,6 +410,25 @@ namespace PnFDesktop.Services
                 MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the share values data", ex);
             }
             return shares;
+
+        }
+
+
+        public async Task<IEnumerable<string>> GetExchangeCodesAsync()
+        {
+            IEnumerable<string> exchangeCodes = new List<string>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    exchangeCodes = await db.Indices.Select(s => s.ExchangeCode).Distinct().ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the share values data", ex);
+            }
+            return exchangeCodes;
 
         }
     }

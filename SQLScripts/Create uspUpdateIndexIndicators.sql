@@ -48,7 +48,6 @@ SELECT ic.[IndexId]
 	LEFT JOIN [PnFSignals] s ON s.[PnFChartId] = c.[Id]
 	WHERE c.[Source] = 4
 
-
 SELECT ixs.[IndexId]
 	,	ixs.[Day]
 	,	ixs.[Signals] IndexSignals
@@ -66,6 +65,7 @@ DECLARE @DoubleBottom AS INT		= 0x0008; --       // Double Bottom
 DECLARE @TripleTop AS INT			= 0x0010; --       // Triple Top
 DECLARE @TripleBottom AS INT		= 0x0020; --       // Triple Bottom
 DECLARE @AboveBullSupport AS INT	= 0x0040; --       // Current box is abobe bullish support level
+
 
 select [IndexId]
 	, [Day]

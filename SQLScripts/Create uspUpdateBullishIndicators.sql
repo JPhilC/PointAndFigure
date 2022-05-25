@@ -16,11 +16,6 @@ CREATE PROCEDURE [dbo].[uspUpdateBullishIndicators]
 SET NOCOUNT ON
 RAISERROR (N'Updating bullish indicators ...', 0, 0) WITH NOWAIT;
 
--- Get the latest day from EodPrices
-DECLARE @Day Date
-SELECT @Day = CONVERT(Date, MAX([Day]))
-	FROM [PnFData].[dbo].[ShareIndicators]
-
 -- Sectors
 SELECT i.[Id] IndexId, si.[Day] 
 		, count(*) [Members]

@@ -24,8 +24,14 @@ namespace PnFImports
                         tidms = db.Shares.Where(s => s.ExchangeCode == exchangeCode && s.EodPrices.Any()).Select(s => s.Tidm).ToList();
                     }
                 }
+                _total = tidms.Count();
+                _progress = 0.0;
                 Parallel.ForEach(tidms,
-                    new ParallelOptions { MaxDegreeOfParallelism = 10 }, (tidm) => GenerateHiLoChart(tidm, toDate));
+                    new ParallelOptions { MaxDegreeOfParallelism = 10 }, (tidm) =>
+                    {
+                        GenerateHiLoChart(tidm, toDate);
+                        UpdateProgress();
+                    });
             }
             catch (Exception ex)
             {
@@ -88,7 +94,7 @@ namespace PnFImports
                                     .Select(c => c.Chart.Id)
                                     .FirstOrDefault();
                                 chart = db.PnFCharts
-                                    .Include(c => c.Columns).ThenInclude(l => l.Boxes)
+                                    .Include(c => c.Columns.OrderBy(c => c.Index)).ThenInclude(l => l.Boxes.OrderBy(b => b.Index))
                                     .SingleOrDefault(c => c.Id == chartId);
                             }
                         }
@@ -108,7 +114,6 @@ namespace PnFImports
                                     try
                                     {
                                         int saveResult = db.SaveChanges();
-                                        Console.WriteLine($"{saveResult} record saved.");
                                         saved = true;
                                     }
                                     catch (DbUpdateConcurrencyException updateEx)
@@ -207,7 +212,6 @@ namespace PnFImports
                                     try
                                     {
                                         int saveResult = db.SaveChanges();
-                                        Console.WriteLine($"{saveResult} record saved.");
                                         saved = true;
                                     }
                                     catch (DbUpdateConcurrencyException updateEx)

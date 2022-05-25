@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220524081815_adding_hiloindexfields")]
+    partial class adding_hiloindexfields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,12 +59,6 @@ namespace PnFData.Migrations
 
                     b.Property<double?>("Low52Week")
                         .HasColumnType("float");
-
-                    b.Property<bool?>("New52WeekHigh")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("New52WeekLow")
-                        .HasColumnType("bit");
 
                     b.Property<double>("Open")
                         .HasColumnType("float");
@@ -204,12 +200,6 @@ namespace PnFData.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool?>("Falling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("HighLowIndexRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("HighLowIndexfalling")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("IndexId")

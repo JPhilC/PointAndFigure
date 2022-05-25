@@ -12,6 +12,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE uspUpdateSIBIndicators
+	@CutOffDate DATE
 AS
 SET NOCOUNT ON
 RAISERROR (N'Start of post initial chart creation run  ...', 0, 0) WITH NOWAIT;
@@ -20,7 +21,7 @@ DECLARE @IIResult int
 DECLARE @BIResult int
 DECLARE @Result int
 
-EXECUTE @SIResult = [dbo].[uspUpdateShareIndicators] 
+EXECUTE @SIResult = [dbo].[uspUpdateShareIndicators] @CutOffDate
 
 EXECUTE @IIResult = [dbo].[uspUpdateIndexIndicators] 
 

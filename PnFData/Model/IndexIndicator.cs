@@ -8,18 +8,31 @@ namespace PnFData.Model
     [Flags]
     public enum IndexEvents
     {
-        [Description("Bull Alert")]
+        [Description("Bullish % Bull Alert")]
         BullAlert = 0x0001,
-        [Description("Bear Alert")]
+        [Description("Bullish % Bear Alert")]
         BearAlert = 0x0002,
-        [Description("Bull Confirmed")]
+        [Description("Bullish % Bull Confirmed")]
         BullConfirmed = 0x0004,
-        [Description("Bear Confirmed")]
+        [Description("Bullish % Bear Confirmed")]
         BearConfirmed = 0x0008,
-        [Description("Bull Confirmed < 30")]
+        [Description("Bullish % Bull Confirmed < 30")]
         BullConfirmedLt30 = 0x0010,
-        [Description("Bear Confirmed > 70")]
+        [Description("Bullish % Bear Confirmed > 70")]
         BearConfirmedGt70 = 0x0020,
+        [Description("Percent of 10 risen above 30")]
+        PercentOf10Gt30 = 0x0040,
+        [Description("Percent of 10 dropped below 70")]
+        PercentOf10Lt70 = 0x0080,
+        [Description("Percent of 30 risen above 30")]
+        PercentOf30Gt30 = 0x0100,
+        [Description("Percent of 30 dropped below 70")]
+        PercentOf30Lt70 = 0x0200,
+        [Description("High-low risen above 30")]
+        HighLowGt30 = 0x0400,
+        [Description("High-low dropped below 70")]
+        HighLowLt70 = 0x0800,
+
     }
 
     [Index(nameof(Day))]
@@ -57,6 +70,8 @@ namespace PnFData.Model
         public bool? PercentPositiveTrendFalling { get; set; }
         public bool? PercentAbove30EmaFalling { get; set; }
         public bool? PercentAbove10EmaFalling { get; set; }
+        public bool? HighLowIndexRising { get; set; }
+        public bool? HighLowIndexfalling { get; set; }
 
         public int NewEvents {get;set;}
 

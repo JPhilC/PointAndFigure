@@ -11,26 +11,33 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE uspGenerateDailyValues
+CREATE PROCEDURE uspGenerateDailyValues 
+	@CutOffDate DATE
 AS
 SET NOCOUNT ON
 RAISERROR (N'Start of daily run  ...', 0, 0) WITH NOWAIT;
 DECLARE @RC int
 
-
-EXECUTE @RC = [dbo].[uspGenerateMarketIndices] 
-
-IF @RC = 0
- EXECUTE @RC = [dbo].[uspGenerateSectorIndices] 
+EXECUTE @RC = [dbo].[uspGenerate52WeekHighsAndLows]
 
 IF @RC = 0
- EXECUTE @RC = [dbo].[uspGenerateIndexRSIValues] 
+  EXECUTE @RC = [dbo].[uspGenerateMarketIndices] @CutOffDate
 
 IF @RC = 0
- EXECUTE @RC = [dbo].[uspGenerateRSIValues] 
+ EXECUTE @RC = [dbo].[uspGenerateSectorIndices] @CutOffDate 
+
+IF @RC = 0
+ EXECUTE @RC = [dbo].[uspGenerateIndexRSIValues] @CutOffDate
+
+IF @RC = 0
+ EXECUTE @RC = [dbo].[uspGenerateRSIValues] @CutOffDate
+
 
 IF @RC = 0
  EXECUTE @RC = [dbo].[uspGenerate10And30WeekEmas]
+
+IF @RC = 0
+ EXECUTE @RC =  [dbo].[uspGenerate10WeekHighLowEma]
 
 IF @RC = 0
 	BEGIN

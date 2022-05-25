@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220524083736_adding_newHiLoFlags_to_Eod")]
+    partial class adding_newHiLoFlags_to_Eod
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -204,12 +206,6 @@ namespace PnFData.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool?>("Falling")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("HighLowIndexRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("HighLowIndexfalling")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("IndexId")

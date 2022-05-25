@@ -17,6 +17,21 @@ namespace PnFDesktop.ViewModels
 {
     public class MarketSummaryViewModel : PaneViewModel
     {
+        public ObservableCollection<string> ExchangeCodes { get => SimpleIoc.Default.GetInstance<MainViewModel>().ExchangeCodes; }
+
+        private string _selectedExchangeCode = "LSE";
+        public string SelectedExchangeCode
+        {
+            get => _selectedExchangeCode;
+            set
+            {
+                if (SetProperty(ref _selectedExchangeCode, value))
+                {
+                    WeakReferenceMessenger.Default.Send<NotificationMessage>(new NotificationMessage(Constants.RefreshMarketSummary));
+                }
+            }
+        }
+
         public ObservableCollection<DayDTO> Days { get; } = new ObservableCollection<DayDTO>();
 
 
@@ -87,6 +102,7 @@ namespace PnFDesktop.ViewModels
         {
             try
             {
+                App.Current.Dispatcher.Invoke(() => IsBusy = true);
                 var dates = await _DataService!.GetMarketAvailableDates(DateTime.Now.AddDays(-60));
                 lock (_ItemsLock)
                 {
@@ -103,7 +119,7 @@ namespace PnFDesktop.ViewModels
                 if (this.Days.Any())
                 {
                     DayDTO latestDay = dates.LastOrDefault();
-                    var list = await _DataService.GetMarketValuesAsync(latestDay!.Day);
+                    var list = await _DataService.GetMarketValuesAsync(latestDay!.Day, this.SelectedExchangeCode);
                     lock (_ItemsLock)
                     {
                         App.Current.Dispatcher.Invoke(() => Indices.Clear());
@@ -127,13 +143,18 @@ namespace PnFDesktop.ViewModels
             {
                 MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the market value data", ex);
             }
+            finally
+            {
+                App.Current.Dispatcher.Invoke(() => IsBusy = false);
+            }
         }
 
         private async Task RefreshMarketSummaryDataAsync()
         {
             try
             {
-                var list = await _DataService!.GetMarketValuesAsync(this.SelectedDay!.Day);
+                App.Current.Dispatcher.Invoke(() => IsBusy = true);
+                var list = await _DataService!.GetMarketValuesAsync(this.SelectedDay!.Day, this.SelectedExchangeCode);
                 lock (_ItemsLock)
                 {
                     App.Current.Dispatcher.Invoke(() => Indices.Clear());
@@ -149,6 +170,10 @@ namespace PnFDesktop.ViewModels
             catch (Exception ex)
             {
                 MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the market value data", ex);
+            }
+            finally
+            {
+                App.Current.Dispatcher.Invoke(() => IsBusy = false);
             }
         }
 

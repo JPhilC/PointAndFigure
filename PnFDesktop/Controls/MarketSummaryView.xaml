@@ -5,12 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:PnFDesktop.Controls"
              xmlns:classes="clr-namespace:PnFDesktop.Classes"
-             xmlns:model="clr-namespace:PnFData.Model;assembly=PnFData"
+             xmlns:model="clr-namespace:PnFData.Model;assembly=PnFData" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="1500"
              d:DataContext="{Binding MarketSummaryViewModel, Source={StaticResource Locator}}"
              Loaded="UserControl_Loaded">
     <UserControl.Resources>
+        <CollectionViewSource x:Key="cvsExchangeCodes" Source="{Binding ExchangeCodes}"/>
         <CollectionViewSource x:Key="cvsDays" Source="{Binding Days}"/>
         <CollectionViewSource x:Key="cvsIndices" Source="{Binding Indices}"/>
         <classes:FlagToVisibilityConverter x:Key="FlagConverter"/>
@@ -21,6 +22,10 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -28,8 +33,19 @@
             <RowDefinition Height="5"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected Date"/>
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Exchange"/>
         <ComboBox Grid.Row="0" Grid.Column="2" 
+                      SelectedItem="{Binding SelectedExchangeCode, UpdateSourceTrigger=PropertyChanged}" 
+                      ItemsSource="{Binding Source={StaticResource cvsExchangeCodes}}"
+                      Width="100" HorizontalAlignment="Left">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding }"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Grid.Row="0" Grid.Column="4" Text="Selected Date"/>
+        <ComboBox Grid.Row="0" Grid.Column="6" 
                       SelectedItem="{Binding SelectedDay, UpdateSourceTrigger=PropertyChanged}" 
                       ItemsSource="{Binding Source={StaticResource cvsDays}}"
                       Width="100" HorizontalAlignment="Left">
@@ -39,7 +55,7 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <DataGrid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
+        <DataGrid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="8"
                   ItemsSource="{Binding Source={StaticResource cvsIndices}}"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
@@ -394,6 +410,8 @@
             </DataGrid.Columns>
 
         </DataGrid>
-
+        <xctk:BusyIndicator Grid.ColumnSpan="8" Grid.RowSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" IsBusy="{Binding IsBusy}"/>
+        
+        
     </Grid>
 </UserControl>

@@ -27,7 +27,7 @@ SELECT @day = MAX([Day])
 SELECT @day AS ResultsAsOf;
 
 SELECT s.[Tidm], s.[Name]
-	, p.[Close]
+	, p.[AdjustedClose]
 	, si.[Rising]
 	, si.[DoubleTop]
 	, si.[TripleTop]

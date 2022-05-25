@@ -32,5 +32,15 @@ namespace PnFData.Model
 
         public double? PercentPositiveTrend { get; set; }
 
+        /// <summary>
+        /// The percentage of new highs compared to new highs and lows
+        /// </summary>
+        public double? PercentHighLow {get;set;}
+
+        /// <summary>
+        /// The 10 day EMA of the percentHighLow figures
+        /// </summary>
+        public double? HighLowEma10 {get;set;}
+
     }
 }

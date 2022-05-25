@@ -118,7 +118,6 @@ namespace PnFImports
             try
             {
                 DateTime cutOffDate = new(2018, 01, 01);
-                DateTime lastClose = PreviousWorkDay(DateTime.Now.Date);
                 List<ShareSummary> shareIds = new List<ShareSummary>();
                 using (var db = new PnFDataContext())
                 {
@@ -135,6 +134,7 @@ namespace PnFImports
                                 HasPrices = s.EodPrices.Any()
                             })
                             .OrderBy(s => s.Tidm).ToList();
+                        //.Where(s=> s.LastEodDate < new DateTime(2022, 05, 17))
                     }
                     else
                     {
@@ -152,8 +152,11 @@ namespace PnFImports
                     }
                 }
 
+                _total = (double)shareIds.Count();
                 _stopwatch.Start();
                 _nextSlot = 0;
+                _progress = 0;
+
                 Parallel.ForEach(shareIds,
                     new ParallelOptions { MaxDegreeOfParallelism = 5 },
                     shareData =>
@@ -181,14 +184,6 @@ namespace PnFImports
                             }
                         }
 
-                        // Check if the current record is up to date.
-                        if (shareData.LastEodDate >= lastClose)
-                        {
-                            Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ... Skipped, up to date.");
-                            //continue;
-                            return;
-                        }
-
                         // Get the prices
                         Task.Run((async () =>
                         {
@@ -204,7 +199,6 @@ namespace PnFImports
                                     _nextSlot = elapsed + _minInterval;
                                     if (delay > 0)
                                     {
-                                        Debug.WriteLine($"Sleeping {delay}");
                                         Thread.Sleep((int)delay);
                                     }
                                 }
@@ -229,7 +223,6 @@ namespace PnFImports
                                                 dayPrice.ShareId = shareData.Id;
                                                 db.EodPrices.Add(dayPrice);
                                             }
-
                                             DateTime maxDay = dayPrices.Max(p => p.Day);
                                             share.LastEodDate = maxDay;
                                             share.EodError = false;
@@ -237,6 +230,10 @@ namespace PnFImports
 
                                             await db.SaveChangesAsync();
                                             Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ...  OK.");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ...  Skipped, up to date.");
                                         }
                                     }
                                 }
@@ -246,7 +243,12 @@ namespace PnFImports
                                 Console.WriteLine(ex.ToString());
                             }
                         })).Wait();
+                        // Indicate some form of progress
+                        UpdateProgress();
                     });
+                {
+
+                }
                 _stopwatch.Stop();
             }
             catch (Exception ex)
@@ -257,6 +259,7 @@ namespace PnFImports
             }
 
         }
+
 
     }
 }

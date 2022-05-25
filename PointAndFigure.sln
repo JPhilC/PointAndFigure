@@ -12,6 +12,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLScripts", "SQLScripts", "{865D7ACA-2D82-4C49-A6AF-1D03D74D5996}"
 	ProjectSection(SolutionItems) = preProject
 		SQLScripts\Create uspGenerate10And30WeekEmas.sql = SQLScripts\Create uspGenerate10And30WeekEmas.sql
+		SQLScripts\Create uspGenerate10WeekHighLowEma.sql = SQLScripts\Create uspGenerate10WeekHighLowEma.sql
+		SQLScripts\Create uspGenerate52WeekHighsAndLows.sql = SQLScripts\Create uspGenerate52WeekHighsAndLows.sql
 		SQLScripts\Create uspGenerateDailyValues.sql = SQLScripts\Create uspGenerateDailyValues.sql
 		SQLScripts\Create uspGenerateIndexRSIValues.sql = SQLScripts\Create uspGenerateIndexRSIValues.sql
 		SQLScripts\Create uspGenerateMarketIndices.sql = SQLScripts\Create uspGenerateMarketIndices.sql

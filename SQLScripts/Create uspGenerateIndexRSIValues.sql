@@ -14,6 +14,7 @@ GO
 
 
 CREATE PROCEDURE [dbo].[uspGenerateIndexRSIValues]
+		@CutOffDate DATE
 	AS
 SET NOCOUNT ON;
 
@@ -24,7 +25,7 @@ SELECT ixh.ExchangeCode, ixh.ExchangeSubCode, ixv.[Day], ixv.[Value]
 	INTO #market
 	FROM IndexValues ixv
 	LEFT JOIN Indices ixh ON ixh.Id = ixv.IndexId
-	WHERE ixv.IndexId IN (SELECT ix.Id FROM Indices ix WHERE ix.[SuperSector] IS NULL)
+	WHERE ixv.[Day] <= @CutOffDate AND ixv.IndexId IN (SELECT ix.Id FROM Indices ix WHERE ix.[SuperSector] IS NULL)
 	ORDER BY ixh.ExchangeCode, ixh.ExchangeSubCode, ixv.[Day]
 
 
@@ -34,7 +35,7 @@ SELECT NEWID() as Id, ixsv.[Day], ixsv.[Value]/m.[Value] * 1000 as [Value], ixh.
 	FROM IndexValues ixsv
 	LEFT JOIN Indices ixh ON ixh.Id = ixsv.IndexId
 	LEFT JOIN #market m ON m.ExchangeCode = ixh.ExchangeCode AND m.ExchangeSubCode = ixh.ExchangeSubCode AND m.[Day] = ixsv.[Day]
-	WHERE ixsv.IndexId IN (SELECT ixs.[Id] FROM Indices ixs WHERE ixs.[SuperSector] IS NOT NULL)
+	WHERE ixsv.[Day] <= @CutOffDate AND ixsv.IndexId IN (SELECT ixs.[Id] FROM Indices ixs WHERE ixs.[SuperSector] IS NOT NULL)
 	ORDER BY ixh.Id, [Day]
 
 

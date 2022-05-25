@@ -15,21 +15,21 @@ namespace PnFData.Model
         RSStockVMarket,
         [Description("Peer RS")]
         RSStockVSector,
-        [Description("Sector RS")]                                  //
+        [Description("Sector RS")]                                  // 4 - Sector RS
         RSSectorVMarket,
-        [Description("Bullish Percent")]                            // IndexIndicator.BullishPercent
+        [Description("Bullish Percent")]                            // 5 - IndexIndicator.BullishPercent
         IndexBullishPercent,
-        [Description("Percent of Share RS on Buy")]                 // IndexIndicator.PercentShareRsBuy
+        [Description("Percent of Share RS on Buy")]                 // 6 - IndexIndicator.PercentShareRsBuy
         IndexPercentShareRsBuy,
-        [Description("Percent of Share RS on X")]                   // IndexIndicator.PercentShareRsRising
+        [Description("Percent of Share RS on X")]                   // 7 - IndexIndicator.PercentShareRsRising
         IndexPercentShareRsX,
-        [Description("Percent of Shares with Positive Trends")]     // IndexIndicator.PercentSharePt
+        [Description("Percent of Shares with Positive Trends")]     // 8 - IndexIndicator.PercentSharePt
         IndexPercentSharePT,
-        [Description("Percent of Shares above 30 EMA")]             // IndexIndicator.PercentAboveEma30
+        [Description("Percent of Shares above 30 EMA")]             // 9 - IndexIndicator.PercentAboveEma30
         IndexPercentShareAbove30,
-        [Description("Percent of Shares bove 10 EMA")]              // IndexIndicator.PercentAboveEma10
+        [Description("Percent of Shares bove 10 EMA")]              // 10 - IndexIndicator.PercentAboveEma10
         IndexPercentShareAbove10,
-        [Description("High-Low Index")]
+        [Description("High-Low Index")]                             // 11 - IndexIndicator. 10 day EMA of HighLow percentage
         HighLowIndex,
         [Description("Advance-Decline Line")]
         AdvanceDeclineLine

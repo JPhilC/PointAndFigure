@@ -25,8 +25,13 @@ namespace PnFImports
                         shares = db.Shares.Where(s => s.ExchangeCode == exchangeCode && s.EodPrices.Any()).ToList();
                     }
                 }
+                _progress = 0;
+                _total = shares.Count * 2.0;
                 Parallel.ForEach(shares,
-                    new ParallelOptions { MaxDegreeOfParallelism = 5 }, (s) => GenerateShareRSChartPair(s.Id, s.Tidm, toDate));
+                    new ParallelOptions { MaxDegreeOfParallelism = 5 }, (s) =>
+                    {
+                        GenerateShareRSChartPair(s.Id, s.Tidm, toDate);
+                    });
             }
             catch (Exception ex)
             {
@@ -97,9 +102,11 @@ namespace PnFImports
             {
                 List<IDayValue> chartData = tickData.Where(d => d.RelativeTo == RelativeToEnum.Market).ToList<IDayValue>();
                 GenerateRSChart(shareId, tidm, uptoDate, chartData, PnFChartSource.RSStockVMarket);
+                UpdateProgress();
 
                 chartData = tickData.Where(d => d.RelativeTo == RelativeToEnum.Sector).ToList<IDayValue>();
                 GenerateRSChart(shareId, tidm, uptoDate, chartData, PnFChartSource.RSStockVSector);
+                UpdateProgress();
             }
         }
         internal static void GenerateIndexRSCharts(string exchangeCode, DateTime toDate)
@@ -118,8 +125,14 @@ namespace PnFImports
                         indices = db.Indices.Where(s => s.ExchangeCode == exchangeCode && s.SuperSector != null && s.IndexValues.Any()).ToList();
                     }
                 }
+                _progress = 0;
+                _total = indices.Count;
                 Parallel.ForEach(indices,
-                    new ParallelOptions { MaxDegreeOfParallelism = 10 }, (i) => GenerateIndexRSChart(i.Id, $"{i.ExchangeCode}, {i.ExchangeSubCode}, {i.SuperSector}", toDate));
+                    new ParallelOptions { MaxDegreeOfParallelism = 10 }, (i) =>
+                    {
+                        GenerateIndexRSChart(i.Id, $"{i.ExchangeCode}, {i.ExchangeSubCode}, {i.SuperSector}", toDate);
+                        UpdateProgress();
+                    });
             }
             catch (Exception ex)
             {
@@ -200,7 +213,7 @@ namespace PnFImports
                                         .Select(c => c.Chart.Id)
                                         .FirstOrDefault();
                                     chart = db.PnFCharts
-                                        .Include(c => c.Columns).ThenInclude(l => l.Boxes)
+                                        .Include(c => c.Columns.OrderBy(c => c.Index)).ThenInclude(l => l.Boxes.OrderBy(b => b.Index))
                                         .SingleOrDefault(c => c.Id == chartId);
                                 }
                             }
@@ -228,7 +241,7 @@ namespace PnFImports
                                         .Select(c => c.Chart.Id)
                                         .FirstOrDefault();
                                     chart = db.PnFCharts
-                                        .Include(c => c.Columns).ThenInclude(l => l.Boxes)
+                                        .Include(c => c.Columns.OrderBy(c => c.Index)).ThenInclude(l => l.Boxes.OrderBy(b => b.Index))
                                         .SingleOrDefault(c => c.Id == chartId);
                                 }
                             }
@@ -248,7 +261,6 @@ namespace PnFImports
                                     try
                                     {
                                         int saveResult = db.SaveChanges();
-                                        Console.WriteLine($"{saveResult} record saved.");
                                         saved = true;
                                     }
                                     catch (DbUpdateConcurrencyException updateEx)
@@ -349,7 +361,6 @@ namespace PnFImports
                                         try
                                         {
                                             int saveResult = db.SaveChanges();
-                                            Console.WriteLine($"{saveResult} record saved.");
                                             saved = true;
                                         }
                                         catch (DbUpdateConcurrencyException updateEx)
@@ -440,7 +451,6 @@ namespace PnFImports
                                         try
                                         {
                                             int saveResult = db.SaveChanges();
-                                            Console.WriteLine($"{saveResult} record saved.");
                                             saved = true;
                                         }
                                         catch (DbUpdateConcurrencyException updateEx)

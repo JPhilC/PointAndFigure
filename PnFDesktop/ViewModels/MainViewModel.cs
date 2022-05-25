@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -22,6 +23,11 @@ namespace PnFDesktop.ViewModels
 {
     public class MainViewModel : ObservableObject, ILayoutViewModelParent, IViewModelResolver
     {
+
+        public ObservableCollection<string>  ExchangeCodes {get; }= new ObservableCollection<string>();
+
+
+
         public Action ExitApplicationAction { get; set; }
 
         private readonly IDataService _dataService;
@@ -31,6 +37,8 @@ namespace PnFDesktop.ViewModels
         public MainViewModel(IDataService dataService)
         {
             _dataService = dataService;
+
+            Task.Run(async () => LoadExchanges());
 
             if (!DesignerLibrary.IsInDesignMode)
             {
@@ -246,6 +254,23 @@ namespace PnFDesktop.ViewModels
             _tools.Add(MessagePaneVm);
         }
 
+        private async Task LoadExchanges()
+        {
+            var exchangeCodes = await _dataService.GetExchangeCodesAsync();
+            if (exchangeCodes.Any())
+            {
+                App.Current.Dispatcher.Invoke(() => ExchangeCodes.Clear());
+            }
+            foreach(var exchangeCode in exchangeCodes)
+            {
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    ExchangeCodes.Add(exchangeCode);
+                });
+            }
+        }
+
+
         public void OpenPointAndFigureChart(PnFChart pnfChart, bool makeActive = false, bool forceRefresh = false)
         {
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
@@ -327,6 +352,8 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+
+        #region Relay Commands ...
         private RelayCommand _openShareChartCommand;
 
         /// <summary>
@@ -484,6 +511,9 @@ namespace PnFDesktop.ViewModels
                                           }));
             }
         }
+
+        #endregion
+
 
         ObservableObject? IViewModelResolver.ContentViewModelFromID(string contentId)
         {

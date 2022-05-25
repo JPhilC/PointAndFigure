@@ -7,10 +7,16 @@ namespace PnFImports
 {
     internal partial class PnFImports
     {
+        private static object _progressLock = new object();
+        private static double _progress;
+        private static double _total;
+
         private static int _LastReturnValue = -1;
+        private static DateTime _runStart;
 
         public static void Main(string[] args)
         {
+            _runStart = DateTime.Now;
             if (args.Length > 0)
             {
                 switch (args[0].ToLower())
@@ -113,17 +119,26 @@ namespace PnFImports
                         }
                         break;
 
+                    case "lastreliabledate":
+                        DateTime test = GetLastReliableDate("ALL");
+                        Console.WriteLine($"Last reliable date = {test}");
+                        break;
+
+                    case "test":
+                        DateTime TplusTwoDate = GetLastReliableDate("ALL");
+                        // Generate values;
+                        // RunLongStoredProcedure("uspUpdateShareIndicators", TplusTwoDate, 60);
+                        break;
+
                 }
             }
-
-            Console.WriteLine("Completed. Press a key to exit.");
+            Console.WriteLine($"Started at {_runStart:g}, completed at {DateTime.Now:g}. Press a key to exit.");
             Console.ReadKey();
 
         }
 
         internal static void FullRun(string exchangeCode, string? parameter)
         {
-            Console.WriteLine($"Starting full run ({exchangeCode})...");
             DateTime now = DateTime.Now.Date;
 
             _LastReturnValue = 0;
@@ -139,33 +154,36 @@ namespace PnFImports
                 }
             }
 
+            // Determine the last reliable date (T+2 settlement etc)
+            DateTime TplusTwoDate = GetLastReliableDate(exchangeCode);
+
             if (_LastReturnValue == 0)
             {
                 // Generate values;
-                RunLongStoredProcedure("uspGenerateDailyValues", 60);
+                RunLongStoredProcedure("uspGenerateDailyValues", TplusTwoDate, 60);
             }
 
 
             if (_LastReturnValue == 0)
             {
                 // Generate charts (HiLo and ShareRS may have concurrency issues so process separately)
-                GenerateAllHiLoCharts(exchangeCode, now);
-                GenerateIndexCharts(exchangeCode, now);
-                GenerateIndexRSCharts(exchangeCode, now);
-                GenerateShareRSCharts(exchangeCode, now);
+                GenerateAllHiLoCharts(exchangeCode, TplusTwoDate);
+                GenerateIndexCharts(exchangeCode, TplusTwoDate);
+                GenerateIndexRSCharts(exchangeCode, TplusTwoDate);
+                GenerateShareRSCharts(exchangeCode, TplusTwoDate);
 
             }
 
             if (_LastReturnValue == 0)
             {
                 // Generate SIB Indicators
-                RunLongStoredProcedure("uspUpdateSIBIndicators", 60);
+                RunLongStoredProcedure("uspUpdateSIBIndicators", TplusTwoDate, 60);
             }
 
             if (_LastReturnValue == 0)
             {
                 // Generate index percent Charts
-                GenerateIndexPercentCharts(exchangeCode, now);
+                GenerateIndexPercentCharts(exchangeCode, TplusTwoDate);
             }
 
             if (_LastReturnValue == 0)
@@ -176,23 +194,34 @@ namespace PnFImports
 
             if (_LastReturnValue == 0)
             {
-                Console.WriteLine($"Full ({exchangeCode}) run completed OK.");
+                Console.WriteLine($"\nFull run for ({exchangeCode}) completed OK.");
+                Console.WriteLine($"T+2 day used was {TplusTwoDate:d}");
             }
             else
             {
-                Console.WriteLine($"Error! Full run ({exchangeCode}) failed.");
+                Console.WriteLine($"Error! Full run ({exchangeCode}) failed @.");
             }
         }
 
         #region Helper methods ...
-
-        private static DateTime PreviousWorkDay(DateTime date)
+        private static void UpdateProgress()
         {
-            do
+            lock (_progressLock)
             {
-                date = date.AddDays(-1);
-            } while (IsWeekend(date));
+                _progress += 1.0;
+                Console.Write($"Completed ({_progress / _total * 100.0:N2} %) ...\r");
+            }
+        }
 
+        private static DateTime PreviousWorkDay(DateTime date, int howManyDaysBack = 1)
+        {
+            for (int i = 0; i < howManyDaysBack; i++)
+            {
+                do
+                {
+                    date = date.AddDays(-1);
+                } while (IsWeekend(date));
+            }
             return date;
         }
 
@@ -202,6 +231,41 @@ namespace PnFImports
                    date.DayOfWeek == DayOfWeek.Sunday;
         }
 
+        private static DateTime GetLastReliableDate(string exchangeCode)
+        {
+            DateTime reliableDate = PreviousWorkDay(DateTime.Now, 2);
+            List<DateTime?> days;
+            DateTime cutOff = DateTime.Now.AddDays(-10);
+            using (PnFDataContext db = new PnFDataContext())
+            {
+                if (exchangeCode == "ALL")
+                {
+                    days = db.Shares
+                        .Where(s => s.LastEodDate > cutOff)
+                        .Select(s => s.LastEodDate)
+                        .Distinct()
+                        .OrderByDescending(s=>s!.Value)
+                        .ToList();
+                }
+                else
+                {
+                    days = db.Shares
+                        .Where(s => s.ExchangeCode == exchangeCode && s.LastEodDate > cutOff)
+                        .Select(s => s.LastEodDate)
+                        .Distinct()
+                        .OrderByDescending(s=>s!.Value)
+                        .ToList();
+                }
+            }
+            if (days.Count() > 2)
+            {
+                if (days[2] != null)
+                {
+                    reliableDate = days[2].Value;
+                }
+            }
+            return reliableDate.Date;
+        }
 
         #endregion
 
@@ -221,6 +285,44 @@ namespace PnFImports
                     _returnParameter.Direction = ParameterDirection.ReturnValue;
                     command.CommandType = System.Data.CommandType.StoredProcedure;
                     command.CommandTimeout = connectionTimeout;   // Default to one minute
+                    command.Connection.FireInfoMessageEventOnUserErrors = true;
+                    command.Connection.InfoMessage += ConnectionInfoMessage;
+                    AsyncCallback runResult = new AsyncCallback(NonQueryCallBack);
+                    command.Connection.Open();
+                    command.BeginExecuteNonQuery(runResult, command);
+                    Console.WriteLine($"Waiting for completion of {storedProcedure} ....");
+                    _reset.WaitOne();
+                }
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine($"Problem with executing {storedProcedure}! - [{ ex.Message}]");
+            }
+            if (_LastReturnValue == 0)
+            {
+                Console.WriteLine($"{storedProcedure} Completed successfully");
+            }
+            else
+            {
+                Console.WriteLine($"Error! {storedProcedure} failed.");
+            }
+        }
+
+        internal static void RunLongStoredProcedure(string storedProcedure, DateTime cutOffDate, int connectionTimeout)
+        {
+            _reset.Reset();
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(PnFDataContext.ConnectionString))
+                using (SqlCommand command = new SqlCommand(storedProcedure, conn))
+                {
+                    var cutoffParameter = command.Parameters.Add("CutOffDate", SqlDbType.Date);
+                    cutoffParameter.Value = cutOffDate;
+                    _returnParameter = command.Parameters.Add("RetVal", SqlDbType.Int);
+                    _returnParameter.Direction = ParameterDirection.ReturnValue;
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.CommandTimeout = connectionTimeout;   // Default to one minute
+                    command.Connection.FireInfoMessageEventOnUserErrors = true;
                     command.Connection.InfoMessage += ConnectionInfoMessage;
                     AsyncCallback runResult = new AsyncCallback(NonQueryCallBack);
                     command.Connection.Open();
@@ -247,7 +349,6 @@ namespace PnFImports
         {
             if (e.Errors.Count > 0)
             {
-                Console.WriteLine($"Received {e.Errors.Count} messages");
                 foreach (SqlError info in e.Errors)
                 {
                     if (info.Class > 9) // Severity
@@ -275,6 +376,7 @@ namespace PnFImports
                 {
                     Console.WriteLine($"Waiting for completion of the Async call, result = {command.EndExecuteNonQuery(result)}");
                     Console.WriteLine($"ReturnParameter = {_returnParameter.Value}");
+                    _LastReturnValue = (int)_returnParameter.Value;
                 }
             }
             catch (SqlException ex)

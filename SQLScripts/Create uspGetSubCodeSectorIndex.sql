@@ -14,7 +14,7 @@ AS
 --SET @uptoDate = '2022-02-04';
 SET NOCOUNT ON;
 
-SELECT p.[Day], SUM(p.[Close]) TotalClose, COUNT(*) ShareCount 
+SELECT p.[Day], SUM(p.[AdjustedClose]) TotalClose, COUNT(*) ShareCount 
 	INTO #tempOne
 	FROM EodPrices p 
 	WHERE p.[ShareId] IN (SELECT s.[Id] FROM [Shares] s WHERE s.[ExchangeSubCode] = @subCode AND s.[Sector]=@sector)

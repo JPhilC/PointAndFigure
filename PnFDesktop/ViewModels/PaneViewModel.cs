@@ -36,6 +36,7 @@ namespace PnFDesktop.ViewModels
             set => SetProperty(ref _initialPaneLocation, value);
         }
 
+
         #region Title property ...
 
         private string _title = string.Empty;
@@ -97,5 +98,22 @@ namespace PnFDesktop.ViewModels
         }
 
         #endregion
+
+
+        #region IsBusy property ...
+
+        private bool _isBusy = false;
+
+        /// <summary>
+        /// Sets and gets the IsBusy property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsBusy
+        {
+            get => _isBusy;
+            set => SetProperty(ref _isBusy, value);
+        }
+        #endregion
+
     }
 }
