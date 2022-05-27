@@ -34,8 +34,12 @@ namespace PnFData.Model
         NewDropBelowEma30 = 0x0800,
         [Description("Breached Bull Support Line")]
         NewBullSupportBreach = 0x1000,
+        [Description("52 Week High")]
+        High52Week = 0x2000,
+        [Description("52 Week Low")]
+        Low52Week = 0x4000,
         [Description("All Signals")]
-        AllShareSignals = NewDoubleTop|NewDoubleBottom|NewTripleTop|NewTripleBottom|NewBullSupportBreach
+        AllShareSignals = NewDoubleTop|NewDoubleBottom|NewTripleTop|NewTripleBottom|NewBullSupportBreach|High52Week|Low52Week
 
     }
 

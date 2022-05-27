@@ -38,6 +38,8 @@ namespace PnFDesktop.DTOs
 
         public double? PercentPositiveTrend { get; set; }
 
+        public double? HighLowIndexValue { get; set; }
+
         public bool? Rising { get; set; }
 
         public bool? Buy { get; set; }
@@ -66,6 +68,9 @@ namespace PnFDesktop.DTOs
         public bool? PercentPositiveTrendFalling { get; set; }
         public bool? PercentAbove30EmaFalling { get; set; }
         public bool? PercentAbove10EmaFalling { get; set; }
+        public bool? HighLowIndexRising { get; set; }
+        public bool? HighLowIndexFalling { get; set; }
+
         public int? NewEvents { get; set; }
 
         public string? Notices {get; set;}

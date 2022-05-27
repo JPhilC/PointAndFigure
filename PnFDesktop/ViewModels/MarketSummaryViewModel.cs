@@ -9,6 +9,7 @@ using PnFDesktop.Messaging;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -32,12 +33,12 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        public ObservableCollection<DayDTO> Days { get; } = new ObservableCollection<DayDTO>();
+        public ObservableCollection<DayDTO> Days { get => SimpleIoc.Default.GetInstance<MainViewModel>().AvailableDays; }
 
 
-        private DayDTO _selectedDay;
+        private DayDTO? _selectedDay;
 
-        public DayDTO SelectedDay
+        public DayDTO? SelectedDay
         {
             get => _selectedDay;
             set
@@ -87,6 +88,7 @@ namespace PnFDesktop.ViewModels
             {
                 if (message.Notification == Constants.MarketSummaryUILoaded && !_dataLoaded)
                 {
+                    this._selectedDay = this.Days.FirstOrDefault();
                     await LoadMarketSummaryDataAsync();
                 }
                 else if (message.Notification == Constants.RefreshMarketSummary && _dataLoaded)
@@ -103,23 +105,9 @@ namespace PnFDesktop.ViewModels
             try
             {
                 App.Current.Dispatcher.Invoke(() => IsBusy = true);
-                var dates = await _DataService!.GetMarketAvailableDates(DateTime.Now.AddDays(-60));
-                lock (_ItemsLock)
-                {
-                    App.Current.Dispatcher.Invoke(() => Days.Clear());
-                    foreach (DayDTO day in dates.OrderByDescending(d => d.Day))
-                    {
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            Days.Add(day);
-                        });
-                    }
-                }
-
                 if (this.Days.Any())
                 {
-                    DayDTO latestDay = dates.LastOrDefault();
-                    var list = await _DataService.GetMarketValuesAsync(latestDay!.Day, this.SelectedExchangeCode);
+                    var list = await _DataService.GetMarketValuesAsync(this.SelectedDay!.Day, this.SelectedExchangeCode);
                     lock (_ItemsLock)
                     {
                         App.Current.Dispatcher.Invoke(() => Indices.Clear());
@@ -130,13 +118,13 @@ namespace PnFDesktop.ViewModels
                                 Indices.Add(index);
                             });
                         }
-                        App.Current.Dispatcher.Invoke(() => SelectedDay = latestDay);
                     }
                 }
                 else
                 {
                     MessageLog.LogMessage(this, LogType.Information, "There is no market value data available");
                 }
+                App.Current.Dispatcher.Invoke(() => OnPropertyChanged(nameof(SelectedDay)));
                 _dataLoaded = true;
             }
             catch (Exception ex)
@@ -264,6 +252,21 @@ namespace PnFDesktop.ViewModels
                 {
                     WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
                         new OpenPointAndFigureChartMessage(this, currentSector.Id, PnFData.Model.PnFChartSource.IndexPercentShareAbove30)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<MarketSummaryDTO> _loadHighLowIndexChartCommand;
+
+        public RelayCommand<MarketSummaryDTO> LoadHighLowIndexChartCommand
+        {
+            get
+            {
+                return _loadHighLowIndexChartCommand ?? (_loadHighLowIndexChartCommand = new RelayCommand<MarketSummaryDTO>(currentSector =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentSector.Id, PnFData.Model.PnFChartSource.HighLowIndex)
                         );
                 }));
             }

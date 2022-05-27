@@ -10,6 +10,7 @@ using PnFDesktop.Messaging;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -31,8 +32,22 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        public ObservableCollection<string> ExchangeCodes { get => SimpleIoc.Default.GetInstance<MainViewModel>().ExchangeCodes; }
 
-        public ObservableCollection<DayDTO> Days { get; } = new ObservableCollection<DayDTO>();
+        private string _selectedExchangeCode = "LSE";
+        public string SelectedExchangeCode
+        {
+            get => _selectedExchangeCode;
+            set
+            {
+                if (SetProperty(ref _selectedExchangeCode, value))
+                {
+                    WeakReferenceMessenger.Default.Send<NotificationMessage>(new NotificationMessage(Constants.RefreshFilteredSharesSummary));
+                }
+            }
+        }
+
+        public ObservableCollection<DayDTO> Days { get => SimpleIoc.Default.GetInstance<MainViewModel>().AvailableDays; }
 
 
         private DayDTO? _selectedDay;
@@ -91,37 +106,24 @@ namespace PnFDesktop.ViewModels
                         {
                             if (message.Notification == Constants.FilteredSharesSummaryUILoaded && !_dataLoaded)
                             {
-                                await LoadDaysAsync();
+                                this._selectedDay = this.Days.FirstOrDefault();
+                                await LoadSummaryDataAsync();
                             }
                             else if (message.Notification == Constants.RefreshFilteredSharesSummary && _dataLoaded)
                             {
                                 await RefeshSharesSummaryDataAsync();
                             }
-                        }); 
+                        });
             Control = new FilteredSharesSummaryView(this);
         }
 
-        private async Task LoadDaysAsync()
+        private async Task LoadSummaryDataAsync()
         {
             try
             {
-                var dates = await _DataService!.GetMarketAvailableDates(DateTime.Now.AddDays(-60));
-                lock (_ItemsLock)
-                {
-                    App.Current.Dispatcher.Invoke(() => Days.Clear());
-                    foreach (DayDTO day in dates.OrderByDescending(d => d.Day))
-                    {
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            Days.Add(day);
-                        });
-                    }
-                }
-
                 if (this.Days.Any())
                 {
-                    DayDTO latestDay = dates.LastOrDefault();
-                    var list = await _DataService.GetEventFilteredSharesAsync(this.EventFilter, latestDay!.Day);
+                    var list = await _DataService.GetEventFilteredSharesAsync(this.EventFilter, this.SelectedDay!.Day, this.SelectedExchangeCode);
                     lock (_ItemsLock)
                     {
                         App.Current.Dispatcher.Invoke(() => Shares.Clear());
@@ -132,13 +134,13 @@ namespace PnFDesktop.ViewModels
                                 Shares.Add(share);
                             });
                         }
-                        App.Current.Dispatcher.Invoke(() => SelectedDay = latestDay);
                     }
                 }
                 else
                 {
                     MessageLog.LogMessage(this, LogType.Information, "There is no share summary data available");
                 }
+                App.Current.Dispatcher.Invoke(() => OnPropertyChanged(nameof(SelectedDay)));
                 _dataLoaded = true;
             }
             catch (Exception ex)
@@ -151,7 +153,7 @@ namespace PnFDesktop.ViewModels
         {
             try
             {
-                var list = await _DataService!.GetEventFilteredSharesAsync(this.EventFilter, this.SelectedDay!.Day);
+                var list = await _DataService!.GetEventFilteredSharesAsync(this.EventFilter, this.SelectedDay!.Day, this.SelectedExchangeCode);
                 lock (_ItemsLock)
                 {
                     App.Current.Dispatcher.Invoke(() => Shares.Clear());
@@ -170,6 +172,51 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        #region Relay commands ...
+        private RelayCommand<ShareSummaryDTO> _loadShareChartCommand;
 
+        public RelayCommand<ShareSummaryDTO> LoadShareChartCommand
+        {
+            get
+            {
+                return _loadShareChartCommand ?? (_loadShareChartCommand = new RelayCommand<ShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.Share)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<ShareSummaryDTO> _loadSharePeerRsChartCommand;
+
+        public RelayCommand<ShareSummaryDTO> LoadSharePeerRsChartCommand
+        {
+            get
+            {
+                return _loadSharePeerRsChartCommand ?? (_loadSharePeerRsChartCommand = new RelayCommand<ShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.RSStockVSector)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<ShareSummaryDTO> _loadShareMarketRsChartCommand;
+
+        public RelayCommand<ShareSummaryDTO> LoadShareMarketRsChartCommand
+        {
+            get
+            {
+                return _loadShareMarketRsChartCommand ?? (_loadShareMarketRsChartCommand = new RelayCommand<ShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.RSStockVMarket)
+                        );
+                }));
+            }
+        }
+        #endregion
     }
 }

@@ -1,11 +1,11 @@
 USE [PnFData]
 GO
 
-/****** Object:  StoredProcedure [dbo].[uspGenerate10WeekHighLowEma]    Script Date: 13/03/2022 17:38:53 ******/
-DROP PROCEDURE [dbo].[uspGenerate10WeekHighLowEma]
+/****** Object:  StoredProcedure [dbo].[uspGenerate10DayHighLowEma]    Script Date: 13/03/2022 17:38:53 ******/
+DROP PROCEDURE [dbo].[uspGenerate10DayHighLowEma]
 GO
 
-/****** Object:  StoredProcedure [dbo].[uspGenerate10WeekHighLowEma]    Script Date: 13/03/2022 17:38:53 ******/
+/****** Object:  StoredProcedure [dbo].[uspGenerate10DayHighLowEma]    Script Date: 13/03/2022 17:38:53 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -13,7 +13,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 
-CREATE PROCEDURE [dbo].[uspGenerate10WeekHighLowEma] 
+CREATE PROCEDURE [dbo].[uspGenerate10DayHighLowEma] 
 	AS
 SET NOCOUNT ON
 

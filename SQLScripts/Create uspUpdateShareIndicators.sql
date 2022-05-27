@@ -168,9 +168,7 @@ UPDATE si
 		SET si.[ClosedAboveEma10] = IIF(p.[AdjustedClose] > si.[Ema10], 1, 0)
 		,	si.[ClosedAboveEma30] = IIF(p.[AdjustedClose] > si.[Ema30], 1, 0)
 		FROM [dbo].[ShareIndicators] si
-		LEFT JOIN [dbo].[EodPrices] p 
-		ON p.[ShareId] = si.[ShareId]
-			AND p.[Day] = si.[Day]
+		LEFT JOIN [dbo].[EodPrices] p ON p.[ShareId] = si.[ShareId] AND p.[Day] = si.[Day]
 		WHERE si.[CreatedAt] > @fromDate
 
 -- Now update the Events code with notifications of new events.
@@ -180,23 +178,42 @@ SELECT si.[ShareId], si.[Day], si.DoubleTop, si.TripleTop, si.RsBuy, si.PeerRsBu
 	FROM [dbo].[ShareIndicators] si
 	WHERE si.[Day] >= @fromDate;
 
+DECLARE @NewDoubleTop AS INT			= 0x0001;
+DECLARE @NewTripleTop AS INT			= 0x0002;
+DECLARE @NewRsBuy AS INT				= 0x0004;
+DECLARE @NewPeerRsBuy AS INT			= 0x0008;
+DECLARE @NewDoubleBottom AS INT			= 0x0010;
+DECLARE @NewTripleBottom AS INT			= 0x0020;
+DECLARE @NewRsSell AS INT				= 0x0040;
+DECLARE @NewPeerRsSell AS INT			= 0x0080;
+DECLARE @NewCloseAboveEma10 AS INT		= 0x0100;
+DECLARE @NewCloseAboveEma30 AS INT		= 0x0200;
+DECLARE @NewDropBelowEma10 AS INT		= 0x0400;
+DECLARE @NewDropBelowEma30 AS INT		= 0x0800;
+DECLARE @NewBullSupportBreach AS INT	= 0x1000;
+DECLARE @High52Week AS INT				= 0x2000;
+DECLARE @Low52Week AS INT				= 0x4000;
+
 
 UPDATE [dbo].[ShareIndicators]
 		SET [UpdatedAt] = GETDATE()
-		,	[NewEvents] = iif(td.[DoubleTop]^yd.[DoubleTop]=1 and td.[DoubleTop]=1, 0x0001, 0)
-		+ iif(td.[TripleTop]^yd.[TripleTop]=1 and td.[TripleTop]=1, 0x0002, 0)
-		+ iif(td.[RsBuy]^yd.[RsBuy]=1 and td.[RsBuy]=1, 0x0004, 0) 
-		+ iif(td.[PeerRsBuy]^yd.[PeerRsBuy]=1 and td.[PeerRsBuy]=1, 0x0008, 0)
-		+ iif(td.[DoubleBottom]^yd.[DoubleBottom]=1 and td.[DoubleBottom]=1, 0x0010, 0)
-		+ iif(td.[TripleBottom]^yd.[TripleBottom]=1 and td.[TripleBottom]=1, 0x0020, 0) 
-		+ iif(td.[RsSell]^yd.[RsSell]=1 and td.[RsSell]=1, 0x0040, 0) 
-		+ iif(td.[PeerRsSell]^yd.[PeerRsSell]=1 and td.[PeerRsSell]=1, 0x0080, 0)
-		+ iif(td.[ClosedAboveEma10]^yd.[ClosedAboveEma10]=1 and td.[ClosedAboveEma10]=1, 0x0100, 0)
-		+ iif(td.[ClosedAboveEma30]^yd.[ClosedAboveEma30]=1 and td.[ClosedAboveEma30]=1, 0x0200, 0)
-		+ iif(td.[ClosedAboveEma10]^yd.[ClosedAboveEma10]=1 and yd.[ClosedAboveEma10]=1, 0x0400, 0)
-		+ iif(td.[ClosedAboveEma30]^yd.[ClosedAboveEma30]=1 and yd.[ClosedAboveEma30]=1, 0x0800, 0) 
-		+ iif(td.[AboveBullSupport]^yd.[AboveBullSupport]=1 and yd.[AboveBullSupport]=1, 0x1000, 0)
+		,	[NewEvents] = iif(td.[DoubleTop]^yd.[DoubleTop]=1 and td.[DoubleTop]=1, @NewDoubleTop, 0)
+		+ iif(td.[TripleTop]^yd.[TripleTop]=1 and td.[TripleTop]=1, @NewTripleTop, 0)
+		+ iif(td.[RsBuy]^yd.[RsBuy]=1 and td.[RsBuy]=1, @NewRsBuy, 0) 
+		+ iif(td.[PeerRsBuy]^yd.[PeerRsBuy]=1 and td.[PeerRsBuy]=1, @NewPeerRsBuy, 0)
+		+ iif(td.[DoubleBottom]^yd.[DoubleBottom]=1 and td.[DoubleBottom]=1, @NewDoubleBottom, 0)
+		+ iif(td.[TripleBottom]^yd.[TripleBottom]=1 and td.[TripleBottom]=1, @NewTripleBottom, 0) 
+		+ iif(td.[RsSell]^yd.[RsSell]=1 and td.[RsSell]=1, @NewRsSell, 0) 
+		+ iif(td.[PeerRsSell]^yd.[PeerRsSell]=1 and td.[PeerRsSell]=1, @NewPeerRsSell, 0)
+		+ iif(td.[ClosedAboveEma10]^yd.[ClosedAboveEma10]=1 and td.[ClosedAboveEma10]=1, @NewCloseAboveEma10, 0)
+		+ iif(td.[ClosedAboveEma30]^yd.[ClosedAboveEma30]=1 and td.[ClosedAboveEma30]=1, @NewCloseAboveEma30, 0)
+		+ iif(td.[ClosedAboveEma10]^yd.[ClosedAboveEma10]=1 and yd.[ClosedAboveEma10]=1, @NewDropBelowEma10, 0)
+		+ iif(td.[ClosedAboveEma30]^yd.[ClosedAboveEma30]=1 and yd.[ClosedAboveEma30]=1, @NewDropBelowEma30, 0) 
+		+ iif(td.[AboveBullSupport]^yd.[AboveBullSupport]=1 and yd.[AboveBullSupport]=1, @NewBullSupportBreach, 0)
+		+ iif(p.[New52WeekHigh]=1, @High52Week, 0)
+		+ iif(p.[New52WeekLow]=1, @Low52Week, 0)
 	FROM [dbo].[ShareIndicators] si
+	LEFT JOIN [dbo].[EodPrices] p ON p.[ShareId] = si.[ShareId] AND p.[Day] = si.[Day]
 	LEFT JOIN #today td ON td.[ShareId] = si.[ShareId] AND td.[Day] = si.[Day]
 	LEFT JOIN #today yd ON yd.[ShareId] = td.[ShareId] AND yd.Ordinal# = td.Ordinal#-1
 	WHERE si.[Day] >= @fromDate and td.[Ordinal#] > 1

@@ -71,7 +71,7 @@ namespace PnFData.Model
         public bool? PercentAbove30EmaFalling { get; set; }
         public bool? PercentAbove10EmaFalling { get; set; }
         public bool? HighLowIndexRising { get; set; }
-        public bool? HighLowIndexfalling { get; set; }
+        public bool? HighLowIndexFalling { get; set; }
 
         public int NewEvents {get;set;}
 

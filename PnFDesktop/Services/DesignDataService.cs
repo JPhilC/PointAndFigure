@@ -9,7 +9,7 @@ namespace PnFDesktop.Services
 {
     public class DesignDataService : IDataService
     {
-        public Task<IEnumerable<ShareSummaryDTO>> GetEventFilteredSharesAsync(ShareEvents eventFilter, DateTime day)
+        public Task<IEnumerable<ShareSummaryDTO>> GetEventFilteredSharesAsync(ShareEvents eventFilter, DateTime day, string exchangeCode)
         {
             throw new NotImplementedException();
         }

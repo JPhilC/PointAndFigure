@@ -211,6 +211,7 @@ namespace PnFDesktop.Services
                                          PercentRsBuy = iv.PercentRsBuy,
                                          PercentRsRising = iv.PercentRsRising,
                                          PercentPositiveTrend = iv.PercentPositiveTrend,
+                                         HighLowIndexValue = iv.HighLowEma10,
                                          Rising = ii.Rising,
                                          Buy = ii.Buy,
                                          RsRising = ii.RsRising,
@@ -231,13 +232,23 @@ namespace PnFDesktop.Services
                                          PercentPositiveTrendFalling = ii.PercentPositiveTrendFalling,
                                          PercentAbove30EmaFalling = ii.PercentAbove30EmaFalling,
                                          PercentAbove10EmaFalling = ii.PercentAbove10EmaFalling,
+                                         HighLowIndexRising = ii.HighLowIndexRising,
+                                         HighLowIndexFalling = ii.HighLowIndexFalling,
                                          NewEvents = ii.NewEvents,
                                          Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.PercentOf10Gt30) == (int)IndexEvents.PercentOf10Gt30 ? "Percent of 10 (Above 30)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.PercentOf30Gt30) == (int)IndexEvents.PercentOf30Gt30 ? "Percent of 30 (Above 30)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.HighLowGt30) == (int)IndexEvents.HighLowGt30 ? "High-Low (Above 30)" : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.PercentOf10Lt70) == (int)IndexEvents.PercentOf10Lt70 ? "Percent of 10 (Below 70)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.PercentOf30Lt70) == (int)IndexEvents.PercentOf30Lt70 ? "Percent of 30 (Below 70)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.HighLowLt70) == (int)IndexEvents.HighLowLt70 ? "High-Low (Below 70)" : "")
                                      }).ToListAsync();
 
                 }
@@ -249,12 +260,6 @@ namespace PnFDesktop.Services
             return indices;
         }
 
-
-        //where si.DoubleTop == marketSummaryDTO.BullishPercentRising || marketSummaryDTO.BullishPercentRising == false
-        //where si.RsRising == marketSummaryDTO.PercentRsRisingRising || marketSummaryDTO.PercentRsRisingRising == false
-        //where si.ClosedAboveEma10 == marketSummaryDTO.PercentAbove10EmaRising || marketSummaryDTO.PercentAbove10EmaRising == false
-        //where si.ClosedAboveEma30 == marketSummaryDTO.PercentAbove30EmaRising || marketSummaryDTO.PercentAbove30EmaRising == false
-        //where si.AboveBullSupport == marketSummaryDTO.PercentPositiveTrendRising || marketSummaryDTO.PercentPositiveTrendRising == false
 
 
         public async Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO)
@@ -269,6 +274,8 @@ namespace PnFDesktop.Services
                                     from rs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Market).DefaultIfEmpty()
                                     from prs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Sector).DefaultIfEmpty()
                                     from q in db.EodPrices.Where(r => r.ShareId == si.ShareId && r.Day == si.Day).DefaultIfEmpty()
+                                    from idx in db.Indices.Where(r => r.ExchangeCode == s.ExchangeCode && r.ExchangeSubCode == s.ExchangeSubCode && r.SuperSector == s.SuperSector).DefaultIfEmpty()
+                                    from ii in db.IndexIndicators.Where(r => r.IndexId == idx.Id && r.Day == si.Day)
                                     where si.Day == marketSummaryDTO.Day
                                         && s.ExchangeCode == marketSummaryDTO.ExchangeCode
                                         && s.ExchangeSubCode == marketSummaryDTO.ExchangeSubCode
@@ -279,6 +286,9 @@ namespace PnFDesktop.Services
                                         Id = s.Id,
                                         Tidm = s.Tidm,
                                         Name = s.Name,
+                                        ExchangeCode = s.ExchangeCode,
+                                        ExchangeSubCode = s.ExchangeSubCode,
+                                        SuperSector = s.SuperSector,
                                         MarketCapMillions = s.MarketCapMillions,
                                         Close = q.Close,
                                         RsValue = rs.Value,
@@ -319,7 +329,13 @@ namespace PnFDesktop.Services
                                                   + (si.PeerRsSell == true ? -1 : 0)
                                                   + (si.ClosedAboveEma10 == true ? 1 : 0)
                                                   + (si.ClosedAboveEma30 == true ? 1 : 0)
-                                                  + (si.AboveBullSupport == true ? 1 : 0)
+                                                  + (si.AboveBullSupport == true ? 1 : 0),
+                                        Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
                                     }).ToListAsync();
                 }
             }
@@ -331,7 +347,7 @@ namespace PnFDesktop.Services
 
         }
 
-        public async Task<IEnumerable<ShareSummaryDTO>> GetEventFilteredSharesAsync(ShareEvents eventFilter, DateTime day)
+        public async Task<IEnumerable<ShareSummaryDTO>> GetEventFilteredSharesAsync(ShareEvents eventFilter, DateTime day, string exchangeCode)
         {
             IEnumerable<ShareSummaryDTO> shares = new List<ShareSummaryDTO>();
             try
@@ -345,7 +361,7 @@ namespace PnFDesktop.Services
                                     from q in db.EodPrices.Where(r => r.ShareId == si.ShareId && r.Day == si.Day).DefaultIfEmpty()                                                   //  on new { si.ShareId, si.Day } equals new { q.ShareId, q.Day }
                                     from idx in db.Indices.Where(r => r.ExchangeCode == s.ExchangeCode && r.ExchangeSubCode == s.ExchangeSubCode && r.SuperSector == s.SuperSector).DefaultIfEmpty()
                                     from ii in db.IndexIndicators.Where(r => r.IndexId == idx.Id && r.Day == day)
-                                    where si.Day == day && (si.NewEvents & (int)eventFilter) != 0
+                                    where s.ExchangeCode == exchangeCode && si.Day == day && (si.NewEvents & (int)eventFilter) != 0
                                     orderby s.Tidm
                                     select new ShareSummaryDTO()
                                     {

@@ -37,7 +37,7 @@ IF @RC = 0
  EXECUTE @RC = [dbo].[uspGenerate10And30WeekEmas]
 
 IF @RC = 0
- EXECUTE @RC =  [dbo].[uspGenerate10WeekHighLowEma]
+ EXECUTE @RC =  [dbo].[uspGenerate10DayHighLowEma]
 
 IF @RC = 0
 	BEGIN

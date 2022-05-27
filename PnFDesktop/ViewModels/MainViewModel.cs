@@ -24,8 +24,9 @@ namespace PnFDesktop.ViewModels
     public class MainViewModel : ObservableObject, ILayoutViewModelParent, IViewModelResolver
     {
 
-        public ObservableCollection<string>  ExchangeCodes {get; }= new ObservableCollection<string>();
+        public ObservableCollection<string> ExchangeCodes { get; } = new ObservableCollection<string>();
 
+        public ObservableCollection<DayDTO> AvailableDays { get; } = new ObservableCollection<DayDTO>();
 
 
         public Action ExitApplicationAction { get; set; }
@@ -37,8 +38,11 @@ namespace PnFDesktop.ViewModels
         public MainViewModel(IDataService dataService)
         {
             _dataService = dataService;
-
-            Task.Run(async () => LoadExchanges());
+            Task.WaitAll(new Task[]
+            {
+            Task.Run(async ()=>await LoadExchanges()),
+            Task.Run(async ()=>await LoadAvailableDays())
+            });
 
             if (!DesignerLibrary.IsInDesignMode)
             {
@@ -259,14 +263,24 @@ namespace PnFDesktop.ViewModels
             var exchangeCodes = await _dataService.GetExchangeCodesAsync();
             if (exchangeCodes.Any())
             {
-                App.Current.Dispatcher.Invoke(() => ExchangeCodes.Clear());
-            }
-            foreach(var exchangeCode in exchangeCodes)
-            {
-                App.Current.Dispatcher.Invoke(() =>
+                ExchangeCodes.Clear();
+                foreach (var exchangeCode in exchangeCodes)
                 {
                     ExchangeCodes.Add(exchangeCode);
-                });
+                }
+            }
+        }
+
+        private async Task LoadAvailableDays()
+        {
+            var dates = await _dataService!.GetMarketAvailableDates(DateTime.Now.AddDays(-60));
+            if (dates.Any())
+            {
+                AvailableDays.Clear();
+                foreach (var dayDto in dates.OrderByDescending(d => d.Day))
+                {
+                    AvailableDays.Add(dayDto);
+                }
             }
         }
 
@@ -321,7 +335,7 @@ namespace PnFDesktop.ViewModels
         {
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
             // source for viewpnfCharts.
-           FilteredSharesSummaryViewModel summaryViewModel = SimpleIoc.Default.GetInstance<FilteredSharesSummaryViewModel>();
+            FilteredSharesSummaryViewModel summaryViewModel = SimpleIoc.Default.GetInstance<FilteredSharesSummaryViewModel>();
             if (summaryViewModel is PaneViewModel paneViewModel)
             {
                 if (!this.DocumentPanes.Contains(paneViewModel))

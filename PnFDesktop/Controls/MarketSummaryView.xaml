@@ -225,15 +225,17 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.PercentOf10Gt30}}"/>
                                 <TextBlock Margin="5,0,5,0">
-                                <Hyperlink Command="{Binding DataContext.LoadPercentAbove10EmaChartCommand, RelativeSource={RelativeSource AncestorType=local:MarketSummaryView}}"
-                                               CommandParameter="{Binding}">
-                                        <TextBlock Text="{Binding PercentAboveEma10, StringFormat={}{0:N2}}"/>
-                                        <Hyperlink.ToolTip>
-                                            <TextBlock Text="Open % of shares above 10 EMA P &amp; F Chart" />
-                                        </Hyperlink.ToolTip>
-                                 </Hyperlink>
-                            </TextBlock>
+                                    <Hyperlink Command="{Binding DataContext.LoadPercentAbove10EmaChartCommand, RelativeSource={RelativeSource AncestorType=local:MarketSummaryView}}"
+                                                   CommandParameter="{Binding}">
+                                            <TextBlock Text="{Binding PercentAboveEma10, StringFormat={}{0:N2}}"/>
+                                            <Hyperlink.ToolTip>
+                                                <TextBlock Text="Open % of shares above 10 EMA P &amp; F Chart" />
+                                            </Hyperlink.ToolTip>
+                                     </Hyperlink>
+                                </TextBlock>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.PercentOf10Lt70}}"/>
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
                                         <Style.Triggers>
@@ -262,15 +264,17 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.PercentOf30Gt30}}"/>
                                 <TextBlock Margin="5,0,5,0">
-                                <Hyperlink Command="{Binding DataContext.LoadPercentAbove30EmaChartCommand, RelativeSource={RelativeSource AncestorType=local:MarketSummaryView}}"
-                                               CommandParameter="{Binding}">
-                                        <TextBlock Text="{Binding PercentAboveEma30, StringFormat={}{0:N2}}"/>
-                                        <Hyperlink.ToolTip>
-                                            <TextBlock Text="Open % of shares above 30 EMA P &amp; F Chart" />
-                                        </Hyperlink.ToolTip>
-                                 </Hyperlink>
-                            </TextBlock>
+                                    <Hyperlink Command="{Binding DataContext.LoadPercentAbove30EmaChartCommand, RelativeSource={RelativeSource AncestorType=local:MarketSummaryView}}"
+                                                   CommandParameter="{Binding}">
+                                            <TextBlock Text="{Binding PercentAboveEma30, StringFormat={}{0:N2}}"/>
+                                            <Hyperlink.ToolTip>
+                                                <TextBlock Text="Open % of shares above 30 EMA P &amp; F Chart" />
+                                            </Hyperlink.ToolTip>
+                                     </Hyperlink>
+                                </TextBlock>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.PercentOf30Lt70}}"/>
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
                                         <Style.Triggers>
@@ -282,6 +286,45 @@
                                                 </Setter>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentAbove30EmaFalling}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Hi-Low" SortMemberPath="HighLowIndexValue">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.HighLowGt30}}"/>
+                                <TextBlock Margin="5,0,5,0">
+                                    <Hyperlink Command="{Binding DataContext.LoadHighLowIndexChartCommand, RelativeSource={RelativeSource AncestorType=local:MarketSummaryView}}"
+                                                   CommandParameter="{Binding}">
+                                            <TextBlock Text="{Binding HighLowIndexValue, StringFormat={}{0:N2}}"/>
+                                            <Hyperlink.ToolTip>
+                                                <TextBlock Text="Open High-Low Index P &amp; F Chart" />
+                                            </Hyperlink.ToolTip>
+                                     </Hyperlink>
+                                    </TextBlock>
+                                    <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.HighLowLt70}}"/>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding  HighLowIndexRising}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding HighLowIndexFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
@@ -411,7 +454,7 @@
 
         </DataGrid>
         <xctk:BusyIndicator Grid.ColumnSpan="8" Grid.RowSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" IsBusy="{Binding IsBusy}"/>
-        
-        
+
+
     </Grid>
 </UserControl>
