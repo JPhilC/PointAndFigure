@@ -1,20 +1,22 @@
-﻿using System.Windows;
+﻿using PnFDesktop.Classes;
+using System.Collections;
+using System.Collections.Specialized;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace PnFDesktop.Controls
 {
     /// <summary>
-    /// Implements an ListBox for displaying PointAndFigureColumns in the NetworkView UI.
+    /// Implements an ListBox for displaying PointAndFigureBoxes in the NetworkView UI.
     /// </summary>
     public class PointAndFigureColumnItemsControl : ListBox
     {
+
         public PointAndFigureColumnItemsControl()
         {
-            //
-            // By default, we don't want this UI element to be focusable.
-            //
             Focusable = false;
         }
+
 
         #region Private Methods
 

@@ -16,170 +16,219 @@
         Opacity="0.25"
     />
 
-
-    <!-- Default style and control-template for 'NodeItem'. -->
-    <Style TargetType="{x:Type controls:PointAndFigureColumnItem}" >
-
-        <!-- Data-bind the parent NetworkView. -->
-        <Setter
-            Property="ParentPointAndFigureChart"
-            Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}, Path=.}"
-            />
-
-        <!-- Set the position of the node within the canvas. -->
-        <Setter
-            Property="Canvas.Left"
-            Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
-            />
-        <Setter
-            Property="Canvas.Top"
-            Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
-            />
-
-        <!-- Set the z-order of the node within the canvas. -->
-        <Setter Property="Canvas.ZIndex" Value="{Binding ZIndex, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
-
-        <!-- Set defaults for background and border. -->
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="1" />
-        <!-- The control-template for the node. -->
+    <!-- 
+    Override the style of the ListBox to remove the ScrollViewer.
+    All we want is ListBox logic but based on a Canvas.
+    -->
+    <Style x:Key="ColumnListStyle" TargetType="ListBox">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type controls:PointAndFigureColumnItem}" >
+                <ControlTemplate TargetType="ListBox">
                     <!-- 
-                        This border indicates that node is selected.
-                        Normally it is transparent, but when 'IsSelected' is set
-                        to 'true' the border brush becomes blue and its background
-                        becomds light blue.
-                        -->
-                    <Border
-                            x:Name="selectionBorder"
-                            Background="{TemplateBinding Background}" 
-                            BorderBrush="{TemplateBinding BorderBrush}" 
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Margin="{TemplateBinding Margin}"
-                            Padding="{TemplateBinding Padding}"
-                            CornerRadius="0">
-                        <Border.RenderTransform>
-                            <TranslateTransform X="{Binding X}" 
-                                                    Y="{Binding Y}"/>
-                        </Border.RenderTransform>
-                        <Canvas>
-                            <!-- 
-                            User-defined node content is presented here. 
-                            -->
-                            <ContentPresenter />
-                            <!-- The visual for the bullish support box. -->
-                            <Grid Visibility="{Binding ShowBullishSupportImage, Converter={StaticResource BoolToVis}}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="{Binding GridSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}}"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="{Binding GridSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}}"/>
-                                </Grid.RowDefinitions>
-                                <!-- The names are added to the transforms below to prevent error appearing in the output window -->
-                                <Grid.RenderTransform>
-                                    <TranslateTransform Y="{Binding BullishSupportY}"/>
-                                </Grid.RenderTransform>
-                                <Image Source="{Binding BullishSupportImage}"  Stretch="None"/>
-                            </Grid>
-                        </Canvas>
-                    </Border>
-
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsSelected"  Value="True">
-
-                            <!-- When the node is selected, set the color of 'selectionBorder' to blue. -->
-                            <!--<Setter
-                                TargetName="selectionBorder"
-                                Property="BorderBrush"
-                                Value="{StaticResource selectionBorderColor}"
-                                />-->
-                        </Trigger>
-
-                        <Trigger 
-                            Property="IsSelected"
-                            Value="True"
-                            >
-
-                            <!-- When the node is selected, set the background of 'selectionBorder' to light blue. -->
-                            <Setter
-                                TargetName="selectionBorder"
-                                Property="Background"
-                                Value="{StaticResource selectionBorderBackgroundColor}"
-                                />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
+                    The ListBoxItems are presented in a Canvas.
+                    'IsItemsHost' is set to 'True' so that the ListBox
+                    uses the Canvas as the container for its items.
+                    -->
+                    <Canvas IsItemsHost="True"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <!-- 
-            Define the visual style for a 'PointAndFigureBoxItem'.
-            -->
-    <Style TargetType="{x:Type controls:PointAndFigureBoxItem}" >
-        <!-- Data-bind the parent NetworkView. -->
-        <Setter
-            Property="ParentPointAndFigureChart"
-            Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}, Path=.}"
-        />
 
-        <!--Data-bind the parent NodeItem.-->
-        <Setter
-            Property="ParentPointAndFigureColumnItem"
-            Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureColumnItem}}, Path=.}"
-        />
+    <!-- Style for the port Items list -->
+    <Style x:Key="CanvasHostedItemsList" TargetType="{x:Type ItemsControl}">
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <Canvas IsItemsHost="True"></Canvas>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
-        <!--Set the position of the node within the canvas.-->
-        <Setter
-            Property="Canvas.Left"
-            Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
-        />
-        <Setter
-            Property="Canvas.Top"
-            Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
-        />
 
-        <!-- The control-template for the connector. -->
+    <!-- Default style and control-template for 'ColumnItem'. -->
+    <Style TargetType="{x:Type controls:PointAndFigureColumnItem}" >
+        <Setter Property="Canvas.Left" Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+        <Setter Property="Canvas.Top" Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+        <!-- The control-template for the column. -->
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate 
-                    TargetType="{x:Type controls:PointAndFigureBoxItem}"
-                >
-                    <!-- The visual for the box. -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="{Binding GridSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}}"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="{Binding GridSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:PointAndFigureChartControl}}}"/>
-                        </Grid.RowDefinitions>
-                        <!-- The names are added to the transforms below to prevent error appearing in the output window -->
+                <ControlTemplate TargetType="{x:Type controls:PointAndFigureColumnItem}" >
+                    <Grid HorizontalAlignment="Left" VerticalAlignment="Top" ToolTip="{Binding Tooltip}">
                         <Grid.RenderTransform>
                             <TranslateTransform X="{Binding X}" 
-                                                Y="{Binding Y}"/>
+                                                    Y="{Binding Y}" />
                         </Grid.RenderTransform>
-                        <Image Source="{Binding Image}"  Stretch="None"
-                               Visibility="{Binding Box.MonthIndicator, Converter={StaticResource StringToVisibility}, ConverterParameter={x:Static Visibility.Collapsed}}"/>
-                        <TextBlock Text="{Binding Box.MonthIndicator}" FontSize="6" FontWeight="Light" VerticalAlignment="Center" HorizontalAlignment="Center" 
-                                   Visibility="{Binding Box.MonthIndicator, Converter={StaticResource StringToVisibility}, ConverterParameter={x:Static Visibility.Visible}}"/>
+
+                        <!-- Boxes list box -->
+                        <ItemsControl ItemsSource="{Binding Boxes}"
+                                          Style="{StaticResource CanvasHostedItemsList}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <!--The visual for the box.-->
+                                    <Grid HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                              Height="5" Width="5">
+                                        <Grid.RenderTransform>
+                                            <TranslateTransform X="{Binding X}" 
+                                                                    Y="{Binding Y}"/>
+                                        </Grid.RenderTransform>
+                                        <!--The names are added to the transforms below to prevent error appearing in the output window-->
+                                        <Image Source="{Binding Image}"  Stretch="None"
+                                                    Visibility="{Binding Box.MonthIndicator, Converter={StaticResource StringToVisibility}, ConverterParameter={x:Static Visibility.Collapsed}}">
+                                            <Image.RenderTransform>
+                                                <TranslateTransform X="0" Y="0" />
+                                            </Image.RenderTransform>
+                                        </Image>
+                                        <TextBlock Text="{Binding Box.MonthIndicator}" FontSize="6" FontWeight="Light" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                    Visibility="{Binding Box.MonthIndicator, Converter={StaticResource StringToVisibility}, ConverterParameter={x:Static Visibility.Visible}}">
+                                            <TextBlock.RenderTransform>
+                                                <TranslateTransform X="0" Y="0" />
+                                            </TextBlock.RenderTransform>
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- The visual for the bullish support box. -->
+                        <Image Source="{Binding BullishSupportImage}"  Stretch="None"
+                                       Visibility="{Binding ShowBullishSupportImage, Converter={StaticResource BoolToVis}}">
+                            <Image.RenderTransform>
+                                <TranslateTransform Y="{Binding BullishSupportY}"/>
+                            </Image.RenderTransform>
+                        </Image>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <!-- Style for the port Items list -->
-    <Style x:Key="BoxItemsList" TargetType="{x:Type ItemsControl}">
-        <Setter Property="ItemsPanel">
+
+    <!-- Define the visual style for a 'PointAndFigureHighlight used to pick out rows'. -->
+    <Style x:Key="HorizontalHighlightStyle" TargetType="{x:Type controls:PointAndFigureHighlightItem}" >
+
+        <!--Set the position of the node within the canvas.-->
+        <Setter Property="Canvas.Left" Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+        <Setter Property="Canvas.Top" Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+
+        <!-- The control-template for the connector. -->
+        <Setter Property="Template">
             <Setter.Value>
-                <ItemsPanelTemplate>
-                    <Canvas Height="{Binding Size.Height}"
-                            Width="{Binding Size.Width}"
-                            IsItemsHost="True"></Canvas>
-                </ItemsPanelTemplate>
+                <ControlTemplate 
+                    TargetType="{x:Type controls:PointAndFigureHighlightItem}"
+                >
+                    <Canvas HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Canvas.RenderTransform>
+                            <TranslateTransform X="{Binding X}" 
+                                                Y="{Binding Y}"/>
+                        </Canvas.RenderTransform>
+                        <Rectangle Height="{Binding Height}" Width="{Binding Width}" StrokeThickness="0" 
+                                Fill="#FFC3F6F6" Opacity="0.6">
+                        </Rectangle>
+                    </Canvas>
+                    <!-- The visual for the box. -->
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Define the visual style for a 'PointAndFigureHighlight used to pick out columns'. -->
+    <Style x:Key="VerticalHighlightStyle" TargetType="{x:Type controls:PointAndFigureHighlightItem}" >
+
+        <!--Set the position of the node within the canvas.-->
+        <Setter Property="Canvas.Left" Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+        <Setter Property="Canvas.Top" Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+
+        <!-- The control-template for the connector. -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate 
+                    TargetType="{x:Type controls:PointAndFigureHighlightItem}"
+                >
+                    <Canvas>
+                        <Canvas.RenderTransform>
+                            <TranslateTransform X="{Binding X}" 
+                                                Y="{Binding Y}"/>
+                        </Canvas.RenderTransform>
+                        <Rectangle Height="{Binding Height}" Width="{Binding Width}" StrokeThickness="0"
+                                Fill="#FFC3F6F6" Opacity="0.2">
+                            <Rectangle.RenderTransform>
+                                <TranslateTransform X="0" Y="0" />
+                            </Rectangle.RenderTransform>
+                        </Rectangle>
+                    </Canvas>
+                    <!-- The visual for the box. -->
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <Style x:Key="LeftAxisLabelStyle" TargetType="{x:Type controls:PointAndFigureAxisLabelItem}" >
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <!--Set the position of the node within the canvas.-->
+        <Setter Property="Canvas.Left" Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+        <Setter Property="Canvas.Top" Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+        <!-- The control-template for the connector. -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:PointAndFigureAxisLabelItem}">
+                    <Grid Width="25" Height="4">
+                        <Grid.RenderTransform>
+                            <TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
+                        </Grid.RenderTransform>
+                        <TextBlock Text="{Binding Text}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="4"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="RightAxisLabelStyle" TargetType="{x:Type controls:PointAndFigureAxisLabelItem}" >
+
+        <!--Set the position of the node within the canvas.-->
+        <Setter Property="Canvas.Left" Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+        <Setter Property="Canvas.Top" Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+
+        <!-- The control-template for the connector. -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:PointAndFigureAxisLabelItem}">
+                    <Grid Width="25" Height="4">
+                        <Grid.RenderTransform>
+                            <TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
+                        </Grid.RenderTransform>
+                        <TextBlock Text="{Binding Text}" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="4"/>
+
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="BottomAxisLabelStyle" TargetType="{x:Type controls:PointAndFigureAxisLabelItem}" >
+
+        <!--Set the position of the node within the canvas.-->
+        <Setter Property="Canvas.Left" Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+        <Setter Property="Canvas.Top" Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"/>
+
+        <!-- The control-template for the connector. -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:PointAndFigureAxisLabelItem}">
+                    <Grid Width="4" Height="25" Focusable="False">
+                        <Grid.RenderTransform>
+                            <TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
+                        </Grid.RenderTransform>
+                        <TextBlock Text="{Binding Text}" 
+                                   TextWrapping="Wrap" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Top" 
+                                   FontSize="4"/>
+                    </Grid>
+                </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
@@ -207,26 +256,10 @@
         </Setter>
     </Style>
 
-    <!-- 
-    Override the style of the ListBox to remove the ScrollViewer.
-    All we want is ListBox logic but based on a Canvas.
-    -->
-    <Style x:Key="ColumnListStyle" TargetType="ListBox">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ListBox">
-                    <!-- 
-                    The ListBoxItems are presented in a Canvas.
-                    'IsItemsHost' is set to 'True' so that the ListBox
-                    uses the Canvas as the container for its items.
-                    -->
-                    <Canvas IsItemsHost="True"/>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
 
-    <!-- Default style and visual template for 'NetworkView'. -->
+
+
+    <!-- Default style and visual template for 'PointAndFigureChartControl'. -->
     <Style TargetType="{x:Type controls:PointAndFigureChartControl}" >
 
         <!-- The visual template. -->
@@ -243,32 +276,33 @@
                         Background="{TemplateBinding Background}"
                         >
                         <Grid HorizontalAlignment="Left" VerticalAlignment="Top" >
-                            <Grid.RenderTransform>
-                                <TranslateTransform X="{Binding LeftPadding}" 
-                                                    Y="{Binding TopPadding}"/>
-                            </Grid.RenderTransform>
+                            <!-- Control that presents the RowBackgronds. -->
+                            <controls:PointAndFigureHighlightItemsControl
+                                ItemsSource="{TemplateBinding Highlights}"
+                                Style="{StaticResource CanvasHostedItemsList}"
+                                ItemTemplateSelector="{TemplateBinding HighlightItemTemplateSelector}"
+                                Focusable="False"
+                                />
 
-                            <!-- Control that presents the nodes. -->
+                            <!-- Control that presents the Axis labels. -->
+                            <controls:PointAndFigureAxisLabelItemsControl
+                                x:Name="PART_AxisLabelItemsControl"
+                                ItemsSource="{TemplateBinding AxisLabels}"
+                                Style="{StaticResource CanvasHostedItemsList}"
+                                ItemTemplateSelector="{TemplateBinding AxisLabelItemTemplateSelector}"
+                                Focusable="False"
+                                />
+
+                            <!-- Control that presents the columns. -->
                             <controls:PointAndFigureColumnItemsControl
                                 x:Name="PART_ColumnItemsControl"
                                 ItemsSource="{TemplateBinding Columns}"
                                 SelectionMode="Extended"
                                 Style="{StaticResource ColumnListStyle}"
                                 ItemTemplate="{TemplateBinding ColumnItemTemplate}"
-                                ItemTemplateSelector="{TemplateBinding ColumnItemTemplateSelector}"
-                                ItemContainerStyle="{TemplateBinding ColumnItemContainerStyle}"
+                                Focusable="False"
                                 />
 
-                            <!-- Control that presents the Annotations. -->
-                            <!--<local:AnnotationItemsControl
-                                x:Name="PART_AnnotationItemsControl"
-                                ItemsSource="{TemplateBinding Annotations}"
-                                SelectionMode="Extended"
-                                Style="{StaticResource noScrollViewerListBoxStyle}"
-                                ItemTemplate="{TemplateBinding AnnotationItemTemplate}"
-                                ItemTemplateSelector="{TemplateBinding AnnotationItemTemplateSelector}"
-                                ItemContainerStyle="{TemplateBinding AnnotationItemContainerStyle}"
-                                />-->
 
                             <!--
                             This Canvas and Border are used as a very simple way to render a drag selection rectangle.

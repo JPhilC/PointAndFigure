@@ -99,12 +99,12 @@
 
      <!--Window--> 
     <Style TargetType="{x:Type Window}">
-        <!--<Setter Property="Icon" Value="../Adept.ico" />-->
+        <Setter Property="Icon" Value="pack://application:,,,/Resources/Images/P_FDesktop32.ico" />
     </Style>
 
      <!--Dialog box (Window)--> 
     <Style TargetType="{x:Type Window}" x:Key="DialogStyle">
-        <!--<Setter Property="Icon" Value="../Adept.ico" />-->
+        <Setter Property="Icon" Value="pack://application:,,,/Resources/Images/P_FDesktop32.ico" />
         <Setter Property="ResizeMode" Value="NoResize" />
         <Setter Property="WindowStyle" Value="SingleBorderWindow" />
         <Setter Property="ShowInTaskbar" Value="False" />

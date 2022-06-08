@@ -1,0 +1,99 @@
+﻿<UserControl x:Class="PnFDesktop.Controls.UserControl1"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PnFDesktop.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="400" Background="Azure">
+    <Canvas>
+        <Rectangle Canvas.Left="195" Canvas.Top="20" 
+                   Height="160" Width="5"  Fill="#FFD0FCFC" Opacity="0.3"/>
+        <Rectangle Canvas.Left="10" Canvas.Top="25" 
+                   Height="5" Width="215"  Fill="#FFD0FCFC" Opacity="0.5"/>
+        <Grid Canvas.Left="10" Canvas.Top="20" Width="25" Height="4">
+
+            <TextBlock 
+                       Text="2022" 
+                       HorizontalAlignment="Right" 
+                       VerticalAlignment="Center"
+                       FontSize="4"/>
+        </Grid>
+
+        <Grid Canvas.Left="10" Canvas.Top="25" Width="25" Height="5">
+
+            <TextBlock Canvas.Left="50" Canvas.Top="25" 
+                       Text="20202022" 
+                       HorizontalAlignment="Right" 
+                       VerticalAlignment="Center"
+                       FontSize="4"/>
+        </Grid>
+
+        <!-- Right hand labels -->
+        <Grid Canvas.Left="200" Canvas.Top="20" Width="25" Height="4">
+
+            <TextBlock 
+                       Text="2022" 
+                       HorizontalAlignment="Left" 
+                       VerticalAlignment="Stretch"
+                       FontSize="4" Margin="0,0,0,-1"/>
+        </Grid>
+
+        <Grid Canvas.Left="200" Canvas.Top="25" Width="25" Height="4">
+
+            <TextBlock Canvas.Left="50" Canvas.Top="25" 
+                       Text="20202022" 
+                       HorizontalAlignment="Left" 
+                       VerticalAlignment="Center"
+                       FontSize="4"/>
+        </Grid>
+
+        <!-- Bottom labels -->
+        <Grid Canvas.Left="100" Canvas.Top="150" Width="4" Height="25">
+
+            <TextBlock TextWrapping="Wrap"
+                       Text="2022" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Top"
+                       FontSize="4"/>
+        </Grid>
+
+        <Grid Canvas.Left="105" Canvas.Top="150" Width="4" Height="25">
+
+            <TextBlock Text="20202022"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Top"
+                       FontSize="4"/>
+        </Grid>
+
+        <Image Canvas.Left="100.25" Canvas.Top="135.25" 
+            Source="{StaticResource XBox4X4}" />
+        <Image Canvas.Left="100.25" Canvas.Top="140.25" 
+            Source="{StaticResource  XBox4X4}" />
+        <Image Canvas.Left="105.25" Canvas.Top="125.25" 
+            Source="{StaticResource OBox4X4}" />
+        <Image Canvas.Left="105.25" Canvas.Top="130.25" 
+            Source="{StaticResource OBox4X4}" />
+        <Image Canvas.Left="105.25" Canvas.Top="135.25" 
+            Source="{StaticResource  OBox4X4}" />
+
+        <Image Canvas.Left="195.25" Canvas.Top="20.25" 
+            Source="{StaticResource OBox4X4}" />
+
+        <Grid Canvas.Left="195" Canvas.Top="25">
+            <Image Source="{StaticResource  OBox4X4}" Stretch="None">
+                <Image.RenderTransform>
+                    <TranslateTransform X="0.5" Y="0.50" />
+                </Image.RenderTransform>
+            </Image>
+        </Grid>
+        <Image Canvas.Left="100" Canvas.Top="145" 
+            Source="{StaticResource BullishSupport5X5}" />
+        <Image Canvas.Left="105" Canvas.Top="140" 
+            Source="{StaticResource BullishSupport5X5}" />
+        <Image Canvas.Left="110" Canvas.Top="135" 
+            Source="{StaticResource BullishSupport5X5}" />
+
+    </Canvas>
+</UserControl>

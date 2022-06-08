@@ -114,6 +114,7 @@ namespace PnFDesktop.ViewModels
             {
                 // Otherwise create it and register it before returning
                 vm = new PointAndFigureChartViewModel(newChart);
+                vm.BuildChartData();
                 SimpleIoc.Default.Register(() => vm, key, true);
             }
             return vm;

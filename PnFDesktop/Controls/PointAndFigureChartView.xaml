@@ -8,6 +8,7 @@
              xmlns:controls="clr-namespace:PnFDesktop.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1800"
+             d:DataContext="{Binding PointAndFigureChartViewModel, Source={StaticResource Locator}}"
              Loaded="PointAndFigureChartView_OnLoaded"
              FocusManager.FocusedElement="{Binding ElementName=PointAndFigureChartControl}">
     <!--d:DataContext="{Binding PointAndFigureChartViewModel, Source={StaticResource Locator}}">-->
@@ -25,21 +26,15 @@
             <RoutedUICommand x:Key="Commands.OneHundredPercent" />
 
             <DataTemplate DataType="{x:Type vm:PointAndFigureColumnViewModel}">
-                <Viewbox HorizontalAlignment="Left" VerticalAlignment="Top"
-                             Stretch="None">
-                    <ItemsControl x:Name="PART_BoxItemsControl"
-                                      ItemsSource="{Binding Boxes}"
-                                      Style="{StaticResource BoxItemsList}"
-                                      Focusable="True"/>
-                    <Viewbox.ToolTip>
-                        <TextBlock Text="{Binding Tooltip}"/>
-                    </Viewbox.ToolTip>
-                </Viewbox>
+                <controls:PointAndFigureColumnItem 
+                    BoxesSource="{Binding Boxes}"/>
             </DataTemplate>
 
-            <DataTemplate DataType="{x:Type vm:PointAndFigureBoxViewModel}">
+            <!-- <DataTemplate DataType="{x:Type vm:PointAndFigureBoxViewModel}">
                 <controls:PointAndFigureBoxItem />
-            </DataTemplate>
+            </DataTemplate>-->
+
+
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -250,24 +245,24 @@
         Focusable is set to False because it is only that NetworkView that I want to be focusable.
         -->
             <ScrollViewer
-            CanContentScroll="True"
-            VerticalScrollBarVisibility="Visible"
-            HorizontalScrollBarVisibility="Visible"
-            Focusable="False"
-            ScrollChanged="ScrollViewer_ScrollChanged">
+                    CanContentScroll="True"
+                    VerticalScrollBarVisibility="Visible"
+                    HorizontalScrollBarVisibility="Visible"
+                    Focusable="False"
+                    ScrollChanged="ScrollViewer_ScrollChanged">
                 <!-- 
             The ZoomAndPanControl displays the NetworkView as its content.
             We can use the mouse to zoom and pan about the NetworkView.
             -->
                 <controls:ZoomAndPanControl
-                x:Name="ZoomAndPanControl"
-                MinContentScale="{Binding MinViewportScale, Mode=OneWay}"
-                ContentScale="{Binding ContentScale, Mode=TwoWay}"
-                ContentOffsetX="{Binding ContentOffsetX, Mode=TwoWay}"
-                ContentOffsetY="{Binding ContentOffsetY, Mode=TwoWay}"
-                ContentViewportWidth="{Binding ContentViewportWidth, Mode=OneWayToSource}"
-                ContentViewportHeight="{Binding ContentViewportHeight, Mode=OneWayToSource}"
-                Focusable="False">
+                        x:Name="ZoomAndPanControl"
+                        MinContentScale="{Binding MinViewportScale, Mode=OneWay}"
+                        ContentScale="{Binding ContentScale, Mode=TwoWay}"
+                        ContentOffsetX="{Binding ContentOffsetX, Mode=TwoWay}"
+                        ContentOffsetY="{Binding ContentOffsetY, Mode=TwoWay}"
+                        ContentViewportWidth="{Binding ContentViewportWidth, Mode=OneWayToSource}"
+                        ContentViewportHeight="{Binding ContentViewportHeight, Mode=OneWayToSource}"
+                        Focusable="False">
 
                     <!--
                 We need to nest our NetworkView in an AdornerDecorator so that adorners work correct when
@@ -278,26 +273,65 @@
                     This grid specifies the size of the ZoomAndPanControl's content.
                     It wraps up both the NetworkView and drag-zooming Canvas.
                     -->
-                        <Grid
-                        Width="{Binding ContentWidth}"
-                        Height="{Binding ContentHeight}"
-                    >
+                        <Grid   Width="{Binding ContentWidth}"
+                                Height="{Binding ContentHeight}">
                             <controls:PointAndFigureChartControl  x:Name="PointAndFigureChartControl"
                                          ColumnsSource="{Binding Columns}"
                                          SelectedColumn="{Binding SelectedColumn, Mode=TwoWay}"      
-                            
+                                         HighlightsSource="{Binding Highlights}"
+                                         AxisLabelsSource="{Binding AxisLabels}"
                                          MouseDown="PointAndFigureChart_MouseDown"
                                          MouseUp="PointAndFigureChart_MouseUp"
                                          MouseMove="PointAndFigureChart_MouseMove"
                                          MouseWheel="PointAndFigureChart_MouseWheel"
                                          GridSize="{Binding GridSize}"
-                                         TopPadding="{Binding TopPadding}"
-                                         LeftPadding="{Binding LeftPadding}"
-                                         IsClearSelectionOnEmptySpaceClickEnabled="True"
-                        >
+                                         IsClearSelectionOnEmptySpaceClickEnabled="True">
                                 <controls:PointAndFigureChartControl.Background>
                                     <SolidColorBrush Color="Azure"/>
                                 </controls:PointAndFigureChartControl.Background>
+                                <!--<controls:PointAndFigureChartControl.ColumnItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:PointAndFigureColumnViewModel}">
+                                        <Grid>
+                                            <controls:PointAndFigureColumnItem 
+                                            BoxesSource="{Binding xBoxes}"
+                                            Style="{StaticResource PointAndFigureColumnStyle}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </controls:PointAndFigureChartControl.ColumnItemTemplate>-->
+                                <controls:PointAndFigureChartControl.AxisLabelItemTemplateSelector>
+                                    <classes:AxisLabelTemplateSelector>
+                                        <classes:AxisLabelTemplateSelector.LeftAxisTemplate>
+                                            <DataTemplate DataType="{x:Type vm:PointAndFigureAxisLabelViewModel}">
+                                                <controls:PointAndFigureAxisLabelItem Style="{StaticResource LeftAxisLabelStyle}"/>
+                                            </DataTemplate>
+                                        </classes:AxisLabelTemplateSelector.LeftAxisTemplate>
+                                        <classes:AxisLabelTemplateSelector.RightAxisTemplate>
+                                            <DataTemplate DataType="{x:Type vm:PointAndFigureAxisLabelViewModel}">
+                                                <controls:PointAndFigureAxisLabelItem  Style="{StaticResource RightAxisLabelStyle}"/>
+                                            </DataTemplate>
+                                        </classes:AxisLabelTemplateSelector.RightAxisTemplate>
+                                        <classes:AxisLabelTemplateSelector.BottomAxisTemplate>
+                                            <DataTemplate DataType="{x:Type vm:PointAndFigureAxisLabelViewModel}">
+                                                <controls:PointAndFigureAxisLabelItem  Style="{StaticResource BottomAxisLabelStyle}"/>
+                                            </DataTemplate>
+                                        </classes:AxisLabelTemplateSelector.BottomAxisTemplate>
+                                    </classes:AxisLabelTemplateSelector>
+                                </controls:PointAndFigureChartControl.AxisLabelItemTemplateSelector>
+                                <!-- Link up the styles for the hightlights-->
+                                <controls:PointAndFigureChartControl.HighlightItemTemplateSelector>
+                                    <classes:HighlightTemplateSelector>
+                                        <classes:HighlightTemplateSelector.HorizontalTemplate>
+                                            <DataTemplate DataType="{x:Type vm:PointAndFigureHighlightViewModel}">
+                                                <controls:PointAndFigureHighlightItem Style="{StaticResource HorizontalHighlightStyle}"/>
+                                            </DataTemplate>
+                                        </classes:HighlightTemplateSelector.HorizontalTemplate>
+                                        <classes:HighlightTemplateSelector.VerticalTemplate>
+                                            <DataTemplate DataType="{x:Type vm:PointAndFigureHighlightViewModel}">
+                                                <controls:PointAndFigureHighlightItem  Style="{StaticResource VerticalHighlightStyle}"/>
+                                            </DataTemplate>
+                                        </classes:HighlightTemplateSelector.VerticalTemplate>
+                                    </classes:HighlightTemplateSelector>
+                                </controls:PointAndFigureChartControl.HighlightItemTemplateSelector>
                             </controls:PointAndFigureChartControl>
                             <!--
                         This Canvas and Border are used as a very simple way to render a drag rectangle that the user

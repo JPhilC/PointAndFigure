@@ -12,10 +12,11 @@ using PnFDesktop.Classes;
 
 namespace PnFDesktop.Controls
 {
-    public class PointAndFigureChartControl: Control
+    public class PointAndFigureChartControl : Control
     {
         #region Dependency Property/Event Definitions
 
+        #region Columns ...
         private static readonly DependencyPropertyKey ColumnsPropertyKey =
             DependencyProperty.RegisterReadOnly("Columns", typeof(ImpObservableCollection<object>), typeof(PointAndFigureChartControl),
                 new FrameworkPropertyMetadata());
@@ -42,18 +43,44 @@ namespace PnFDesktop.Controls
         public static readonly DependencyProperty IsClearSelectionOnEmptySpaceClickEnabledProperty =
             DependencyProperty.Register("IsClearSelectionOnEmptySpaceClickEnabled", typeof(bool), typeof(PointAndFigureChartControl),
                 new FrameworkPropertyMetadata(true));
+        #endregion
+
+
+        #region row and column highlights ...
+        private static readonly DependencyPropertyKey HighlightsPropertyKey =
+            DependencyProperty.RegisterReadOnly("Highlights", typeof(ImpObservableCollection<object>), typeof(PointAndFigureChartControl),
+                new FrameworkPropertyMetadata());
+
+        public static readonly DependencyProperty HighlightsProperty = HighlightsPropertyKey.DependencyProperty;
+
+        public static readonly DependencyProperty HighlightsSourceProperty =
+            DependencyProperty.Register("HighlightsSource", typeof(IEnumerable), typeof(PointAndFigureChartControl),
+                new FrameworkPropertyMetadata(HighlightsSource_PropertyChanged));
+
+        public static readonly DependencyProperty HighlightItemTemplateSelectorProperty =
+            DependencyProperty.Register("HighlightItemTemplateSelector", typeof(DataTemplateSelector), typeof(PointAndFigureChartControl));
+        #endregion
+
+        #region axis labels ...
+        private static readonly DependencyPropertyKey AxisLabelsPropertyKey =
+            DependencyProperty.RegisterReadOnly("AxisLabels", typeof(ImpObservableCollection<object>), typeof(PointAndFigureChartControl),
+                new FrameworkPropertyMetadata());
+
+        public static readonly DependencyProperty AxisLabelsProperty = AxisLabelsPropertyKey.DependencyProperty;
+
+        public static readonly DependencyProperty AxisLabelsSourceProperty =
+            DependencyProperty.Register("AxisLabelsSource", typeof(IEnumerable), typeof(PointAndFigureChartControl),
+                new FrameworkPropertyMetadata(AxisLabelsSource_PropertyChanged));
+
+        public static readonly DependencyProperty AxisLabelItemTemplateSelectorProperty =
+            DependencyProperty.Register("AxisLabelItemTemplateSelector", typeof(DataTemplateSelector), typeof(PointAndFigureChartControl));
+        #endregion
+
 
         private static readonly DependencyProperty GridSizeProperty =
             DependencyProperty.Register("GridSize", typeof(double), typeof(PointAndFigureChartControl),
                 new FrameworkPropertyMetadata(5d));
 
-        private static readonly DependencyProperty LeftPaddingProperty =
-            DependencyProperty.Register("LeftPadding", typeof(double), typeof(PointAndFigureChartControl),
-                new FrameworkPropertyMetadata(10d));
-
-        private static readonly DependencyProperty TopPaddingProperty =
-            DependencyProperty.Register("TopPadding", typeof(double), typeof(PointAndFigureChartControl),
-                new FrameworkPropertyMetadata(10d));
         #endregion
 
         #region Private Data Members
@@ -73,10 +100,9 @@ namespace PnFDesktop.Controls
 
         public PointAndFigureChartControl()
         {
-            //
-            // Create a collection to contain columns.
-            //
-            SetValue(ColumnsPropertyKey, new ImpObservableCollection<object>()); 
+            SetValue(HighlightsPropertyKey, new ImpObservableCollection<object>());
+            SetValue(AxisLabelsPropertyKey, new ImpObservableCollection<object>());
+            SetValue(ColumnsPropertyKey, new ImpObservableCollection<object>());
         }
 
 
@@ -90,9 +116,21 @@ namespace PnFDesktop.Controls
 
 
         /// <summary>
-        /// Collection of columns in the chart.
+        /// Collection of Columns in the chart.
         /// </summary>
         public ImpObservableCollection<object> Columns => (ImpObservableCollection<object>)GetValue(ColumnsProperty);
+
+
+        /// <summary>
+        /// Collection of Highlights in the chart.
+        /// </summary>
+        public ImpObservableCollection<object> Highlights => (ImpObservableCollection<object>)GetValue(HighlightsProperty);
+
+        /// <summary>
+        /// Collection of AxisLabels in the chart.
+        /// </summary>
+        public ImpObservableCollection<object> AxisLabels => (ImpObservableCollection<object>)GetValue(AxisLabelsProperty);
+
 
         /// <summary>
         /// The currently selected Column
@@ -176,7 +214,8 @@ namespace PnFDesktop.Controls
                 }
                 else
                 {
-                    if (_initialSelectedColumns == null) {
+                    if (_initialSelectedColumns == null)
+                    {
                         _initialSelectedColumns = new List<object>();
                     }
 
@@ -201,11 +240,14 @@ namespace PnFDesktop.Controls
         {
             get
             {
-                if (_columnItemsControl != null) {
+                if (_columnItemsControl != null)
+                {
                     return _columnItemsControl.SelectedItems;
                 }
-                else {
-                    if (_initialSelectedColumns == null) {
+                else
+                {
+                    if (_initialSelectedColumns == null)
+                    {
                         _initialSelectedColumns = new List<object>();
                     }
 
@@ -247,24 +289,47 @@ namespace PnFDesktop.Controls
             set => SetValue(GridSizeProperty, value);
         }
 
+
         /// <summary>
-        /// The left padding for the chart
+        /// A reference to the collection that is the source used to populate 'Highlights'.
+        /// Used in the same way as 'ItemsSource' in 'ItemsControl'.
         /// </summary>
-        public double LeftPadding
+        public IEnumerable HighlightsSource
         {
-            get => (double)GetValue(LeftPaddingProperty);
-            set => SetValue(LeftPaddingProperty, value);
+            get => (IEnumerable)GetValue(HighlightsSourceProperty);
+            set => SetValue(HighlightsSourceProperty, value);
         }
 
         /// <summary>
-        /// The top padding for the chart
+        /// Gets or sets custom style-selection logic for a style that can be applied to each generated container element. 
+        /// This is the equivalent to 'ItemTemplateSelector' for ItemsControl.
         /// </summary>
-        public double TopPadding
+        public DataTemplateSelector HighlightItemTemplateSelector
         {
-            get => (double)GetValue(TopPaddingProperty);
-            set => SetValue(TopPaddingProperty, value);
+            get => (DataTemplateSelector)GetValue(HighlightItemTemplateSelectorProperty);
+            set => SetValue(HighlightItemTemplateSelectorProperty, value);
         }
 
+
+        /// <summary>
+        /// A reference to the collection that is the source used to populate 'AxisLabels'.
+        /// Used in the same way as 'ItemsSource' in 'ItemsControl'.
+        /// </summary>
+        public IEnumerable AxisLabelsSource
+        {
+            get => (IEnumerable)GetValue(AxisLabelsSourceProperty);
+            set => SetValue(AxisLabelsSourceProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets custom style-selection logic for a style that can be applied to each generated container element. 
+        /// This is the equivalent to 'ItemTemplateSelector' for ItemsControl.
+        /// </summary>
+        public DataTemplateSelector AxisLabelItemTemplateSelector
+        {
+            get => (DataTemplateSelector)GetValue(AxisLabelItemTemplateSelectorProperty);
+            set => SetValue(AxisLabelItemTemplateSelectorProperty, value);
+        }
 
         #region Private methods ...
         /// <summary>
@@ -355,6 +420,180 @@ namespace PnFDesktop.Controls
         }
 
         /// <summary>
+        /// Event raised when a new collection has been assigned to the 'HighlightsSource' property.
+        /// </summary>
+        private static void HighlightsSource_PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            PointAndFigureChartControl c = (PointAndFigureChartControl)d;
+
+            //
+            // Clear 'Highlights'.
+            //
+            c.Highlights.Clear();
+
+            if (e.OldValue != null)
+            {
+                var notifyCollectionChanged = e.OldValue as INotifyCollectionChanged;
+                if (notifyCollectionChanged != null)
+                {
+                    //
+                    // Unhook events from previous collection.
+                    //
+                    notifyCollectionChanged.CollectionChanged -= new NotifyCollectionChangedEventHandler(c.HighlightsSource_CollectionChanged);
+                }
+            }
+
+            if (e.NewValue != null)
+            {
+                var enumerable = e.NewValue as IEnumerable;
+                if (enumerable != null)
+                {
+                    //
+                    // Populate 'Highlights' from 'HighlightsSource'.
+                    //
+                    foreach (object obj in enumerable)
+                    {
+                        c.Highlights.Add(obj);
+                    }
+                }
+
+                var notifyCollectionChanged = e.NewValue as INotifyCollectionChanged;
+                if (notifyCollectionChanged != null)
+                {
+                    //
+                    // Hook events in new collection.
+                    //
+                    notifyCollectionChanged.CollectionChanged += new NotifyCollectionChangedEventHandler(c.HighlightsSource_CollectionChanged);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Event raised when a column has been added to or removed from the collection assigned to 'HighlightsSource'.
+        /// </summary>
+        private void HighlightsSource_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                //
+                // 'HighlightsSource' has been cleared, also clear 'Highlights'.
+                //
+                Highlights.Clear();
+            }
+            else
+            {
+                if (e.OldItems != null)
+                {
+                    //
+                    // For each item that has been removed from 'HighlightsSource' also remove it from 'Highlights'.
+                    //
+                    foreach (object obj in e.OldItems)
+                    {
+                        Highlights.Remove(obj);
+                    }
+                }
+
+                if (e.NewItems != null)
+                {
+                    //
+                    // For each item that has been added to 'HighlightsSource' also add it to 'Highlights'.
+                    //
+                    foreach (object obj in e.NewItems)
+                    {
+                        Highlights.Add(obj);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Event raised when a new collection has been assigned to the 'HighlightsSource' property.
+        /// </summary>
+        private static void AxisLabelsSource_PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            PointAndFigureChartControl c = (PointAndFigureChartControl)d;
+
+            //
+            // Clear 'AxisLabels'.
+            //
+            c.AxisLabels.Clear();
+
+            if (e.OldValue != null)
+            {
+                var notifyCollectionChanged = e.OldValue as INotifyCollectionChanged;
+                if (notifyCollectionChanged != null)
+                {
+                    //
+                    // Unhook events from previous collection.
+                    //
+                    notifyCollectionChanged.CollectionChanged -= new NotifyCollectionChangedEventHandler(c.AxisLabelsSource_CollectionChanged);
+                }
+            }
+
+            if (e.NewValue != null)
+            {
+                var enumerable = e.NewValue as IEnumerable;
+                if (enumerable != null)
+                {
+                    //
+                    // Populate 'AxisLabels' from 'AxisLabelsSource'.
+                    //
+                    foreach (object obj in enumerable)
+                    {
+                        c.AxisLabels.Add(obj);
+                    }
+                }
+
+                var notifyCollectionChanged = e.NewValue as INotifyCollectionChanged;
+                if (notifyCollectionChanged != null)
+                {
+                    //
+                    // Hook events in new collection.
+                    //
+                    notifyCollectionChanged.CollectionChanged += new NotifyCollectionChangedEventHandler(c.AxisLabelsSource_CollectionChanged);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Event raised when a column has been added to or removed from the collection assigned to 'HighlightsSource'.
+        /// </summary>
+        private void AxisLabelsSource_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                //
+                // 'AxisLabelsSource' has been cleared, also clear 'AxisLabels'.
+                //
+                AxisLabels.Clear();
+            }
+            else
+            {
+                if (e.OldItems != null)
+                {
+                    //
+                    // For each item that has been removed from 'AxisLabelsSource' also remove it from 'AxisLabels'.
+                    //
+                    foreach (object obj in e.OldItems)
+                    {
+                        AxisLabels.Remove(obj);
+                    }
+                }
+
+                if (e.NewItems != null)
+                {
+                    //
+                    // For each item that has been added to 'AxisLabelsSource' also add it to 'AxisLabels'.
+                    //
+                    foreach (object obj in e.NewItems)
+                    {
+                        AxisLabels.Add(obj);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Called after the visual tree of the control has been built.
         /// Search for and cache references to named parts defined in the XAML control template for NetworkView.
         /// </summary>
@@ -369,14 +608,16 @@ namespace PnFDesktop.Controls
             this._columnItemsControl = (PointAndFigureColumnItemsControl)this.Template.FindName("PART_ColumnItemsControl", this);
             if (this._columnItemsControl == null)
             {
-                throw new ApplicationException("Failed to find 'PART_ColumnItemsControl' in the visual tree for 'NetworkView'.");
+                throw new ApplicationException("Failed to find 'PART_ColumnItemsControl' in the visual tree for 'PointAndFigureChartControl'.");
             }
 
             //
             // Synchronize initial selected nodes to the NodeItemsControl.
             //
-            if (this._initialSelectedColumns != null && this._initialSelectedColumns.Count > 0) {
-                foreach (var node in this._initialSelectedColumns) {
+            if (this._initialSelectedColumns != null && this._initialSelectedColumns.Count > 0)
+            {
+                foreach (var node in this._initialSelectedColumns)
+                {
                     this._columnItemsControl.SelectedItems.Add(node);
                 }
             }
@@ -406,78 +647,7 @@ namespace PnFDesktop.Controls
             this.SelectedColumn = _columnItemsControl.SelectedItem;
         }
 
-        /// <summary>
-        /// Find the max ZIndex of all the columns and annotations.
-        /// </summary>
-        internal int FindMaxZIndex()
-        {
-            if (this._columnItemsControl == null)
-            {
-                return 0;
-            }
-
-            int maxZ = 0;
-
-            if (this._columnItemsControl != null)
-            {
-                for (int columnIndex = 0; ; ++columnIndex)
-                {
-                    PointAndFigureColumnItem columnItem = (PointAndFigureColumnItem)this._columnItemsControl.ItemContainerGenerator.ContainerFromIndex(columnIndex);
-                    if (columnItem == null)
-                    {
-                        break;
-                    }
-
-                    if (columnItem.ZIndex > maxZ)
-                    {
-                        maxZ = columnItem.ZIndex;
-                    }
-                }
-            }
-
-            return maxZ;
-        }
-
-        /// <summary>
-        /// Find the ColumnItem UI element that is associated with 'column'.
-        /// 'column' can be a view-model object, in which model the visual-tree
-        /// is searched for the associated ColumnItem.
-        /// Otherwise 'column' can actually be a 'ColumnItem' in which case it is 
-        /// simply returned.
-        /// </summary>
-        public PointAndFigureColumnItem FindAssociatedColumnItem(object column)
-        {
-            PointAndFigureColumnItem columnItem = column as PointAndFigureColumnItem;
-            if (columnItem == null)
-            {
-                columnItem = _columnItemsControl.FindAssociatedColumnItem(column);
-            }
-            return columnItem;
-        }
-
         #endregion
 
-        #region Mouse handling ...
-        /// <summary>
-        /// Called when the user releases the mouse.
-        /// </summary>
-        protected override void OnMouseUp(MouseButtonEventArgs e)
-        {
-            base.OnMouseUp(e);
-
-            if (e.ChangedButton == MouseButton.Left)
-            {
-                if (IsClearSelectionOnEmptySpaceClickEnabled)
-                {
-                    //
-                    // A click and release in empty space clears the selection.
-                    //
-                    this.SelectedColumns.Clear();
-                }
-            }
-        }
-
-
-        #endregion
     }
 }

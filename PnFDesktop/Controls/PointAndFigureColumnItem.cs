@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using PnFDesktop.Classes;
 using PnFDesktop.ViewModels;
 
 namespace PnFDesktop.Controls
@@ -24,23 +27,106 @@ namespace PnFDesktop.Controls
             DependencyProperty.Register("BullishSupportY", typeof(double), typeof(PointAndFigureColumnItem),
                 new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public static readonly DependencyProperty BoxOffsetXProperty =
-           DependencyProperty.Register("BoxOffsetX", typeof(double), typeof(PointAndFigureColumnItem),
-              new FrameworkPropertyMetadata(0.0));
-        public static readonly DependencyProperty BoxOffsetYProperty =
-           DependencyProperty.Register("BoxOffsetY", typeof(double), typeof(PointAndFigureColumnItem),
-              new FrameworkPropertyMetadata(0.0));
 
-        public static readonly DependencyProperty ZIndexProperty =
-            DependencyProperty.Register("ZIndex", typeof(int), typeof(PointAndFigureColumnItem),
-                new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        private static readonly DependencyPropertyKey BoxesPropertyKey =
+                 DependencyProperty.RegisterReadOnly("Boxes", typeof(ImpObservableCollection<object>), typeof(PointAndFigureColumnItem),
+                        new FrameworkPropertyMetadata());
 
-        public static readonly DependencyProperty ParentPointAndFigureChartProperty =
-            DependencyProperty.Register("ParentPointAndFigureChart", typeof(PointAndFigureChartControl), typeof(PointAndFigureColumnItem),
-                new FrameworkPropertyMetadata(ParentPointAndFigureChart_PropertyChanged));
+        public static readonly DependencyProperty BoxesProperty = BoxesPropertyKey.DependencyProperty;
 
+        public static readonly DependencyProperty BoxesSourceProperty =
+            DependencyProperty.Register("BoxesSource", typeof(IEnumerable), typeof(PointAndFigureColumnItem),
+                new FrameworkPropertyMetadata(BoxesSource_PropertyChanged));
+
+        /// <summary>
+        /// Event raised when a new collection has been assigned to the 'BoxesSource' property.
+        /// </summary>
+        private static void BoxesSource_PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            PointAndFigureColumnItem c = (PointAndFigureColumnItem)d;
+
+            //
+            // Clear 'Boxes'.
+            //
+            c.Boxes.Clear();
+
+            if (e.OldValue != null)
+            {
+                var notifyCollectionChanged = e.OldValue as INotifyCollectionChanged;
+                if (notifyCollectionChanged != null)
+                {
+                    //
+                    // Unhook events from previous collection.
+                    //
+                    notifyCollectionChanged.CollectionChanged -= new NotifyCollectionChangedEventHandler(c.BoxesSource_CollectionChanged);
+                }
+            }
+
+            if (e.NewValue != null)
+            {
+                var enumerable = e.NewValue as IEnumerable;
+                if (enumerable != null)
+                {
+                    //
+                    // Populate 'Boxes' from 'BoxesSource'.
+                    //
+                    foreach (object obj in enumerable)
+                    {
+                        c.Boxes.Add(obj);
+                    }
+                }
+
+                var notifyCollectionChanged = e.NewValue as INotifyCollectionChanged;
+                if (notifyCollectionChanged != null)
+                {
+                    //
+                    // Hook events in new collection.
+                    //
+                    notifyCollectionChanged.CollectionChanged += new NotifyCollectionChangedEventHandler(c.BoxesSource_CollectionChanged);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Event raised when a column has been added to or removed from the collection assigned to 'BoxesSource'.
+        /// </summary>
+        private void BoxesSource_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                //
+                // 'BoxesSource' has been cleared, also clear 'Boxes'.
+                //
+                Boxes.Clear();
+            }
+            else
+            {
+                if (e.OldItems != null)
+                {
+                    //
+                    // For each item that has been removed from 'BoxesSource' also remove it from 'Boxes'.
+                    //
+                    foreach (object obj in e.OldItems)
+                    {
+                        Boxes.Remove(obj);
+                    }
+                }
+
+                if (e.NewItems != null)
+                {
+                    //
+                    // For each item that has been added to 'BoxesSource' also add it to 'Boxes'.
+                    //
+                    foreach (object obj in e.NewItems)
+                    {
+                        Boxes.Add(obj);
+                    }
+                }
+            }
+        }
 
         #endregion Dependency Property/Event Definitions
+
 
         public PointAndFigureColumnItem()
         {
@@ -48,6 +134,15 @@ namespace PnFDesktop.Controls
             // By default, we don't want this UI element to be focusable.
             //
             Focusable = false;
+            SetValue(BoxesPropertyKey, new ImpObservableCollection<object>());
+        }
+
+        /// <summary>
+        /// Static constructor.
+        /// </summary>
+        static PointAndFigureColumnItem()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(PointAndFigureColumnItem), new FrameworkPropertyMetadata(typeof(PointAndFigureColumnItem)));
         }
 
         /// <summary>
@@ -77,314 +172,20 @@ namespace PnFDesktop.Controls
             set => SetValue(BullishSupportYProperty, value);
         }
 
-        /// <summary>
-        /// The X offset for the box.
+                /// <summary>
+        /// Collection of Columns in the chart.
         /// </summary>
-        public double BoxOffsetX
-        {
-            get => (double)GetValue(BoxOffsetXProperty);
-            set => SetValue(BoxOffsetXProperty, value);
-        }
+        public ImpObservableCollection<object> Boxes => (ImpObservableCollection<object>)GetValue(BoxesProperty);
 
         /// <summary>
-        /// The Y offset or the box.
+        /// A reference to the collection that is the source used to populate 'Columns'.
+        /// Used in the same way as 'ItemsSource' in 'ItemsControl'.
         /// </summary>
-        public double BoxOffsetY
+        public IEnumerable BoxesSource
         {
-            get => (double)GetValue(BoxOffsetYProperty);
-            set => SetValue(BoxOffsetYProperty, value);
+            get => (IEnumerable)GetValue(BoxesSourceProperty);
+            set => SetValue(BoxesSourceProperty, value);
         }
 
-        /// <summary>
-        /// The Z index of the PointAndFigureColumn.
-        /// </summary>
-        public int ZIndex
-        {
-            get => (int)GetValue(ZIndexProperty);
-            set => SetValue(ZIndexProperty, value);
-        }
-
-        public void Select()
-        {
-            //
-            // Clear the selection and select the clicked item as the only selected item.
-            //
-            this.ParentPointAndFigureChart.SelectedColumn = null;
-            this.IsSelected = true;
-        }
-
-
-        #region Private Data Members\Properties
-
-        internal PointAndFigureBoxItem GetPointAndFigureBox()
-        {
-            // Find the PointAndFigureColumn items ItemsControl in the visual tree
-            ItemsControl connectorsControl = FindVisualChild<ItemsControl>(this);
-            // Get the ContentPresenter for the first connector
-            ContentPresenter connectorCp = (ContentPresenter)connectorsControl.ItemContainerGenerator.ContainerFromItem(connectorsControl.Items[0]);
-            // Get the PointAndFigureBoxItem from the template
-            PointAndFigureBoxItem connector = connectorCp.ContentTemplate.FindName("PointAndFigureBoxItem", connectorCp) as PointAndFigureBoxItem;
-            if (connector == null)
-            {
-                throw new ApplicationException("Template part 'ConnectionItem' is not found on PointAndFigureBoxItem template");
-            }
-            return connector;
-        }
-
-        private TChildItem FindVisualChild<TChildItem>(DependencyObject obj)
-             where TChildItem : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is TChildItem)
-                {
-                    return (TChildItem)child;
-                }
-                else
-                {
-                    TChildItem childOfChild = FindVisualChild<TChildItem>(child);
-                    if (childOfChild != null)
-                        return childOfChild;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Reference to the data-bound parent PointAndFigureChart.
-        /// </summary>
-        public PointAndFigureChartControl ParentPointAndFigureChart
-        {
-            get => (PointAndFigureChartControl)GetValue(ParentPointAndFigureChartProperty);
-            set => SetValue(ParentPointAndFigureChartProperty, value);
-        }
-
-        /// <summary>
-        /// Set to 'true' when left mouse button is held down.
-        /// </summary>
-        private bool _isLeftMouseDown;
-
-        /// <summary>
-        /// Set to 'true' when left mouse button and the control key are held down.
-        /// </summary>
-        private bool _isLeftMouseAndControlDown;
-
-
-
-        #endregion Private Data Members\Properties
-
-        #region Private Methods
-
-        /// <summary>
-        /// Static constructor.
-        /// </summary>
-        static PointAndFigureColumnItem()
-        {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(PointAndFigureColumnItem), new FrameworkPropertyMetadata(typeof(PointAndFigureColumnItem)));
-        }
-
-        /// <summary>
-        /// Bring the PointAndFigureColumn to the front of other elements.
-        /// </summary>
-        internal void BringToFront()
-        {
-            if (this.ParentPointAndFigureChart == null)
-            {
-                return;
-            }
-
-            int maxZ = this.ParentPointAndFigureChart.FindMaxZIndex();
-            this.ZIndex = maxZ + 1;
-        }
-
-        /// <summary>
-        /// Called when a mouse button is held down.
-        /// </summary>
-        protected override void OnMouseDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseDown(e);
-
-            BringToFront();
-
-            if (this.ParentPointAndFigureChart != null)
-            {
-                this.ParentPointAndFigureChart.Focus();
-            }
-
-            if (e.ChangedButton == MouseButton.Left && this.ParentPointAndFigureChart != null)
-            {
-                _isLeftMouseDown = true;
-
-                LeftMouseDownSelectionLogic();
-
-                e.Handled = true;
-            }
-            else if (e.ChangedButton == MouseButton.Right && this.ParentPointAndFigureChart != null)
-            {
-                RightMouseDownSelectionLogic();
-            }
-        }
-
-        /// <summary>
-        /// This method contains selection logic that is invoked when the left mouse button is pressed down.
-        /// The reason this exists in its own method rather than being included in OnMouseDown is 
-        /// so that PointAndFigureBoxItem can reuse this logic from its OnMouseDown.
-        /// </summary>
-        internal void LeftMouseDownSelectionLogic()
-        {
-            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
-            {
-                //
-                // Control key was held down.
-                // This means that the rectangle is being added to or removed from the existing selection.
-                // Don't do anything yet, we will act on this later in the MouseUp event handler.
-                //
-                _isLeftMouseAndControlDown = true;
-            }
-            else
-            {
-                //
-                // Control key is not held down.
-                //
-                _isLeftMouseAndControlDown = false;
-
-                if (this.ParentPointAndFigureChart.SelectedColumn == null)
-                {
-                    //
-                    // Nothing already selected, select the item.
-                    //
-                    this.IsSelected = true;
-                }
-                else if (this.ParentPointAndFigureChart.SelectedColumn.Equals(this) ||
-                         this.ParentPointAndFigureChart.SelectedColumn.Equals(this.DataContext))
-                {
-                    // 
-                    // Item is already selected, do nothing.
-                    // We will act on this in the MouseUp if there was no drag operation.
-                    //
-                }
-                else
-                {
-                    //
-                    // Item is not selected.
-                    // Deselect all, and select the item.
-                    //
-                    ((PointAndFigureColumnViewModel)this.ParentPointAndFigureChart.SelectedColumn).IsSelected = false;
-                    this.IsSelected = true;
-                }
-            }
-        }
-
-        /// <summary>
-        /// This method contains selection logic that is invoked when the right mouse button is pressed down.
-        /// The reason this exists in its own method rather than being included in OnMouseDown is 
-        /// so that PointAndFigureBoxItem can reuse this logic from its OnMouseDown.
-        /// </summary>
-        internal void RightMouseDownSelectionLogic()
-        {
-            if (this.ParentPointAndFigureChart.SelectedColumn == null)
-            {
-                //
-                // Nothing already selected, select the item.
-                //
-                this.IsSelected = true;
-            }
-            else if (this.ParentPointAndFigureChart.SelectedColumn.Equals(this) ||
-                     this.ParentPointAndFigureChart.SelectedColumn.Equals(this.DataContext))
-            {
-                // 
-                // Item is already selected, do nothing.
-                //
-            }
-            else
-            {
-                //
-                // Item is not selected.
-                // Deselect all, and select the item.
-                //
-                this.ParentPointAndFigureChart.SelectedColumn = null;
-                this.IsSelected = true;
-            }
-        }
-
-        /// <summary>
-        /// Called when a mouse button is released.
-        /// </summary>
-        protected override void OnMouseUp(MouseButtonEventArgs e)
-        {
-            base.OnMouseUp(e);
-
-            if (_isLeftMouseDown)
-            {
-                //
-                // Execute mouse up selection logic only if there was no drag operation.
-                //
-
-                LeftMouseUpSelectionLogic();
-
-                _isLeftMouseDown = false;
-                _isLeftMouseAndControlDown = false;
-
-                e.Handled = true;
-            }
-        }
-
-        /// <summary>
-        /// This method contains selection logic that is invoked when the left mouse button is released.
-        /// The reason this exists in its own method rather than being included in OnMouseUp is 
-        /// so that PointAndFigureBoxItem can reuse this logic from its OnMouseUp.
-        /// </summary>
-        internal void LeftMouseUpSelectionLogic()
-        {
-            if (_isLeftMouseAndControlDown)
-            {
-                //
-                // Control key was held down.
-                // Toggle the selection.
-                //
-                this.IsSelected = !this.IsSelected;
-            }
-            else
-            {
-                //
-                // Control key was not held down.
-                //
-                PointAndFigureChartControl pointAndFigureChartControl = this.ParentPointAndFigureChart;
-                if (pointAndFigureChartControl != null && pointAndFigureChartControl.SelectedColumn != null && (pointAndFigureChartControl.SelectedColumn.Equals(this) ||
-                                                                                                                pointAndFigureChartControl.SelectedColumn.Equals(this.DataContext)))
-                {
-                    //
-                    // The item that was clicked is already the only selected item.
-                    // Don't need to do anything.
-                    //
-                }
-                else
-                {
-                    //
-                    // Clear the selection and select the clicked item as the only selected item.
-                    //
-                    this.ParentPointAndFigureChart.SelectedColumn = null;
-                    this.IsSelected = true;
-                }
-            }
-
-            _isLeftMouseAndControlDown = false;
-        }
-
-
-        /// <summary>
-        /// Event raised when the ParentPointAndFigureChart property has changed.
-        /// </summary>
-        private static void ParentPointAndFigureChart_PropertyChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-        {
-            //
-            // Bring new PointAndFigureColumns to the front of the z-order.
-            //
-            var pointAndFigureColumnItem = (PointAndFigureColumnItem)o;
-            pointAndFigureColumnItem.BringToFront();
-        }
-
-        #endregion Private Methods
     }
 }

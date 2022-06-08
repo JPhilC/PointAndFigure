@@ -383,7 +383,6 @@ namespace PnFDesktop.Controls
         private void Fill_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             SavePrevZoomRect();
-
             ZoomAndPanControl.AnimatedScaleToFit();
         }
 

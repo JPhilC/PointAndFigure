@@ -17,6 +17,9 @@ namespace PnFDesktop.ViewCharts
     public class PointAndFigureChartViewModel : PaneViewModel, IPointAndFigureChartViewModel
     {
         #region Internal data members ...
+
+        private IChartLayoutManager _chartLayoutManager = new ChartLayoutManager();
+
         ///
         /// The current scale at which the content is being viewed.
         /// 
@@ -120,10 +123,6 @@ namespace PnFDesktop.ViewCharts
         }
 
         #region Layout and zoom control properties and methods...
-        private double _contentLeftLimit = 0.0;
-        private double _contentRightLimit = 0.0;
-        private double _contentTopLimit = 0.0;
-        private double _contentBottomLimit = 0.0;
 
         private double _viewportWidth = double.NaN;
 
@@ -183,7 +182,25 @@ namespace PnFDesktop.ViewCharts
             {
                 if (!ViewportWidth.Equals(double.NaN) && !ViewportHeight.Equals(double.NaN))
                 {
-                    return Math.Max(ViewportWidth / ContentWidth, ViewportHeight / ContentHeight);
+                    return Math.Min(ViewportWidth / ContentWidth, ViewportHeight / ContentHeight);
+                }
+                else
+                {
+                    return 0.05;
+                }
+            }
+        }
+
+        ///
+        /// The maximum port scale
+        /// 
+        public double MaxViewportScale
+        {
+            get
+            {
+                if (!ViewportWidth.Equals(double.NaN) && !ViewportHeight.Equals(double.NaN))
+                {
+                    return Math.Max(ViewportWidth / 50.0 * _chartLayoutManager.GridSize, ViewportHeight / 50.0 * _chartLayoutManager.GridSize);
                 }
                 else
                 {
@@ -216,7 +233,13 @@ namespace PnFDesktop.ViewCharts
         public double ContentWidth
         {
             get => _contentWidth;
-            set => SetProperty(ref _contentWidth, value);
+            set
+            {
+                if (SetProperty(ref _contentWidth, value))
+                {
+                    OnPropertyChanged("MinViewportScale");
+                }
+            }
         }
 
         ///
@@ -225,7 +248,13 @@ namespace PnFDesktop.ViewCharts
         public double ContentHeight
         {
             get => _contentHeight;
-            set => SetProperty(ref _contentHeight, value);
+            set
+            {
+                if (SetProperty(ref _contentHeight, value))
+                {
+                    OnPropertyChanged("MinViewportScale");
+                }
+            }
         }
 
         ///
@@ -256,6 +285,7 @@ namespace PnFDesktop.ViewCharts
             _viewportWidth = viewportWidth;
             _viewportHeight = viewportHeight;
             OnPropertyChanged("MinViewportScale");
+            OnPropertyChanged("MaxViewportScale");
         }
         #endregion
 
@@ -277,6 +307,11 @@ namespace PnFDesktop.ViewCharts
                 }
             }
         }
+
+        public ImpObservableCollection<PointAndFigureHighlightViewModel> Highlights { get; } =
+    new ImpObservableCollection<PointAndFigureHighlightViewModel>();
+        public ImpObservableCollection<PointAndFigureAxisLabelViewModel> AxisLabels { get; } =
+    new ImpObservableCollection<PointAndFigureAxisLabelViewModel>();
 
         public new string Title
         {
@@ -324,8 +359,12 @@ namespace PnFDesktop.ViewCharts
             if (DesignerProperties.GetIsInDesignMode(new DependencyObject()))
             {
                 this.Chart = new DesignDataService().GetPointAndFigureChart("Test", 5, 3);
-                CalculateLimits();
-                AddColumns();
+                this.AxisLabels.Add(new PointAndFigureAxisLabelViewModel("1000", AxisLabelLocation.Left, 0d, 10d));
+                this.AxisLabels.Add(new PointAndFigureAxisLabelViewModel("2000", AxisLabelLocation.Left, 0d, 20d));
+                this.AxisLabels.Add(new PointAndFigureAxisLabelViewModel("3000", AxisLabelLocation.Left, 0d, 30d));
+                this.AxisLabels.Add(new PointAndFigureAxisLabelViewModel("4000", AxisLabelLocation.Left, 0d, 40d));
+                this.AxisLabels.Add(new PointAndFigureAxisLabelViewModel("5000", AxisLabelLocation.Left, 0d, 50d));
+                this.AxisLabels.Add(new PointAndFigureAxisLabelViewModel("6000", AxisLabelLocation.Left, 0d, 60d));
             }
         }
 
@@ -333,180 +372,65 @@ namespace PnFDesktop.ViewCharts
         {
             Chart = chart;
             ContentId = $"{Constants.PointAndFigureChart}_{chart.Id}";
-            CalculateLimits();
-            AddColumns();
-            // At this stage the content is at least a margins width from the top and left
-            // So the width and height are the right and bottom limit plus the margin.
-            ContentHeight = _contentBottomLimit + TopPadding + BottomPadding + Constants.ChartMargin;
-            ContentWidth = _contentRightLimit + LeftPadding + RightPadding + Constants.ChartMargin;
+            _chartLayoutManager.Initialize(chart, 5d, 10d, 25d);
+
+            ContentWidth = _chartLayoutManager.SheetWidth;
+            ContentHeight = _chartLayoutManager.SheetHeight;
+            OnPropertyChanged("MaxViewportScale");
 
             Control = new PointAndFigureChartView(this);
         }
 
-        /// <summary>
-        ///  Look for the Node sent in the message in the nodes list 
-        /// </summary>
-        /// <param name="selectedNode"></param>
-        private void HandleColumnMessage(ActivePointAndFigureColumnChangedMessage message)
+        public void BuildChartData()
         {
-            if (message.Sender != this)
-            {
-                PointAndFigureColumnViewModel columnVm = this.Columns.FirstOrDefault(n => n.Column.Id == message.Column.Id);
-                SelectedColumn = columnVm;
-            }
+            Highlights.Clear();
+            AxisLabels.Clear();
+            AddColumns(out int minRowIndex, out int maxRowIndex);
+            AddRowData(minRowIndex, maxRowIndex);
         }
 
         #region Helper methods ...
-        private void AddColumns()
+        private void AddColumns(out int minRowIndex, out int maxRowIndex)
         {
-            //int lastBullishSupportIndex = int.MaxValue;
-            PointAndFigureColumnViewModel previousColumnVm = null;
+            minRowIndex = int.MaxValue;
+            maxRowIndex = int.MinValue;
             Columns.Clear();
-            foreach (PnFColumn column in Chart.Columns.OrderBy(c => c.Index))
+            foreach (PnFColumn column in this.Chart.Columns.OrderBy(c => c.Index))
             {
-                //bool showBullishSupportImage = (lastBullishSupportIndex == column.BullSupportIndex - 1);
-                //if (showBullishSupportImage && previousColumnVm!=null && !previousColumnVm.ShowBullishSupportImage)
-                //{
-                //    previousColumnVm.ShowBullishSupportImage = true;
-                //}
-                PointAndFigureColumnViewModel columnVm = new PointAndFigureColumnViewModel(column, GridSize, _maxIndex);
+                if (column.StartAtIndex < minRowIndex) minRowIndex = column.StartAtIndex;
+                if (column.EndAtIndex < minRowIndex) minRowIndex = column.EndAtIndex;
+                if (column.StartAtIndex > maxRowIndex) maxRowIndex = column.StartAtIndex;
+                if (column.EndAtIndex > maxRowIndex) maxRowIndex = column.EndAtIndex;
+
+                PointAndFigureColumnViewModel columnVm = new PointAndFigureColumnViewModel(column, _chartLayoutManager);
                 Columns.Add(columnVm);
-                // lastBullishSupportIndex = column.BullSupportIndex;
-                previousColumnVm = columnVm;
-            }
-        }
-
-
-        private int _maxIndex;
-
-        /// <summary>
-        /// Calculates the drawing limits and if necessary shifts the columns and annotations
-        /// to get them back on the sheet.
-        /// </summary>
-        private void CalculateLimits()
-        {
-
-            double columnLeftLimit = 0d;
-            double columnTopLimit = 0d;
-            double columnRightLimit;
-            double columnBottomLimit;
-            //double annLeftLimit = 0.0;
-            //double annTopLimit = 0.0;
-            //double annRightLimit;
-            //double annBottomLimit;
-            int minColIndex = int.MaxValue;
-            int maxColIndex = int.MinValue;
-            int minBoxIndex = int.MaxValue;
-            int maxBoxIndex = int.MinValue;
-            _maxIndex = 0;
-
-            if (Chart.Columns.Count > 0)
-            {
-                foreach (var column in Chart.Columns)
+                if (column.ContainsNewYear && column.EndAt.HasValue)
                 {
-                    minColIndex = Math.Min(minColIndex, column.Index);
-                    maxColIndex = Math.Max(maxColIndex, column.Index);
-                    foreach (var box in column.Boxes)
-                    {
-                        minBoxIndex = Math.Min(minBoxIndex, box.Index);
-                        maxBoxIndex = Math.Max(maxBoxIndex, box.Index);
-                        if (box.Index > _maxIndex) _maxIndex = box.Index;
-                    }
+                    ColumnData colData = _chartLayoutManager.GetColumnData(column.Index);
+                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{column.EndAt.Value.Year}", AxisLabelLocation.Bottom, colData.BottomLabel.X, colData.BottomLabel.Y));
+                    Highlights.Add(new PointAndFigureHighlightViewModel(colData.ColumnHighlight, Orientation.Vertical));
                 }
-                columnLeftLimit = Math.Min((minColIndex * GridSize), 0.0);
-                columnTopLimit = Math.Min((minBoxIndex * GridSize), 0.0);
-                columnRightLimit = Math.Max((maxColIndex * GridSize), Constants.DefaultChartWidth);
-                columnBottomLimit = Math.Max(((maxBoxIndex - minBoxIndex) * GridSize), Constants.DefaultChartHeight);
-
             }
-            else
-            {
-                columnRightLimit = Constants.DefaultChartWidth;
-                columnBottomLimit = Constants.DefaultChartHeight;
-            }
-
-            _contentLeftLimit = columnLeftLimit;
-            _contentRightLimit = columnRightLimit;
-            _contentTopLimit = columnTopLimit;
-            _contentBottomLimit = columnBottomLimit;
-
-
-            // Note: This block left in for when annotation support is added.
-            //if (Chart.Annotations.Count > 0)
-            //{
-            //    annLeftLimit = Math.Min(Chart.Annotations.Select(n => n.LayoutXPosition).Min(), 0.0);
-            //    annTopLimit = Math.Min(Chart.Annotations.Select(n => n.LayoutYPosition).Min(), 0.0);
-            //    annRightLimit = Math.Max(Chart.Annotations.Select(n => n.LayoutXPosition).Max(), ApplicationOptionsManager.Options.DefaultSheetWidth);
-            //    annBottomLimit = Math.Max(Chart.Annotations.Select(n => n.LayoutYPosition).Max(), ApplicationOptionsManager.Options.DefaultSheetHeight);
-            //}
-            //else
-            //{
-            //    annRightLimit = ApplicationOptionsManager.Options.DefaultSheetWidth;
-            //    annBottomLimit = ApplicationOptionsManager.Options.DefaultSheetHeight;
-            //}
-
-
-            //_contentLeftLimit = Math.Min(annLeftLimit, columnLeftLimit);
-            //_contentRightLimit = Math.Max(annRightLimit, columnRightLimit);
-            //_contentTopLimit = Math.Min(annTopLimit, columnTopLimit);
-            //_contentBottomLimit = Math.Max(annBottomLimit, columnBottomLimit);
-
-
-            // Assuming that content can only grow east and south we need to move the content if some of it
-            // is too far North and West.
-            double xShift = 0.0;
-            double yShift = 0.0;
-            if (_contentLeftLimit < 0.0)
-            {
-                xShift = 0.0 - _contentLeftLimit;
-            }
-            if (_contentTopLimit < 0.0)
-            {
-                yShift = 0.0 - _contentTopLimit;
-            }
-
-            //if (xShift > 0.0 || yShift > 0.0)
-            //{
-            //    Chart.Columns.ToList().ForEach(n =>
-            //    {
-            //        n.LayoutXPosition = n.LayoutXPosition + xShift;
-            //        n.LayoutYPosition = n.LayoutYPosition + yShift;
-            //    });
-            //    Chart.Annotations.ToList().ForEach(n =>
-            //    {
-            //        n.LayoutXPosition = n.LayoutXPosition + xShift;
-            //        n.LayoutYPosition = n.LayoutYPosition + yShift;
-            //    });
-            //    _contentLeftLimit = _contentLeftLimit + xShift;
-            //    _contentRightLimit = _contentRightLimit + xShift;
-            //    _contentTopLimit = _contentTopLimit + yShift;
-            //    _contentBottomLimit = _contentBottomLimit + yShift;
-            //}
         }
 
-        public void ResizeContent()
+        private void AddRowData(int minRowIndex, int maxRowIndex)
         {
-
-            CalculateLimits();
-
-            double contentHeight = _contentBottomLimit + Constants.ChartMargin;
-            double contentWidth = _contentRightLimit + Constants.ChartMargin;
-            bool raisePropertyChanged = false;
-
-            if (contentHeight > this.ContentHeight)
+            if (minRowIndex != int.MaxValue && maxRowIndex != int.MinValue)
             {
-                this.ContentHeight = contentHeight;
-                raisePropertyChanged = true;
+                // Add row backgrounds
+                for (int i = minRowIndex; i <= maxRowIndex; i++)
+                {
+                    RowData rowData = _chartLayoutManager.GetRowData(i);
+                    if (i * this.Chart.BoxSize % (5 * this.Chart.BoxSize) == 0)
+                    {
+                        Highlights.Add(new PointAndFigureHighlightViewModel(rowData.RowHighlight, Orientation.Horizontal));
+                    }
+                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{(i * this.Chart.BoxSize):F}", AxisLabelLocation.Left, rowData.LeftLabel.X, rowData.LeftLabel.Y));
+                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{(i * this.Chart.BoxSize):F}", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
+                }
             }
-            if (contentWidth > this.ContentWidth)
-            {
-                this.ContentWidth = contentWidth;
-                raisePropertyChanged = true;
-            }
-            if (raisePropertyChanged)
-            {
-                OnPropertyChanged("MinViewportScale");
-            }
+
+
         }
 
         #endregion

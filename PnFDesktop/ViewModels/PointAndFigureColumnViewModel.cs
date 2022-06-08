@@ -7,6 +7,7 @@ using Accessibility;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using PnFData.Model;
 using PnFDesktop.Classes;
+using PnFDesktop.Interfaces;
 
 namespace PnFDesktop.ViewModels
 {
@@ -78,7 +79,7 @@ namespace PnFDesktop.ViewModels
             set => SetProperty(ref _showBullishSupportImage, value);
         }
 
-        private string _artworkKey = "BullishSupport4X4";
+        private string _artworkKey = "BullishSupport5X5";
 
         public DrawingImage BullishSupportImage
         {
@@ -94,20 +95,6 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-
-        /// <summary>
-        /// The Z index of the column.
-        /// </summary>
-        private int _zIndex;
-
-        /// <summary>
-        /// The Z index of the column.
-        /// </summary>
-        public int ZIndex
-        {
-            get => _zIndex;
-            set => SetProperty(ref _zIndex, value);
-        }
 
         private Size _size = new Size(0, 0);
 
@@ -145,15 +132,14 @@ namespace PnFDesktop.ViewModels
         public ImpObservableCollection<PointAndFigureBoxViewModel> Boxes { get; }= new ImpObservableCollection<PointAndFigureBoxViewModel>();
         #endregion
 
-        public PointAndFigureColumnViewModel(PnFColumn column, double chartGridSize, int maxChartBoxIndex)
+        public PointAndFigureColumnViewModel(PnFColumn column, IChartLayoutManager layoutManager)
         {
             _column = column;
-            _x = column.Index * chartGridSize;
+            _x = layoutManager.GetColumnXCoordinate(column.Index);
             if (column.Boxes.Any())
             {
-                Size = AddBoxes(chartGridSize, out int minIndex, out int maxIndex);
-                _y = (maxChartBoxIndex - maxIndex) * chartGridSize;
-                _bullishSupportY = (maxIndex - Column.BullSupportIndex) * chartGridSize;
+                Size = AddBoxes(layoutManager, out int minIndex, out int maxIndex);
+                _y = layoutManager.GetRowYCoordinate(maxIndex);
                 ShowBullishSupportImage = Column.ShowBullishSupport;
             }
             else
@@ -168,19 +154,32 @@ namespace PnFDesktop.ViewModels
 
         }
 
-        private Size AddBoxes(double chartGridSize, out int minIndex, out int maxIndex)
+        /// <summary>
+        /// Add the boxes, remembering that the coordinates are relative to the column.
+        /// </summary>
+        /// <param name="layoutManager"></param>
+        /// <param name="minIndex"></param>
+        /// <param name="maxIndex"></param>
+        /// <returns></returns>
+        private Size AddBoxes(IChartLayoutManager layoutManager, out int minIndex, out int maxIndex)
         {
+            PointAndFigureBoxViewModel boxVm = null;
             int i = 0;
             foreach (var box in Column.Boxes.OrderByDescending(b=>b.Index))
             {
-                this.Boxes.Add(new PointAndFigureBoxViewModel(box, i * chartGridSize));
+                boxVm = new PointAndFigureBoxViewModel(box, i * layoutManager.GridSize);
+                this.Boxes.Add(boxVm);
                 i++;
             }
 
             minIndex = Boxes.Min(b => b.Box.Index);
             maxIndex = Boxes.Max(b => b.Box.Index);
+            if (boxVm != null)
+            {
+                this.BullishSupportY = Boxes[0].Y + ((maxIndex - Column.BullSupportIndex) * layoutManager.GridSize);
+            }
 
-            return new Size(chartGridSize, Boxes.Count * chartGridSize);
+            return new Size(layoutManager.GridSize, Boxes.Count * layoutManager.GridSize);
         }
 
     }

@@ -5,6 +5,8 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <PackageIcon>P_FDesktop.png</PackageIcon>
+    <ApplicationIcon>Resources\Images\P_FDesktop.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +16,21 @@
     <Compile Remove="Classes\Messaging\Messenger.cs" />
     <Compile Remove="Classes\Messaging\WeakAction.cs" />
     <Compile Remove="Classes\Messaging\WeakActionGeneric.cs" />
+    <Compile Remove="Controls\PointAndFigureBoxItem.cs" />
+    <Compile Remove="Controls\PointAndFigureBoxItemsControl.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Images\P_FDesktop32.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Images\P_FDesktop.ico" />
+    <Content Include="Resources\Images\P_FDesktop.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
+    <Resource Include="Resources\Images\P_FDesktop32.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +63,10 @@
   <ItemGroup>
     <None Update="Config\default.layout">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\P_FDesktop.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 

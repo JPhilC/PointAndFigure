@@ -423,7 +423,7 @@ namespace PnFData.Services
 
 
 
-            boxSize = RangeBoxSize((stats.BestHigh - stats.BestLow) * 0.005);   // Take 1% of the middle of the range
+            boxSize = RangeBoxSize((stats.BestHigh - stats.BestLow) * 0.02);   // Take 2% of the middle of the range
             //int bs = (int)(boxSize + 0.5);
             //boxSize = bs * 0.01d;
             //boxSize = stats.SumHighLessLow / _eodList.Count;

@@ -238,8 +238,6 @@ namespace PnFDesktop.Services
                                          Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
                                             + ((ii.NewEvents & (int)IndexEvents.PercentOf10Gt30) == (int)IndexEvents.PercentOf10Gt30 ? "Percent of 10 (Above 30)" : "")
                                             + ((ii.NewEvents & (int)IndexEvents.PercentOf30Gt30) == (int)IndexEvents.PercentOf30Gt30 ? "Percent of 30 (Above 30)" : "")
                                             + ((ii.NewEvents & (int)IndexEvents.HighLowGt30) == (int)IndexEvents.HighLowGt30 ? "High-Low (Above 30)" : "")

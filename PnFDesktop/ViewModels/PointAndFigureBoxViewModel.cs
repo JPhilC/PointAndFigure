@@ -57,20 +57,6 @@ namespace PnFDesktop.ViewModels
             set => SetProperty(ref _y, value);
         }
 
-        /// <summary>
-        /// The Z index of the box.
-        /// </summary>
-        private int _zIndex;
-
-        /// <summary>
-        /// The Z index of the box.
-        /// </summary>
-        public int ZIndex
-        {
-            get => _zIndex;
-            set => SetProperty(ref _zIndex, value);
-        }
-
         #endregion
 
         public DrawingImage Image
@@ -111,7 +97,7 @@ namespace PnFDesktop.ViewModels
         public PointAndFigureBoxViewModel(PnFBox box, double y)
         {
             Box = box;
-            _x = 0d; // Box.Column.Index * chartGridSize;
+            _x = 0d; //
             _y = y;
             OnPropertyChanged("X");
             OnPropertyChanged("Y");
