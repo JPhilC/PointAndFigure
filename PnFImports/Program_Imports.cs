@@ -117,7 +117,7 @@ namespace PnFImports
         {
             try
             {
-                DateTime cutOffDate = new(2018, 01, 01);
+                DateTime cutOffDate = new(2005, 01, 01);
                 List<ShareSummary> shareIds = new List<ShareSummary>();
                 using (var db = new PnFDataContext())
                 {

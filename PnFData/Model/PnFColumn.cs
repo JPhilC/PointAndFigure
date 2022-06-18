@@ -141,26 +141,34 @@ namespace PnFData.Model
             if (this.PnFChart.BoxSize == null) return "";
             int boxCount = Boxes.Count;
             double boxSize = this.PnFChart.BoxSize.Value;
+            double minValue = Boxes.Min(b=>b.Value);
+            double maxValue = Boxes.Max(b=>b.Value);
+            double fromValue = 0d;
+            double toValue = 0d;
             string columnType = "";
             switch (ColumnType)
             {
                 case PnFColumnType.O:
                 case PnFColumnType.XO:
                     columnType = "O";
+                    fromValue = maxValue;
+                    toValue = minValue;
                     break;
                 case PnFColumnType.X:
                 case PnFColumnType.OX:
                     columnType = "X";
+                    fromValue = minValue;
+                    toValue = maxValue;
                     break;
             }
             if (EndAt != null && boxCount > 0)
             {
                 return
-                    $"{boxCount} {columnType}'s\nFrom {StartAtIndex * boxSize} on {StartAt.Date:d}\nTo {EndAtIndex * boxSize} on {EndAt.Value.Date:d}";
+                    $"{boxCount} {columnType}'s\nFrom {fromValue:F} on {StartAt.Date:d}\nTo {toValue:F} on {EndAt.Value.Date:d}";
             }
             else
             {
-                return $"From {Boxes[0].Index * boxSize} on {StartAt.Date:d}";
+                return $"From {Boxes[0].Value} on {StartAt.Date:d}";
             }
         }
 

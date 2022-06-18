@@ -66,8 +66,8 @@ namespace PnFImports
             if (tickData != null && tickData.Any())
             {
 
-                PnFChartBuilderService chartBuilder = new PnFHiLoChartBuilderService(tickData);
-                double boxSize = chartBuilder.ComputeBoxSize();
+                PnFChartBuilderService chartBuilder = new PnFLogarithmicHiLoChartBuilderService(tickData);
+                double boxSize = 2d;    //chartBuilder.ComputeNormalBoxSize();
                 PnFChart chart = null;
                 // See if we already have a chart.
                 try
@@ -89,6 +89,7 @@ namespace PnFImports
                                             c.Chart != null
                                             && c.Chart.BoxSize == boxSize
                                             && c.Chart.Reversal == reversal
+                                            && c.Chart.PriceScale == PnFChartPriceScale.Logarithmic
                                             && c.Chart.Source == PnFChartSource.Share)
                                     .OrderByDescending(c => c.Chart.GeneratedDate)
                                     .Select(c => c.Chart.Id)
@@ -168,7 +169,7 @@ namespace PnFImports
                 if (newChart != null)
                 {
                     newChart.Source = PnFChartSource.Share;
-                    newChart.Name = $"{tidm.Replace(".LON", "")} Daily (H/L) ({newChart.BoxSize}, {reversal} rev)";
+                    newChart.Name = $"{tidm.Replace(".LON", "")} Daily (H/L) ({newChart.BoxSize}%, {reversal} rev)";
                     try
                     {
                         // Save the chart
@@ -190,6 +191,7 @@ namespace PnFImports
                                         && c.Chart.BoxSize == newChart.BoxSize
                                         && c.Chart.Reversal == newChart.Reversal
                                         && c.Chart.Source == PnFChartSource.Share
+                                        && c.Chart.PriceScale == PnFChartPriceScale.Logarithmic
                                         && c.Chart.GeneratedDate == newChart.GeneratedDate);
                                     foreach (var shareChart in shareCharts.ToList())
                                     {

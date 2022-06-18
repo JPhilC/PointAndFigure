@@ -63,7 +63,7 @@ IF object_id('tempdb..#yesterday','U') is not null
 DECLARE @cutoffDate date
 -- SET @cutoffDate = DATEADD(d, -170, GETDATE())		-- Make sure we clear the 30 week EMA period
 
-SET @cutoffDate = CONVERT(DATETIME, '2018-01-01')		-- Make sure we clear the 30 week EMA period
+SET @cutoffDate = CONVERT(DATETIME, '2005-01-01')		-- Make sure we clear the 30 week EMA period
 
 
 SELECT ic.[IndexId]

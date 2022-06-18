@@ -417,19 +417,37 @@ namespace PnFDesktop.ViewCharts
         {
             if (minRowIndex != int.MaxValue && maxRowIndex != int.MinValue)
             {
-                // Add row backgrounds
-                for (int i = minRowIndex; i <= maxRowIndex; i++)
+                if (this.Chart.PriceScale == PnFChartPriceScale.Normal)
                 {
-                    RowData rowData = _chartLayoutManager.GetRowData(i);
-                    if (i * this.Chart.BoxSize % (5 * this.Chart.BoxSize) == 0)
+                    // Add row backgrounds
+                    for (int i = minRowIndex; i <= maxRowIndex; i++)
                     {
-                        Highlights.Add(new PointAndFigureHighlightViewModel(rowData.RowHighlight, Orientation.Horizontal));
+                        RowData rowData = _chartLayoutManager.GetRowData(i);
+                        if (i % 5 == 0)
+                        {
+                            Highlights.Add(new PointAndFigureHighlightViewModel(rowData.RowHighlight, Orientation.Horizontal));
+                        }
+                        AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{(i * this.Chart.BoxSize):F}", AxisLabelLocation.Left, rowData.LeftLabel.X, rowData.LeftLabel.Y));
+                        AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{(i * this.Chart.BoxSize):F}", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
                     }
-                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{(i * this.Chart.BoxSize):F}", AxisLabelLocation.Left, rowData.LeftLabel.X, rowData.LeftLabel.Y));
-                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{(i * this.Chart.BoxSize):F}", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
+                }
+                else
+                {
+                    // Logarithmic
+                    double increment = 1d + (this.Chart!.BoxSize!.Value * 0.01);    // Calculate the boxsize and a percentage incrementor (e,g, 2 => 1.02)
+                    for (int i = minRowIndex; i <= maxRowIndex; i++)
+                    {
+                        RowData rowData = _chartLayoutManager.GetRowData(i);
+                        if (i % 5 == 0) // Add a row and labels every 5 rows
+                        {
+                            double rowValue = this.Chart!.BaseValue!.Value * Math.Pow(increment,  i-1);
+                            Highlights.Add(new PointAndFigureHighlightViewModel(rowData.RowHighlight, Orientation.Horizontal));
+                            AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{rowValue:F}", AxisLabelLocation.Left, rowData.LeftLabel.X, rowData.LeftLabel.Y));
+                            AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{rowValue:F}", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
+                        }
+                    }
                 }
             }
-
 
         }
 

@@ -97,7 +97,7 @@ namespace PnFImports
             {
                 // Create the chart.
                 PnFChartBuilderService chartBuilder = new PnFSingleValueChartBuilderService(tickData);
-                double boxSize = chartBuilder.ComputeBoxSize();
+                double boxSize = chartBuilder.ComputeNormalBoxSize();
                 PnFChart chart = null;
                 try
                 {

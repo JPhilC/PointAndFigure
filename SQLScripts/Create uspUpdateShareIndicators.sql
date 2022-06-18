@@ -38,8 +38,8 @@ IF object_id('tempdb..#today','U') is not null
 	DROP TABLE #today;
 
 DECLARE @fromDate date
-SET @fromDate = DATEADD(d, -170, GETDATE())		-- 170 days should clear 30 week EMA
---SET @cutoffDate = CONVERT(DATETIME, '2018-01-01')	-- Process all
+-- SET @fromDate = DATEADD(d, -170, GETDATE())		-- 170 days should clear 30 week EMA
+SET @fromDate = CONVERT(DATETIME, '2005-01-01')	-- Process all
 
 
 SELECT sc.[ShareId]

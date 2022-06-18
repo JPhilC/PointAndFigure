@@ -43,7 +43,7 @@ INSERT INTO IndexRSIValues ([Id], [Day], [Value], [IndexId])
 SELECT nv.[Id], nv.[Day], nv.[Value], nv.[IndexId]
 	FROM #rsivalues nv
 	LEFT JOIN IndexRSIValues ixv ON ixv.IndexId = nv.IndexId AND ixv.[Day] = nv.[Day]
-	WHERE ixv.IndexId IS nULL
+	WHERE nv.[Value] IS NOT NULL AND ixv.IndexId IS NULL
 
 DROP TABLE #market;
 DROP TABLE #rsivalues;

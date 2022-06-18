@@ -70,18 +70,18 @@ namespace PnFData.Services
                     if (nextValue.Value < dayValue.Value)
                     {
                         // Start with Os (down day)
-                        int newStartIndex = GetIndex(dayValue.Value, true) + 1;
+                        int newStartIndex = GetNormalIndex(dayValue.Value, true) + 1;
                         currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, ContainsNewYear = true };
-                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetNormalIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                         lastMonthRecorded = dayValue.Day.Month;
                         chart.Columns.Add(currentColumn);
                     }
                     else
                     {
                         // Start with Xs (up day)
-                        int newStartIndex = GetIndex(dayValue.Value) - 1;
+                        int newStartIndex = GetNormalIndex(dayValue.Value) - 1;
                         currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.X, CurrentBoxIndex = newStartIndex, ContainsNewYear = true };
-                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetNormalIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                         lastMonthRecorded = dayValue.Day.Month;
                         chart.Columns.Add(currentColumn);
                     }
@@ -92,17 +92,17 @@ namespace PnFData.Services
                     if (currentColumn.ColumnType == PnFColumnType.O)
                     {
                         // Chart is falling.
-                        double nextBox = GetValue(currentColumn.CurrentBoxIndex - 1);
+                        double nextBox = GetValueNormal(currentColumn.CurrentBoxIndex - 1);
                         if (dayValue.Value <= nextBox)
                         {
                             // Add the box range.
-                            currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                            currentColumn.AddBox(PnFBoxType.O, BoxSize, GetNormalIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                             lastMonthRecorded = dayValue.Day.Month;
                         }
                         else
                         {
                             // Have we reversed!
-                            double reversalBox = GetValue(currentColumn.CurrentBoxIndex + reversal);
+                            double reversalBox = GetValueNormal(currentColumn.CurrentBoxIndex + reversal);
                             if (dayValue.Value >= reversalBox)
                             {
                                 int newStartIndex = currentColumn.CurrentBoxIndex;
@@ -113,7 +113,7 @@ namespace PnFData.Services
                                     ColumnType = PnFColumnType.X,
                                     CurrentBoxIndex = newStartIndex
                                 };
-                                currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                                currentColumn.AddBox(PnFBoxType.X, BoxSize, GetNormalIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                                 lastMonthRecorded = dayValue.Day.Month;
                                 chart.Columns.Add(currentColumn);
                             }
@@ -122,16 +122,16 @@ namespace PnFData.Services
                     else
                     {
                         // Chart is rising.
-                        double nextBox = GetValue(currentColumn.CurrentBoxIndex + 1);
+                        double nextBox = GetValueNormal(currentColumn.CurrentBoxIndex + 1);
                         if (dayValue.Value >= nextBox)
                         {
-                            currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                            currentColumn.AddBox(PnFBoxType.X, BoxSize, GetNormalIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                             lastMonthRecorded = dayValue.Day.Month;
                         }
                         else
                         {
                             // Have we reversed.
-                            double reversalBox = GetValue(currentColumn.CurrentBoxIndex - reversal);
+                            double reversalBox = GetValueNormal(currentColumn.CurrentBoxIndex - reversal);
                             if (dayValue.Value <= reversalBox)
                             {
                                 int newStartIndex = currentColumn.CurrentBoxIndex;
@@ -142,7 +142,7 @@ namespace PnFData.Services
                                     ColumnType = PnFColumnType.O,
                                     CurrentBoxIndex = newStartIndex
                                 };
-                                currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                                currentColumn.AddBox(PnFBoxType.O, BoxSize, GetNormalIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                                 lastMonthRecorded = dayValue.Day.Month;
                                 chart.Columns.Add(currentColumn);
                             }
@@ -204,17 +204,17 @@ namespace PnFData.Services
                 if (currentColumn.ColumnType == PnFColumnType.O)
                 {
                     // Chart is falling.
-                    double nextBox = GetValue(currentColumn.CurrentBoxIndex - 1);
+                    double nextBox = GetValueNormal(currentColumn.CurrentBoxIndex - 1);
                     if (dayValue.Value <= nextBox)
                     {
                         // Add the box range.
-                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                        currentColumn.AddBox(PnFBoxType.O, BoxSize, GetNormalIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                         lastMonthRecorded = dayValue.Day.Month;
                     }
                     else
                     {
                         // Have we reversed!
-                        double reversalBox = GetValue(currentColumn.CurrentBoxIndex + reversal);
+                        double reversalBox = GetValueNormal(currentColumn.CurrentBoxIndex + reversal);
                         if (dayValue.Value >= reversalBox)
                         {
                             int newStartIndex = currentColumn.CurrentBoxIndex;
@@ -225,7 +225,7 @@ namespace PnFData.Services
                                 ColumnType = PnFColumnType.X,
                                 CurrentBoxIndex = newStartIndex
                             };
-                            currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                            currentColumn.AddBox(PnFBoxType.X, BoxSize, GetNormalIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                             lastMonthRecorded = dayValue.Day.Month;
                             chart.Columns.Add(currentColumn);
                         }
@@ -234,16 +234,16 @@ namespace PnFData.Services
                 else
                 {
                     // Chart is rising.
-                    double nextBox = GetValue(currentColumn.CurrentBoxIndex + 1);
+                    double nextBox = GetValueNormal(currentColumn.CurrentBoxIndex + 1);
                     if (dayValue.Value >= nextBox)
                     {
-                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                        currentColumn.AddBox(PnFBoxType.X, BoxSize, GetNormalIndex(dayValue.Value), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                         lastMonthRecorded = dayValue.Day.Month;
                     }
                     else
                     {
                         // Have we reversed.
-                        double reversalBox = GetValue(currentColumn.CurrentBoxIndex - reversal);
+                        double reversalBox = GetValueNormal(currentColumn.CurrentBoxIndex - reversal);
                         if (dayValue.Value <= reversalBox)
                         {
                             int newStartIndex = currentColumn.CurrentBoxIndex;
@@ -254,7 +254,7 @@ namespace PnFData.Services
                                 ColumnType = PnFColumnType.O,
                                 CurrentBoxIndex = newStartIndex
                             };
-                            currentColumn.AddBox(PnFBoxType.O, BoxSize, GetIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
+                            currentColumn.AddBox(PnFBoxType.O, BoxSize, GetNormalIndex(dayValue.Value, true), dayValue.Value, dayValue.Day, (dayValue.Day.Month != lastMonthRecorded ? GetMonthIndicator(dayValue.Day) : null));
                             lastMonthRecorded = dayValue.Day.Month;
                             chart.Columns.Add(currentColumn);
                         }
@@ -282,7 +282,7 @@ namespace PnFData.Services
         /// Compute the box size based on prices
         /// </summary>
         /// <returns></returns>
-        public override double ComputeBoxSize()
+        public override double ComputeNormalBoxSize()
         {
             double boxSize;
             var stats = (from d in _valueList
@@ -295,7 +295,7 @@ namespace PnFData.Services
                          }).First();
 
 
-            boxSize = RangeBoxSize((stats.BestHigh - stats.BestLow) * 0.005);   // Take 1% of mid price
+            boxSize = RangeBoxSize((((stats.BestHigh - stats.BestLow) * 0.5) + stats.BestLow) * 0.01);   // Take 1% of mid price
             //int bs = (int)(boxSize + 0.5);
             //boxSize = bs * 0.01d;
             //boxSize = stats.SumHighLessLow / _eodList.Count;

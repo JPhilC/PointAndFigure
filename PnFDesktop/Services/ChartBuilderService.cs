@@ -37,7 +37,7 @@ namespace PnFDesktop.Services
             {
                 // Create the chart.
                 PnFChartBuilderService chartBuilder = new PnFHiLoChartBuilderService(tickData);
-                double boxSize = chartBuilder.ComputeBoxSize();
+                double boxSize = chartBuilder.ComputeNormalBoxSize();
                 try
                 {
                     MessageLog.LogMessage(null, LogType.Information, $@"Building chart for {tidm}.");

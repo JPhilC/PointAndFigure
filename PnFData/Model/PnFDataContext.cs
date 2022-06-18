@@ -19,7 +19,6 @@ namespace PnFData.Model
         public DbSet<Eod> EodPrices { get; set; }
         public DbSet<Index> Indices { get; set; }
 
-
         public DbSet<IndexValue> IndexValues { get; set; }
 
         public DbSet<ShareRSI> ShareRSIValues {get;set;}
@@ -41,6 +40,11 @@ namespace PnFData.Model
         public DbSet<IndexChart> IndexCharts { get; set; }
 
         public DbSet<IndexIndicator> IndexIndicators {get;set;}
+
+        public DbSet<Portfolio> Portfolios { get; set; }
+
+        public DbSet<PortfolioShare> PortfolioShares { get; set; }
+
 
         // The following configures EF to create a Sqlite database file in the
         // special "local" folder for your platform.
@@ -107,6 +111,12 @@ namespace PnFData.Model
             modelBuilder.Entity<IndexIndicator>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("newid()");
+            modelBuilder.Entity<Portfolio>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("newid()");
+            modelBuilder.Entity<PortfolioShare>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("newid()");
 
             // Define Db generated default values for CreatedAt
             modelBuilder.Entity<Share>()
@@ -149,6 +159,12 @@ namespace PnFData.Model
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("getdate()");
             modelBuilder.Entity<IndexIndicator>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<Portfolio>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<PortfolioShare>()
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("getdate()");
 
@@ -217,6 +233,11 @@ namespace PnFData.Model
                 .HasOne(c => c.IndexChart)
                 .WithOne(sc => sc.Chart)
                 .HasForeignKey<IndexChart>(sc => sc.ChartId);
+
+            modelBuilder.Entity<PortfolioShare>()
+                .HasOne(p => p.Portfolio)
+                .WithMany(b => b.Shares)
+                .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
         }

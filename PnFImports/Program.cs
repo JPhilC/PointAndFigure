@@ -148,6 +148,10 @@ namespace PnFImports
                 {
                     ImportEodDailyPrices(exchangeCode, null, true);
                 }
+                else if (parameter == "HISTORIC")
+                {
+                    ImportEodDailyPrices(exchangeCode, null, false, true);
+                }
                 else
                 {
                     ImportEodDailyPrices(exchangeCode, null);
@@ -166,7 +170,6 @@ namespace PnFImports
 
             if (_LastReturnValue == 0)
             {
-                // Generate charts (HiLo and ShareRS may have concurrency issues so process separately)
                 GenerateAllHiLoCharts(exchangeCode, TplusTwoDate);
                 GenerateIndexCharts(exchangeCode, TplusTwoDate);
                 GenerateIndexRSCharts(exchangeCode, TplusTwoDate);

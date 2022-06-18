@@ -4,6 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PnFData.Model
 {
+    public enum PnFChartPriceScale
+    {
+        Normal,
+        Logarithmic
+    }
 
     public enum PnFChartSource
     {
@@ -43,7 +48,17 @@ namespace PnFData.Model
 
         public DateTime GeneratedDate { get; set; }
 
+        [DefaultValue(0)]
+        public PnFChartPriceScale PriceScale { get;set;}
+
         public double? BoxSize { get; set; }
+        
+        /// <summary>
+        /// Base value used for Logarithmic scale
+        /// </summary>
+        public double? BaseValue { get; set;}
+
+
         public int Reversal { get; set; }
 
         public List<PnFColumn> Columns { get; } = new List<PnFColumn>();
