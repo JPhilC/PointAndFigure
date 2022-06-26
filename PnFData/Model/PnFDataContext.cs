@@ -239,6 +239,10 @@ namespace PnFData.Model
                 .WithMany(b => b.Shares)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Portfolio>()
+                .HasIndex(p => p.Name)
+                .IsUnique();
+
             base.OnModelCreating(modelBuilder);
         }
     }

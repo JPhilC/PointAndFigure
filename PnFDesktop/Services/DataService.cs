@@ -128,6 +128,91 @@ namespace PnFDesktop.Services
             return shares;
         }
 
+        /// <summary>
+        /// Returns a single share record matching the tidm
+        /// </summary>
+        public async Task<Share?> GetShareAsync(string tidm)
+        {
+            Share share = null;
+            try
+            {
+                using var db = new PnFDataContext();
+                share = await db.Shares.FirstOrDefaultAsync(s => s.Tidm == tidm);
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the share data", ex);
+            }
+            return share;
+        }
+
+        public async Task<IEnumerable<Portfolio>> GetPortfoliosAsync()
+        {
+            IEnumerable<Portfolio> portfolios = new List<Portfolio>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    portfolios = await db.Portfolios.ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the portfolio data", ex);
+            }
+            return portfolios;
+        }
+
+        public async Task<Portfolio?> GetPortfolioAsync(Guid itemId)
+        {
+            Portfolio portfolio = null;
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    portfolio = await db.Portfolios
+                        .Include(ps => ps.Shares).ThenInclude(s => s.Share)
+                        .SingleOrDefaultAsync(p => p.Id == itemId);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the portfolio data", ex);
+            }
+            return portfolio;
+        }
+
+
+
+        public async Task<IEnumerable<PortfolioShareDTO>> GetPortfolioSharesAsync(Portfolio portfolio)
+        {
+            IEnumerable<PortfolioShareDTO> shares = new List<PortfolioShareDTO>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    shares = await (from ps in db.PortfolioShares
+                                    join s in db.Shares on ps.ShareId equals s.Id
+                                    where ps.PortfolioId == portfolio.Id
+                                    orderby s.Tidm
+                                    select new PortfolioShareDTO()
+                                    {
+                                        Id = s.Id,
+                                        Tidm = s.Tidm,
+                                        Name = s.Name,
+                                        Holding = ps.Holding
+                                    }).ToListAsync();
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the share data", ex);
+            }
+            return shares;
+        }
+
         public async Task<IEnumerable<IndexDTO>> GetIndicesAsync()
         {
             IEnumerable<IndexDTO> indices = new List<IndexDTO>();
@@ -445,5 +530,127 @@ namespace PnFDesktop.Services
             return exchangeCodes;
 
         }
+
+
+        public async Task<IEnumerable<ShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day)
+        {
+            IEnumerable<ShareSummaryDTO> shares = new List<ShareSummaryDTO>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    shares = await (from ps in db.PortfolioShares
+                                    join si in db.ShareIndicators on ps.ShareId equals si.ShareId
+                                    join s in db.Shares on si.ShareId equals s.Id
+                                    from rs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Market).DefaultIfEmpty()
+                                    from prs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Sector).DefaultIfEmpty()
+                                    from q in db.EodPrices.Where(r => r.ShareId == si.ShareId && r.Day == si.Day).DefaultIfEmpty()
+                                    from idx in db.Indices.Where(r => r.ExchangeCode == s.ExchangeCode && r.ExchangeSubCode == s.ExchangeSubCode && r.SuperSector == s.SuperSector).DefaultIfEmpty()
+                                    from ii in db.IndexIndicators.Where(r => r.IndexId == idx.Id && r.Day == si.Day)
+                                    where ps.PortfolioId == portfolio.Id
+                                        && si.Day == day
+                                    orderby s.Tidm
+                                    select new ShareSummaryDTO()
+                                    {
+                                        Id = s.Id,
+                                        Tidm = s.Tidm,
+                                        Name = s.Name,
+                                        ExchangeCode = s.ExchangeCode,
+                                        ExchangeSubCode = s.ExchangeSubCode,
+                                        SuperSector = s.SuperSector,
+                                        MarketCapMillions = s.MarketCapMillions,
+                                        Close = q.Close,
+                                        RsValue = rs.Value,
+                                        PeerRsValue = prs.Value,
+                                        Ema10 = si.Ema10 ?? 0d,
+                                        Ema30 = si.Ema30 ?? 0d,
+                                        ClosedAboveEma10 = si.ClosedAboveEma10 ?? false,
+                                        ClosedAboveEma30 = si.ClosedAboveEma30 ?? false,
+                                        Rising = si.Rising ?? false,
+                                        DoubleTop = si.DoubleTop ?? false,
+                                        TripleTop = si.TripleTop ?? false,
+                                        RsRising = si.RsRising ?? false,
+                                        RsBuy = si.RsBuy ?? false,
+                                        PeerRsRising = si.PeerRsRising ?? false,
+                                        PeerRsBuy = si.PeerRsBuy ?? false,
+                                        Falling = si.Falling ?? false,
+                                        DoubleBottom = si.DoubleBottom ?? false,
+                                        TripleBottom = si.TripleBottom ?? false,
+                                        RsFalling = si.RsFalling ?? false,
+                                        RsSell = si.RsSell ?? false,
+                                        PeerRsFalling = si.PeerRsFalling ?? false,
+                                        PeerRsSell = si.PeerRsSell ?? false,
+                                        AboveBullSupport = si.AboveBullSupport,
+                                        NewEvents = si.NewEvents,
+                                        Score = 0 + (si.Rising == true ? 1 : 0)
+                                                  + (si.Falling == true ? -1 : 0)
+                                                  + (si.DoubleTop == true ? 1 : 0)
+                                                  + (si.DoubleBottom == true ? -1 : 0)
+                                                  + (si.TripleTop == true ? 1 : 0)
+                                                  + (si.TripleBottom == true ? -1 : 0)
+                                                  + (si.RsRising == true ? 1 : 0)
+                                                  + (si.RsFalling == true ? -1 : 0)
+                                                  + (si.RsBuy == true ? 1 : 0)
+                                                  + (si.RsSell == true ? -1 : 0)
+                                                  + (si.PeerRsRising == true ? 1 : 0)
+                                                  + (si.PeerRsFalling == true ? -1 : 0)
+                                                  + (si.PeerRsBuy == true ? 1 : 0)
+                                                  + (si.PeerRsSell == true ? -1 : 0)
+                                                  + (si.ClosedAboveEma10 == true ? 1 : 0)
+                                                  + (si.ClosedAboveEma30 == true ? 1 : 0)
+                                                  + (si.AboveBullSupport == true ? 1 : 0),
+                                        Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
+                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
+                                    }).ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the share values data", ex);
+            }
+            return shares;
+
+        }
+
+        public async Task<bool> UpdatePortfolioAsync(Portfolio portfolio)
+        {
+            bool result = false;
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    db.Portfolios.Update(portfolio);
+                    result = (await db.SaveChangesAsync() > 0);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, $"An error occurred updating portfolio '{portfolio.Name}'", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> DeletePortfolioShareAsync(PortfolioShare portfolioShare)
+        {
+            bool result = false;
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    db.PortfolioShares.Remove(portfolioShare);
+                    result = (await db.SaveChangesAsync() > 0);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred deleting the portfolio share", ex);
+            }
+            return result;
+        }
+
     }
 }

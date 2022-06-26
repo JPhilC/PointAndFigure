@@ -50,6 +50,9 @@ namespace PnFDesktop.ViewModels
             SimpleIoc.Default.Register<OpenIndexChartViewModel>();
             SimpleIoc.Default.Register<MarketSummaryViewModel>();
             SimpleIoc.Default.Register<SharesSummaryViewModel>();
+            SimpleIoc.Default.Register<CreatePortfolioViewModel>();
+            SimpleIoc.Default.Register<PortfolioManagementViewModel>();
+            SimpleIoc.Default.Register<PortfolioSummaryViewModel>();
             SimpleIoc.Default.Register<FilteredSharesSummaryViewModel>();
         }
 
@@ -141,6 +144,45 @@ namespace PnFDesktop.ViewModels
             return vm;
         }
 
+        public static PortfolioManagementViewModel GetPortfolioManagementViewModel(Portfolio portfolio)
+        {
+            string key = $"{Constants.PortfolioManagement}_{portfolio.Id}";
+            PortfolioManagementViewModel vm = null;
+
+            if (SimpleIoc.Default.IsRegistered<PortfolioManagementViewModel>(key))
+            {
+                // If the viewmodel is already registered get it.
+                vm = SimpleIoc.Default.GetInstance<PortfolioManagementViewModel>(key);
+            }
+            else
+            {
+                // Otherwise create it and register it before returning
+                vm = new PortfolioManagementViewModel(SimpleIoc.Default.GetInstance<IDataService>());
+                vm.Portfolio = portfolio;
+                SimpleIoc.Default.Register(() => vm, key, true);
+            }
+            return vm;
+        }
+
+        public static PortfolioSummaryViewModel GetPortfolioSummaryViewModel(Portfolio portfolio)
+        {
+            string key = $"{Constants.PortfolioManagement}_{portfolio.Id}";
+            PortfolioSummaryViewModel vm = null;
+
+            if (SimpleIoc.Default.IsRegistered<PortfolioSummaryViewModel>(key))
+            {
+                // If the viewmodel is already registered get it.
+                vm = SimpleIoc.Default.GetInstance<PortfolioSummaryViewModel>(key);
+            }
+            else
+            {
+                // Otherwise create it and register it before returning
+                vm = new PortfolioSummaryViewModel(SimpleIoc.Default.GetInstance<IDataService>());
+                vm.Portfolio = portfolio;
+                SimpleIoc.Default.Register(() => vm, key, true);
+            }
+            return vm;
+        }
 
         /// <summary>
         /// Viewmodel for Page Layout window.
@@ -207,6 +249,28 @@ namespace PnFDesktop.ViewModels
             get
             {
                 return SimpleIoc.Default.GetInstance<FilteredSharesSummaryViewModel>();
+            }
+        }
+
+        /// <summary>
+        /// Viewmodel for the Portfolio Summary page
+        /// </summary>
+        public PortfolioManagementViewModel PortfolioManagementViewModel
+        {
+            get
+            {
+                return SimpleIoc.Default.GetInstance<PortfolioManagementViewModel>();
+            }
+        }
+
+        /// <summary>
+        /// Viewmodel for the Portfolio Summary page
+        /// </summary>
+        public PortfolioSummaryViewModel PortfolioSummaryViewModel
+        {
+            get
+            {
+                return SimpleIoc.Default.GetInstance<PortfolioSummaryViewModel>();
             }
         }
 

@@ -16,7 +16,9 @@ namespace PnFDesktop.Classes
         {
             if (value is IPointAndFigureChartViewModel 
                 || value is MarketSummaryViewModel
-                || value is FilteredSharesSummaryViewModel)
+                || value is FilteredSharesSummaryViewModel
+                || value is PortfolioManagementViewModel
+                || value is PortfolioSummaryViewModel)
             {
                 return value;
             }
@@ -29,7 +31,9 @@ namespace PnFDesktop.Classes
         {
             if (value is IPointAndFigureChartViewModel
                 || value is MarketSummaryViewModel
-                || value is FilteredSharesSummaryViewModel)
+                || value is FilteredSharesSummaryViewModel
+                || value is PortfolioManagementViewModel
+                || value is PortfolioSummaryViewModel)
             {
                 return value;
             }

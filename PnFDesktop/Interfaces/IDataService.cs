@@ -15,6 +15,10 @@ namespace PnFDesktop.Interfaces
 
         Task<IEnumerable<ShareDTO>> GetSharesAsync();
 
+        Task<Share> GetShareAsync(string tidm);
+
+        Task<IEnumerable<PortfolioShareDTO>> GetPortfolioSharesAsync(Portfolio portfolio);
+
         Task<IEnumerable<IndexDTO>> GetIndicesAsync();
 
         Task<IEnumerable<DayDTO>> GetMarketAvailableDates(DateTime cutOff);
@@ -23,7 +27,18 @@ namespace PnFDesktop.Interfaces
         Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO);
 
         Task<IEnumerable<ShareSummaryDTO>> GetEventFilteredSharesAsync(ShareEvents eventFilter, DateTime day, string exchangeCode);
+        
+        Task<IEnumerable<Portfolio>> GetPortfoliosAsync();
+
+        Task<Portfolio?> GetPortfolioAsync(Guid itemId);
+
+        Task<IEnumerable<ShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day);
 
         Task<IEnumerable<string>> GetExchangeCodesAsync();
+
+        Task<bool> DeletePortfolioShareAsync(PortfolioShare portfolioShare);
+
+        Task<bool> UpdatePortfolioAsync(Portfolio newPortfolio);
+
     }
 }

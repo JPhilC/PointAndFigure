@@ -49,6 +49,16 @@ namespace PnFDesktop.Classes
                 return DocumentViewTemplate!;
             }
 
+            if (item is PortfolioManagementViewModel)
+            {
+                return DocumentViewTemplate!;
+            }
+
+            if (item is PortfolioSummaryViewModel)
+            {
+                return DocumentViewTemplate!;
+            }
+
             if (item is MessagesViewModel)
                 return MessagesViewTemplate!;
 

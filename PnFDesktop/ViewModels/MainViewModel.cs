@@ -28,6 +28,12 @@ namespace PnFDesktop.ViewModels
 
         public ObservableCollection<DayDTO> AvailableDays { get; } = new ObservableCollection<DayDTO>();
 
+        public ObservableCollection<Portfolio> Portfolios { get; } = new ObservableCollection<Portfolio>();
+
+        public bool PortfoliosAvailable
+        {
+            get => Portfolios.Any();
+        }
 
         public Action ExitApplicationAction { get; set; }
 
@@ -41,7 +47,8 @@ namespace PnFDesktop.ViewModels
             Task.WaitAll(new Task[]
             {
             Task.Run(async ()=>await LoadExchanges()),
-            Task.Run(async ()=>await LoadAvailableDays())
+            Task.Run(async ()=>await LoadAvailableDays()),
+            Task.Run(async ()=>await LoadPortfolios())
             });
 
             if (!DesignerLibrary.IsInDesignMode)
@@ -284,6 +291,19 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        private async Task LoadPortfolios()
+        {
+            var portfolios = await _dataService.GetPortfoliosAsync();
+            if (portfolios.Any())
+            {
+                Portfolios.Clear();
+                foreach (var portfolio in portfolios)
+                {
+                    Portfolios.Add(portfolio);
+                }
+            }
+            OnPropertyChanged("PortfoliosAvailable");
+        }
 
         public void OpenPointAndFigureChart(PnFChart pnfChart, bool makeActive = false, bool forceRefresh = false)
         {
@@ -337,6 +357,53 @@ namespace PnFDesktop.ViewModels
             // source for viewpnfCharts.
             FilteredSharesSummaryViewModel summaryViewModel = SimpleIoc.Default.GetInstance<FilteredSharesSummaryViewModel>();
             if (summaryViewModel is PaneViewModel paneViewModel)
+            {
+                if (!this.DocumentPanes.Contains(paneViewModel))
+                {
+                    this.DocumentPanes.Add(paneViewModel);
+                }
+                ActiveDocument = paneViewModel;
+            }
+        }
+
+        public void CreatePortfolio()
+        {
+            CreatePortfolioViewModel createVm = SimpleIoc.Default.GetInstance<CreatePortfolioViewModel>();
+            Window dialog = new CreatePortfolioWindow(createVm);
+            dialog.Owner = Application.Current.MainWindow;
+            bool? dialogResult = dialog.ShowDialog();
+
+            if (dialogResult.HasValue && dialogResult.Value == true)
+            {
+                // Open the portfolio management pane for the newly created portfolio
+                ManagePortfolio(createVm.Portfolio!.Id!);
+            }
+        }
+
+        public void ManagePortfolio(Guid portfolioId)
+        {
+            Portfolio? portfolio = null;
+            Task.WaitAll(new Task[] {
+                        Task.Run(async () => {portfolio = await _dataService.GetPortfolioAsync(portfolioId);})
+                        });
+            if (portfolio != null)
+            {
+                PortfolioManagementViewModel portfolioManagementViewModel = ViewModelLocator.GetPortfolioManagementViewModel(portfolio);
+                if (portfolioManagementViewModel is PaneViewModel paneViewModel)
+                {
+                    if (!this.DocumentPanes.Contains(paneViewModel))
+                    {
+                        this.DocumentPanes.Add(paneViewModel);
+                    }
+                    ActiveDocument = paneViewModel;
+                }
+            }
+        }
+
+        public void ViewPortfolio(Portfolio portfolio)
+        {
+            PortfolioSummaryViewModel portfolioVm = ViewModelLocator.GetPortfolioSummaryViewModel(portfolio);
+            if (portfolioVm is PaneViewModel paneViewModel)
             {
                 if (!this.DocumentPanes.Contains(paneViewModel))
                 {
@@ -481,6 +548,45 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        private RelayCommand _createPortfolioCommand;
+
+        /// <summary>
+        /// Creates a new portfolio
+        /// </summary>
+        public RelayCommand CreatePortfolioCommand
+        {
+            get
+            {
+                return _createPortfolioCommand
+                       ?? (_createPortfolioCommand = new RelayCommand(
+                           () =>
+                           {
+                               CreatePortfolio();
+                           }));
+            }
+        }
+
+        private RelayCommand<Portfolio> _managePortfolioCommand;
+
+        /// <summary>
+        /// Creates a new portfolio
+        /// </summary>
+        public RelayCommand<Portfolio> ManagePortfolioCommand
+        {
+            get
+            {
+                return _managePortfolioCommand
+                       ?? (_managePortfolioCommand = new RelayCommand<Portfolio>(
+                           (portfolio) =>
+                           {
+                               if (portfolio != null)
+                               {
+                                   ManagePortfolio(portfolio.Id);
+                               }
+                           }));
+            }
+        }
+
         private RelayCommand _printPointAndFigureChartCommand;
 
         /// <summary>
@@ -603,9 +709,28 @@ namespace PnFDesktop.ViewModels
                 }
                 return vm;
             }
+            else if (splitId[0] == Constants.PortfolioManagement)
+            {
+                if (splitId.Length == 2)
+                {
+                    Guid objectId = new Guid(splitId[1]);
+                    Portfolio? portfolio = null;
+                    Task.WaitAll(new Task[] {
+                        Task.Run(async () => {portfolio = await _dataService.GetPortfolioAsync(objectId);})
+                        });
+                    if (portfolio != null)
+                    {
+                        PortfolioManagementViewModel portfolioManagementViewModel = ViewModelLocator.GetPortfolioManagementViewModel(portfolio);
+                        if (!this.DocumentPanes.Contains(portfolioManagementViewModel))
+                        {
+                            this.DocumentPanes.Add(portfolioManagementViewModel);
+                        }
+                        return portfolioManagementViewModel;
+                    }
+                }
+            }
             return null;
         }
-
 
     }
 }

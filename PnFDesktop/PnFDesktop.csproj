@@ -21,6 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Images\icons8-plus-math-32.png" />
+    <None Remove="Resources\Images\icons8-trash-can-32.png" />
     <None Remove="Resources\Images\P_FDesktop32.ico" />
   </ItemGroup>
 
@@ -30,6 +32,8 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </Content>
+    <Resource Include="Resources\Images\icons8-plus-math-32.png" />
+    <Resource Include="Resources\Images\icons8-trash-can-32.png" />
     <Resource Include="Resources\Images\P_FDesktop32.ico" />
   </ItemGroup>
 
@@ -49,7 +53,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controls\CreatePortfolioWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Controls\PortfolioManagementView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Controls\FilteredSharesSummaryView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Controls\PortFolioSummaryView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Controls\SharesSummaryView.xaml.cs">
@@ -71,7 +84,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="Controls\CreatePortfolioWindow.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\PortfolioManagementView.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Controls\FilteredSharesSummaryView.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\PortFolioSummaryView.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>

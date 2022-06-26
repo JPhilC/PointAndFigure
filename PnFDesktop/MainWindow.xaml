@@ -22,7 +22,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-                <Menu>
+        <Menu>
             <MenuItem Header="File">
                 <MenuItem Header="Open">
                     <MenuItem Header="Market Values Summary" Command="{Binding OpenMarketSummaryCommand}" ToolTip="Opens the market and sector summary page"/>
@@ -36,6 +36,28 @@
                 <Separator/>
                 <MenuItem Header="Exit" Command="{Binding ExitCommand}" ToolTip="Closes the application."/>
 
+            </MenuItem>
+            <MenuItem Header="Portfolios">
+                <MenuItem Header="Create" Command="{Binding CreatePortfolioCommand}" ToolTip="Creates a new portfolio"/>
+                <Separator Visibility="{Binding PortfoliosAvailable, Converter={StaticResource BoolToVis}}"/>
+                <MenuItem Header="Manage" ItemsSource="{Binding Portfolios}" Visibility="{Binding PortfoliosAvailable, Converter={StaticResource BoolToVis}}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type MenuItem}">
+                            <Setter Property="Header" Value="{Binding Path=Name}" />
+                            <Setter Property="Command" Value="{Binding DataContext.ManagePortfolioCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                            <Setter Property="CommandParameter" Value="{Binding .}" />
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+                <MenuItem Header="View" ItemsSource="{Binding Portfolios}" Visibility="{Binding PortfoliosAvailable, Converter={StaticResource BoolToVis}}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type MenuItem}">
+                            <Setter Property="Header" Value="{Binding Path=Name}" />
+                            <Setter Property="Command" Value="{Binding DataContext.ViewPortfolioCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                            <Setter Property="CommandParameter" Value="{Binding .}" />
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="Tools">
                 <MenuItem Header="Messages" IsChecked="{Binding MessagePaneVm.IsVisible, Mode=TwoWay}" IsCheckable="True" ToolTip="Show or hide the messages pane."/>
@@ -75,9 +97,10 @@
                     <classes:PanesTemplateSelector.MessagesViewTemplate>
                         <DataTemplate>
                             <TextBox Text="{Binding Messages, Mode=OneWay}" IsReadOnly="True" 
-                              IsReadOnlyCaretVisible="True" 
-                              VerticalScrollBarVisibility="Auto" 
-                              TextChanged="TextBox_TextChanged">
+                                    IsReadOnlyCaretVisible="True" 
+                                    VerticalScrollBarVisibility="Auto"
+                                    Height="Auto"
+                                    TextChanged="TextBox_TextChanged">
                                 <TextBox.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="Clear Messages" Command="{Binding ClearMessagesCommand}" />

@@ -9,6 +9,11 @@ namespace PnFDesktop.Services
 {
     public class DesignDataService : IDataService
     {
+        public Task<bool> DeletePortfolioShareAsync(PortfolioShare portfolioShare)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IEnumerable<ShareSummaryDTO>> GetEventFilteredSharesAsync(ShareEvents eventFilter, DateTime day, string exchangeCode)
         {
             throw new NotImplementedException();
@@ -110,12 +115,42 @@ namespace PnFDesktop.Services
             throw new NotImplementedException();
         }
 
+        public Task<Portfolio?> GetPortfolioAsync(Guid itemId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<Portfolio>> GetPortfoliosAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<PortfolioShareDTO>> GetPortfolioSharesAsync(Portfolio portfolio)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Share> GetShareAsync(string tidm)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IEnumerable<ShareDTO>> GetSharesAsync()
         {
             throw new NotImplementedException();
         }
 
         public Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> UpdatePortfolioAsync(Portfolio newPortfolio)
         {
             throw new NotImplementedException();
         }

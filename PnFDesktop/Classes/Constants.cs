@@ -14,6 +14,8 @@ namespace PnFDesktop.Classes
         public const string PointAndFigureChart = "PnFChart"; 
         public const string MarketSummary = "MarketSummary";
         public const string SharesSummary = "SharesSummary";
+        public const string PortfolioSummary = "PortfolioSummary";
+        public const string PortfolioManagement = "PortfolioManagement";
         public const string FilteredSharesSummary = "FilteredSharesSummary";
 
         #region Notifications ...
@@ -21,6 +23,9 @@ namespace PnFDesktop.Classes
         public const string MarketSummaryUILoaded = "MarketSummaryUILoaded";
         public const string RefreshMarketSummary = "RefreshMarketSummary";
         public const string SharesSummaryUILoaded = "SharesSummaryUILoaded";
+        public const string PortfolioManagementUILoaded = "PortfolioManagementUILoaded";
+        public const string PortfolioSummaryUILoaded = "PortfolioSummaryUILoaded";
+        public const string RefreshPortfolioSummary = "RefreshPortfolioSummary";
         public const string FilteredSharesSummaryUILoaded = "FilteredSharesSummaryUILoaded";
         public const string RefreshFilteredSharesSummary = "RefreshFilteredSharesSummary";
         public const string OpenSharesSummaryPage = "OpenSharesSummaryPage";

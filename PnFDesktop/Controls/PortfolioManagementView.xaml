@@ -1,0 +1,93 @@
+﻿<UserControl x:Class="PnFDesktop.Controls.PortfolioManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:PnFDesktop.Controls"
+             xmlns:model="clr-namespace:PnFData.Model;assembly=PnFData"
+             xmlns:classes="clr-namespace:PnFDesktop.Classes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="1500"
+             d:DataContext="{Binding PortfolioManagementViewModel, Source={StaticResource Locator}}"
+             Loaded="UserControl_Loaded">
+    <UserControl.Resources>
+        <CollectionViewSource x:Key="cvsShares" Source="{Binding PortfolioShares}"/>
+        <classes:FlagToVisibilityConverter x:Key="FlagConverter"/>
+        <classes:FlagToBooleanConverter x:Key="FlagBooleanConverter"/>
+    </UserControl.Resources>
+    <Grid Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Portfolio Name"/>
+        <TextBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="7"  Text="{Binding Name}" Width="300" HorizontalAlignment="Left"/>
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Share TIDM"/>
+        <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding ShareTidm}" Style="{StaticResource TextBoxShort}"/>
+        <TextBlock Grid.Row="2" Grid.Column="4" Text="Qty"/>
+        <TextBox Grid.Row="2" Grid.Column="6" Text="{Binding HoldingQty, StringFormat={}{0:N4}}" Style="{StaticResource TextBoxShort}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="8" Text="{Binding SelectedShare.Name}" Width="400"/>
+        <Button Grid.Row="2" Grid.Column="10" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Padding="0"
+                Command="{Binding AddSelectedShareCommand}">
+            <Button.ToolTip>
+                <TextBlock Text="Add the current share to the portfolio." />
+            </Button.ToolTip>
+            <Image Source="pack://application:,,,/Resources/Images/icons8-plus-math-32.png" 
+                                StretchDirection="Both"  Width="18" Height="18"/>
+        </Button>
+
+        <!--<local:ShareListDataGrid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="8"/>-->
+        <DataGrid Grid.Row="12" Grid.ColumnSpan="11"
+                  ItemsSource="{Binding Source={StaticResource cvsShares}}"
+                  SelectedItem="{Binding SelectedPortfolioShare}"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  AutoGenerateColumns="False"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Padding="0" 
+                                        Command="{Binding DataContext.DeletePorfolioShareCommand, RelativeSource={RelativeSource AncestorType=local:PortfolioManagementView}}"
+                                        CommandParameter="{Binding}" Margin="10,0">
+                                <Button.ToolTip>
+                                    <TextBlock Text="Delete the current share." />
+                                </Button.ToolTip>
+                                <Image Source="pack://application:,,,/Resources/Images/icons8-trash-can-32.png" 
+                                StretchDirection="Both"  Width="18" Height="18"/>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="TIDM" Binding="{Binding Tidm}"  IsReadOnly="True" Width="80"/>
+                <DataGridTextColumn Header="Holding" Binding="{Binding Holding, StringFormat={}{0:N4}}"  IsReadOnly="True"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="300" IsReadOnly="True"/>
+            </DataGrid.Columns>
+            </DataGrid>
+
+
+    </Grid>
+</UserControl>
