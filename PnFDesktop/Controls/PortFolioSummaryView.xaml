@@ -6,11 +6,13 @@
              xmlns:local="clr-namespace:PnFDesktop.Controls"
              xmlns:model="clr-namespace:PnFData.Model;assembly=PnFData"
              xmlns:classes="clr-namespace:PnFDesktop.Classes"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="1500"
              d:DataContext="{Binding PortfolioSummaryViewModel, Source={StaticResource Locator}}"
              Loaded="UserControl_Loaded">
     <UserControl.Resources>
+        <CollectionViewSource x:Key="cvsDays" Source="{Binding Days}"/>
         <CollectionViewSource x:Key="cvsShares" Source="{Binding Shares}"/>
         <classes:FlagToVisibilityConverter x:Key="FlagConverter"/>
         <classes:FlagToBooleanConverter x:Key="FlagBooleanConverter"/>
@@ -20,16 +22,41 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="5"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="5"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding SelectedDay, StringFormat={}{0:D}}"/>
-        <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Portfolio.Name}"/>
-        <local:ShareListDataGrid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"/>
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Portfolio"/>
+        <TextBlock Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="6" Text="{Binding Portfolio.Name}"/>
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Selected Date"/>
+        <ComboBox Grid.Row="2" Grid.Column="2" 
+                      SelectedItem="{Binding SelectedDay, UpdateSourceTrigger=PropertyChanged}" 
+                      ItemsSource="{Binding Source={StaticResource cvsDays}}"
+                      Width="100" HorizontalAlignment="Left">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DayDescription}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Grid.Row="2" Grid.Column="4" Text="Custom Date"/>
+        <xctk:DateTimePicker  Grid.Row="2" Grid.Column="6"  
+                              Value="{Binding CustomDay}"
+                              Format="ShortDate"
+                              Width="100"
+                              ShowButtonSpinner="False"
+                              TimePickerVisibility="Collapsed"
+                              AutoCloseCalendar="True"/>
+        <local:ShareListDataGrid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="8"/>
 
     </Grid>
 </UserControl>

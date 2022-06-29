@@ -271,68 +271,136 @@ namespace PnFDesktop.Services
             {
                 using (var db = new PnFDataContext())
                 {
-                    indices = await (from iv in db.IndexValues
-                                     join i in db.Indices on iv.IndexId equals i.Id
-                                     from ii in db.IndexIndicators.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
-                                     from irs in db.IndexRSIValues.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
-                                     where iv.Day == day && i.ExchangeCode == exchangeCode
-                                     orderby i.SuperSector, i.ExchangeCode, i.ExchangeSubCode
-                                     select new MarketSummaryDTO()
-                                     {
-                                         Id = i.Id,
-                                         Day = day,
-                                         ExchangeCode = i.ExchangeCode,
-                                         ExchangeSubCode = i.ExchangeSubCode,
-                                         SuperSector = i.SuperSector,
-                                         Description = (i.SuperSector == null ?
-                                              $"Market - {i.ExchangeCode}/{i.ExchangeSubCode}" :
-                                              $"Sector - {i.ExchangeCode}/{i.ExchangeSubCode}, {i.SuperSector}"),
-                                         Value = iv.Value,
-                                         RsValue = irs.Value,
-                                         Contributors = iv.Contributors,
-                                         BullishPercent = iv.BullishPercent,
-                                         PercentAboveEma10 = iv.PercentAboveEma10,
-                                         PercentAboveEma30 = iv.PercentAboveEma30,
-                                         PercentRsBuy = iv.PercentRsBuy,
-                                         PercentRsRising = iv.PercentRsRising,
-                                         PercentPositiveTrend = iv.PercentPositiveTrend,
-                                         HighLowIndexValue = iv.HighLowEma10,
-                                         Rising = ii.Rising,
-                                         Buy = ii.Buy,
-                                         RsRising = ii.RsRising,
-                                         RsBuy = ii.RsBuy,
-                                         Falling = ii.Falling,
-                                         Sell = ii.Sell,
-                                         RsFalling = ii.RsFalling,
-                                         RsSell = ii.RsSell,
-                                         BullishPercentRising = ii.BullishPercentRising,
-                                         PercentRSBuyRising = ii.PercentRSBuyRising,
-                                         PercentRsRisingRising = ii.PercentRsRisingRising,
-                                         PercentPositiveTrendRising = ii.PercentPositiveTrendRising,
-                                         PercentAbove30EmaRising = ii.PercentAbove30EmaRising,
-                                         PercentAbove10EmaRising = ii.PercentAbove10EmaRising,
-                                         BullishPercentFalling = ii.BullishPercentFalling,
-                                         PercentRSBuyFalling = ii.PercentRSBuyFalling,
-                                         PercentRsRisingFalling = ii.PercentRsRisingFalling,
-                                         PercentPositiveTrendFalling = ii.PercentPositiveTrendFalling,
-                                         PercentAbove30EmaFalling = ii.PercentAbove30EmaFalling,
-                                         PercentAbove10EmaFalling = ii.PercentAbove10EmaFalling,
-                                         HighLowIndexRising = ii.HighLowIndexRising,
-                                         HighLowIndexFalling = ii.HighLowIndexFalling,
-                                         NewEvents = ii.NewEvents,
-                                         Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.PercentOf10Gt30) == (int)IndexEvents.PercentOf10Gt30 ? "Percent of 10 (Above 30)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.PercentOf30Gt30) == (int)IndexEvents.PercentOf30Gt30 ? "Percent of 30 (Above 30)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.HighLowGt30) == (int)IndexEvents.HighLowGt30 ? "High-Low (Above 30)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.PercentOf10Lt70) == (int)IndexEvents.PercentOf10Lt70 ? "Percent of 10 (Below 70)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.PercentOf30Lt70) == (int)IndexEvents.PercentOf30Lt70 ? "Percent of 30 (Below 70)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.HighLowLt70) == (int)IndexEvents.HighLowLt70 ? "High-Low (Below 70)" : "")
-                                     }).ToListAsync();
+                    if (exchangeCode == "<All>")
+                    {
+                        indices = await (from iv in db.IndexValues
+                                         join i in db.Indices on iv.IndexId equals i.Id
+                                         from ii in db.IndexIndicators.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
+                                         from irs in db.IndexRSIValues.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
+                                         where iv.Day == day 
+                                         orderby i.SuperSector, i.ExchangeCode, i.ExchangeSubCode
+                                         select new MarketSummaryDTO()
+                                         {
+                                             Id = i.Id,
+                                             Day = day,
+                                             ExchangeCode = i.ExchangeCode,
+                                             ExchangeSubCode = i.ExchangeSubCode,
+                                             SuperSector = i.SuperSector,
+                                             Description = (i.SuperSector == null ?
+                                                  $"Market - {i.ExchangeCode}/{i.ExchangeSubCode}" :
+                                                  $"Sector - {i.ExchangeCode}/{i.ExchangeSubCode}, {i.SuperSector}"),
+                                             Value = iv.Value,
+                                             RsValue = irs.Value,
+                                             Contributors = iv.Contributors,
+                                             BullishPercent = iv.BullishPercent,
+                                             PercentAboveEma10 = iv.PercentAboveEma10,
+                                             PercentAboveEma30 = iv.PercentAboveEma30,
+                                             PercentRsBuy = iv.PercentRsBuy,
+                                             PercentRsRising = iv.PercentRsRising,
+                                             PercentPositiveTrend = iv.PercentPositiveTrend,
+                                             HighLowIndexValue = iv.HighLowEma10,
+                                             Rising = ii.Rising,
+                                             Buy = ii.Buy,
+                                             RsRising = ii.RsRising,
+                                             RsBuy = ii.RsBuy,
+                                             Falling = ii.Falling,
+                                             Sell = ii.Sell,
+                                             RsFalling = ii.RsFalling,
+                                             RsSell = ii.RsSell,
+                                             BullishPercentRising = ii.BullishPercentRising,
+                                             PercentRSBuyRising = ii.PercentRSBuyRising,
+                                             PercentRsRisingRising = ii.PercentRsRisingRising,
+                                             PercentPositiveTrendRising = ii.PercentPositiveTrendRising,
+                                             PercentAbove30EmaRising = ii.PercentAbove30EmaRising,
+                                             PercentAbove10EmaRising = ii.PercentAbove10EmaRising,
+                                             BullishPercentFalling = ii.BullishPercentFalling,
+                                             PercentRSBuyFalling = ii.PercentRSBuyFalling,
+                                             PercentRsRisingFalling = ii.PercentRsRisingFalling,
+                                             PercentPositiveTrendFalling = ii.PercentPositiveTrendFalling,
+                                             PercentAbove30EmaFalling = ii.PercentAbove30EmaFalling,
+                                             PercentAbove10EmaFalling = ii.PercentAbove10EmaFalling,
+                                             HighLowIndexRising = ii.HighLowIndexRising,
+                                             HighLowIndexFalling = ii.HighLowIndexFalling,
+                                             NewEvents = ii.NewEvents,
+                                             Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.PercentOf10Gt30) == (int)IndexEvents.PercentOf10Gt30 ? "Percent of 10 (Above 30)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.PercentOf30Gt30) == (int)IndexEvents.PercentOf30Gt30 ? "Percent of 30 (Above 30)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.HighLowGt30) == (int)IndexEvents.HighLowGt30 ? "High-Low (Above 30)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.PercentOf10Lt70) == (int)IndexEvents.PercentOf10Lt70 ? "Percent of 10 (Below 70)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.PercentOf30Lt70) == (int)IndexEvents.PercentOf30Lt70 ? "Percent of 30 (Below 70)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.HighLowLt70) == (int)IndexEvents.HighLowLt70 ? "High-Low (Below 70)" : "")
+                                         }).ToListAsync();
+                    }
+                    else
+                    {
+                        indices = await (from iv in db.IndexValues
+                                         join i in db.Indices on iv.IndexId equals i.Id
+                                         from ii in db.IndexIndicators.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
+                                         from irs in db.IndexRSIValues.Where(r => r.IndexId == iv.IndexId && r.Day == iv.Day).DefaultIfEmpty()
+                                         where iv.Day == day && i.ExchangeCode == exchangeCode
+                                         orderby i.SuperSector, i.ExchangeCode, i.ExchangeSubCode
+                                         select new MarketSummaryDTO()
+                                         {
+                                             Id = i.Id,
+                                             Day = day,
+                                             ExchangeCode = i.ExchangeCode,
+                                             ExchangeSubCode = i.ExchangeSubCode,
+                                             SuperSector = i.SuperSector,
+                                             Description = (i.SuperSector == null ?
+                                                  $"Market - {i.ExchangeCode}/{i.ExchangeSubCode}" :
+                                                  $"Sector - {i.ExchangeCode}/{i.ExchangeSubCode}, {i.SuperSector}"),
+                                             Value = iv.Value,
+                                             RsValue = irs.Value,
+                                             Contributors = iv.Contributors,
+                                             BullishPercent = iv.BullishPercent,
+                                             PercentAboveEma10 = iv.PercentAboveEma10,
+                                             PercentAboveEma30 = iv.PercentAboveEma30,
+                                             PercentRsBuy = iv.PercentRsBuy,
+                                             PercentRsRising = iv.PercentRsRising,
+                                             PercentPositiveTrend = iv.PercentPositiveTrend,
+                                             HighLowIndexValue = iv.HighLowEma10,
+                                             Rising = ii.Rising,
+                                             Buy = ii.Buy,
+                                             RsRising = ii.RsRising,
+                                             RsBuy = ii.RsBuy,
+                                             Falling = ii.Falling,
+                                             Sell = ii.Sell,
+                                             RsFalling = ii.RsFalling,
+                                             RsSell = ii.RsSell,
+                                             BullishPercentRising = ii.BullishPercentRising,
+                                             PercentRSBuyRising = ii.PercentRSBuyRising,
+                                             PercentRsRisingRising = ii.PercentRsRisingRising,
+                                             PercentPositiveTrendRising = ii.PercentPositiveTrendRising,
+                                             PercentAbove30EmaRising = ii.PercentAbove30EmaRising,
+                                             PercentAbove10EmaRising = ii.PercentAbove10EmaRising,
+                                             BullishPercentFalling = ii.BullishPercentFalling,
+                                             PercentRSBuyFalling = ii.PercentRSBuyFalling,
+                                             PercentRsRisingFalling = ii.PercentRsRisingFalling,
+                                             PercentPositiveTrendFalling = ii.PercentPositiveTrendFalling,
+                                             PercentAbove30EmaFalling = ii.PercentAbove30EmaFalling,
+                                             PercentAbove10EmaFalling = ii.PercentAbove10EmaFalling,
+                                             HighLowIndexRising = ii.HighLowIndexRising,
+                                             HighLowIndexFalling = ii.HighLowIndexFalling,
+                                             NewEvents = ii.NewEvents,
+                                             Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.PercentOf10Gt30) == (int)IndexEvents.PercentOf10Gt30 ? "Percent of 10 (Above 30)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.PercentOf30Gt30) == (int)IndexEvents.PercentOf30Gt30 ? "Percent of 30 (Above 30)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.HighLowGt30) == (int)IndexEvents.HighLowGt30 ? "High-Low (Above 30)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.PercentOf10Lt70) == (int)IndexEvents.PercentOf10Lt70 ? "Percent of 10 (Below 70)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.PercentOf30Lt70) == (int)IndexEvents.PercentOf30Lt70 ? "Percent of 30 (Below 70)" : "")
+                                                + ((ii.NewEvents & (int)IndexEvents.HighLowLt70) == (int)IndexEvents.HighLowLt70 ? "High-Low (Below 70)" : "")
+                                         }).ToListAsync();
+                    }
 
                 }
             }

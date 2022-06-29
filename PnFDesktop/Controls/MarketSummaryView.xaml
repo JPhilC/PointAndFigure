@@ -26,6 +26,10 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -55,7 +59,17 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <DataGrid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="8"
+        <TextBlock Grid.Row="0" Grid.Column="8" Text="Custom Date"/>
+        <xctk:DateTimePicker  Grid.Row="0" Grid.Column="10"  
+                              Value="{Binding CustomDay}"
+                              Format="ShortDate"
+                              Width="100"
+                              ShowButtonSpinner="False"
+                              TimePickerVisibility="Collapsed"
+                              AutoCloseCalendar="True"/>
+        <!--<local:ShareListDataGrid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="12"/>-->
+
+        <DataGrid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="12"
                   ItemsSource="{Binding Source={StaticResource cvsIndices}}"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
@@ -231,7 +245,7 @@
                                                    CommandParameter="{Binding}">
                                             <TextBlock Text="{Binding PercentAboveEma10, StringFormat={}{0:N2}}"/>
                                             <Hyperlink.ToolTip>
-                                                <TextBlock Text="Open % of shares above 10 EMA P &amp; F Chart" />
+                                                <TextBlock Text="Open % of shares above their own 10 week EMA P &amp; F Chart" />
                                             </Hyperlink.ToolTip>
                                      </Hyperlink>
                                 </TextBlock>
@@ -270,7 +284,7 @@
                                                    CommandParameter="{Binding}">
                                             <TextBlock Text="{Binding PercentAboveEma30, StringFormat={}{0:N2}}"/>
                                             <Hyperlink.ToolTip>
-                                                <TextBlock Text="Open % of shares above 30 EMA P &amp; F Chart" />
+                                                <TextBlock Text="Open % of shares above their own 30 week EMA P &amp; F Chart" />
                                             </Hyperlink.ToolTip>
                                      </Hyperlink>
                                 </TextBlock>

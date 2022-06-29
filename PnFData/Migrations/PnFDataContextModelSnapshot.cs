@@ -92,7 +92,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("ShareId");
 
-                    b.ToTable("EodPrices");
+                    b.ToTable("EodPrices", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.Index", b =>
@@ -132,7 +132,7 @@ namespace PnFData.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Indices");
+                    b.ToTable("Indices", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.IndexChart", b =>
@@ -170,7 +170,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("IndexId");
 
-                    b.ToTable("IndexCharts");
+                    b.ToTable("IndexCharts", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.IndexIndicator", b =>
@@ -282,7 +282,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("IndexId");
 
-                    b.ToTable("IndexIndicators");
+                    b.ToTable("IndexIndicators", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.IndexRSI", b =>
@@ -322,7 +322,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("IndexId");
 
-                    b.ToTable("IndexRSIValues");
+                    b.ToTable("IndexRSIValues", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.IndexValue", b =>
@@ -389,7 +389,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("IndexId");
 
-                    b.ToTable("IndexValues");
+                    b.ToTable("IndexValues", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.PnFBox", b =>
@@ -439,7 +439,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("PnFColumnId");
 
-                    b.ToTable("PnFBoxes");
+                    b.ToTable("PnFBoxes", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.PnFChart", b =>
@@ -488,7 +488,7 @@ namespace PnFData.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PnFCharts");
+                    b.ToTable("PnFCharts", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.PnFColumn", b =>
@@ -547,7 +547,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("PnFChartId");
 
-                    b.ToTable("PnFColumns");
+                    b.ToTable("PnFColumns", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.PnFSignal", b =>
@@ -588,85 +588,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("PnFChartId");
 
-                    b.ToTable("PnFSignals");
-                });
-
-            modelBuilder.Entity("PnFData.Model.Portfolio", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
-
-                    b.Property<DateTimeOffset?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Portfolios");
-                });
-
-            modelBuilder.Entity("PnFData.Model.PortfolioShare", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newid()");
-
-                    b.Property<DateTimeOffset?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<double>("Holding")
-                        .HasColumnType("float");
-
-                    b.Property<Guid>("PortfolioId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ProfolioId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ShareId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfolioId");
-
-                    b.HasIndex("ShareId");
-
-                    b.ToTable("PortfolioShares");
+                    b.ToTable("PnFSignals", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.Share", b =>
@@ -753,7 +675,7 @@ namespace PnFData.Migrations
                     b.HasIndex("ShareDataSource", "ShareDataSourceId")
                         .IsUnique();
 
-                    b.ToTable("Shares");
+                    b.ToTable("Shares", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.ShareChart", b =>
@@ -791,7 +713,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("ShareId");
 
-                    b.ToTable("ShareCharts");
+                    b.ToTable("ShareCharts", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.ShareIndicator", b =>
@@ -888,7 +810,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("ShareId");
 
-                    b.ToTable("ShareIndicators");
+                    b.ToTable("ShareIndicators", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.ShareRSI", b =>
@@ -931,7 +853,7 @@ namespace PnFData.Migrations
 
                     b.HasIndex("ShareId");
 
-                    b.ToTable("ShareRSIValues");
+                    b.ToTable("ShareRSIValues", (string)null);
                 });
 
             modelBuilder.Entity("PnFData.Model.Eod", b =>
@@ -1030,25 +952,6 @@ namespace PnFData.Migrations
                     b.Navigation("PnFChart");
                 });
 
-            modelBuilder.Entity("PnFData.Model.PortfolioShare", b =>
-                {
-                    b.HasOne("PnFData.Model.Portfolio", "Portfolio")
-                        .WithMany("Shares")
-                        .HasForeignKey("ProfolioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PnFData.Model.Share", "Share")
-                        .WithMany()
-                        .HasForeignKey("ShareId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Portfolio");
-
-                    b.Navigation("Share");
-                });
-
             modelBuilder.Entity("PnFData.Model.ShareChart", b =>
                 {
                     b.HasOne("PnFData.Model.PnFChart", "Chart")
@@ -1115,11 +1018,6 @@ namespace PnFData.Migrations
             modelBuilder.Entity("PnFData.Model.PnFColumn", b =>
                 {
                     b.Navigation("Boxes");
-                });
-
-            modelBuilder.Entity("PnFData.Model.Portfolio", b =>
-                {
-                    b.Navigation("Shares");
                 });
 
             modelBuilder.Entity("PnFData.Model.Share", b =>

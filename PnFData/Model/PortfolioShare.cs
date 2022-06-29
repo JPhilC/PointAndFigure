@@ -10,7 +10,7 @@ namespace PnFData.Model
         [Required]
         public Guid PortfolioId { get;set;}
 
-        [ForeignKey("ProfolioId")]
+        [ForeignKey("PortfolioId")]
         public Portfolio Portfolio { get; set; }
 
         [Required]

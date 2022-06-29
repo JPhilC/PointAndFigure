@@ -57,10 +57,11 @@ namespace PnFData.Services
                 Reversal = reversal
             };
             PnFColumn currentColumn = new PnFColumn();
+            PnFColumn prevColumnOne = null;
 
+            PnFSignalEnum previousSignals = PnFSignalEnum.NotSet;
             bool firstDayValue = true;
             int lastMonthRecorded = 0;
-            int lastYearRecorded = 0;
             foreach (IDayValue dayValue in sortedList)
             {
                 // System.Diagnostics.Debug.WriteLine($"{eod.Open}\t{eod.High}\t{eod.Low}\t{eod.Close}");
@@ -106,6 +107,7 @@ namespace PnFData.Services
                             if (dayValue.Value >= reversalBox)
                             {
                                 int newStartIndex = currentColumn.CurrentBoxIndex;
+                                prevColumnOne = currentColumn;
                                 currentColumn = new PnFColumn()
                                 {
                                     PnFChart = chart,
@@ -135,6 +137,7 @@ namespace PnFData.Services
                             if (dayValue.Value <= reversalBox)
                             {
                                 int newStartIndex = currentColumn.CurrentBoxIndex;
+                                prevColumnOne = currentColumn;
                                 currentColumn = new PnFColumn()
                                 {
                                     PnFChart = chart,
@@ -151,16 +154,15 @@ namespace PnFData.Services
                     }
 
                     // See if we had a year change in the current column.
-                    if (dayValue.Day.Year != lastYearRecorded)
-                    {
-                        currentColumn.ContainsNewYear = true;
-                    }
                 }
 
                 // Update signal states
-                UpdateSignals(ref chart, currentColumn.Index, dayValue.Day);
-                
-                lastYearRecorded = dayValue.Day.Year;
+                previousSignals = UpdateSignals(ref chart, currentColumn.Index, dayValue.Day, previousSignals);
+
+                if (prevColumnOne != null && currentColumn.EndAt.HasValue && prevColumnOne.EndAt.HasValue && prevColumnOne.EndAt.Value.Year < currentColumn.EndAt.Value.Year)
+                {
+                    currentColumn.ContainsNewYear = true;
+                }
                 chart.GeneratedDate = dayValue.Day;
 
 
@@ -177,14 +179,11 @@ namespace PnFData.Services
             int reversal = chart.Reversal;
             DateTime lastUpdate = chart.GeneratedDate;
             int lastMonthRecorded = lastUpdate.Month;
-            int lastYearRecorded = lastUpdate.Year;
 
             // Get the column settings.
             int columnIndex = chart.Columns.Max(c => c.Index);
             PnFColumn currentColumn = chart.Columns.FirstOrDefault(c => c.Index == columnIndex);
             PnFColumn prevColumnOne = chart.Columns.FirstOrDefault(c => c.Index == columnIndex - 1);
-            PnFColumn prevColumnTwo = chart.Columns.FirstOrDefault(c => c.Index == columnIndex - 2);
-
 
             if (currentColumn == null)
             {
@@ -198,6 +197,8 @@ namespace PnFData.Services
             {
                 return true;
             }
+
+            PnFSignalEnum previousSignals = chart.Signals.OrderByDescending(s => s.Day).Select(s => s.Signals).FirstOrDefault();
 
             foreach (IDayValue dayValue in sortedList)
             {
@@ -218,6 +219,7 @@ namespace PnFData.Services
                         if (dayValue.Value >= reversalBox)
                         {
                             int newStartIndex = currentColumn.CurrentBoxIndex;
+                            prevColumnOne = currentColumn;
                             currentColumn = new PnFColumn()
                             {
                                 PnFChart = chart,
@@ -247,6 +249,7 @@ namespace PnFData.Services
                         if (dayValue.Value <= reversalBox)
                         {
                             int newStartIndex = currentColumn.CurrentBoxIndex;
+                            prevColumnOne = currentColumn;
                             currentColumn = new PnFColumn()
                             {
                                 PnFChart = chart,
@@ -262,17 +265,15 @@ namespace PnFData.Services
                     }
                 }
 
-                // See if we had a year change in the current column.
-                if (dayValue.Day.Year != lastYearRecorded)
+
+                if (prevColumnOne != null && currentColumn.EndAt.HasValue && prevColumnOne.EndAt.HasValue && prevColumnOne.EndAt.Value.Year < currentColumn.EndAt.Value.Year)
                 {
                     currentColumn.ContainsNewYear = true;
                 }
-
-                lastYearRecorded = dayValue.Day.Year;
                 chart.GeneratedDate = dayValue.Day;
 
                 // Update signal states
-                UpdateSignals(ref chart, currentColumn.Index, dayValue.Day);
+                previousSignals = UpdateSignals(ref chart, currentColumn.Index, dayValue.Day, previousSignals);
 
             }
             return !errors;

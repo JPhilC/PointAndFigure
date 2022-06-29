@@ -271,6 +271,7 @@ namespace PnFDesktop.ViewModels
             if (exchangeCodes.Any())
             {
                 ExchangeCodes.Clear();
+                ExchangeCodes.Add("<All>");
                 foreach (var exchangeCode in exchangeCodes)
                 {
                     ExchangeCodes.Add(exchangeCode);
@@ -369,12 +370,15 @@ namespace PnFDesktop.ViewModels
         public void CreatePortfolio()
         {
             CreatePortfolioViewModel createVm = SimpleIoc.Default.GetInstance<CreatePortfolioViewModel>();
+            createVm.Portfolio = new Portfolio();
             Window dialog = new CreatePortfolioWindow(createVm);
             dialog.Owner = Application.Current.MainWindow;
             bool? dialogResult = dialog.ShowDialog();
 
             if (dialogResult.HasValue && dialogResult.Value == true)
             {
+                Portfolios.Add(createVm.Portfolio);         // Add to list for menu
+                OnPropertyChanged("PortfoliosAvailable");   // Trigger menu update
                 // Open the portfolio management pane for the newly created portfolio
                 ManagePortfolio(createVm.Portfolio!.Id!);
             }
@@ -582,6 +586,27 @@ namespace PnFDesktop.ViewModels
                                if (portfolio != null)
                                {
                                    ManagePortfolio(portfolio.Id);
+                               }
+                           }));
+            }
+        }
+
+        private RelayCommand<Portfolio> _viewPortfolioCommand;
+
+        /// <summary>
+        /// Creates a new portfolio
+        /// </summary>
+        public RelayCommand<Portfolio> ViewPortfolioCommand
+        {
+            get
+            {
+                return _viewPortfolioCommand
+                       ?? (_viewPortfolioCommand = new RelayCommand<Portfolio>(
+                           (portfolio) =>
+                           {
+                               if (portfolio != null)
+                               {
+                                   ViewPortfolio(portfolio);
                                }
                            }));
             }

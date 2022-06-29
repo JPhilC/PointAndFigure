@@ -646,9 +646,6 @@ namespace PnFData.Migrations
                     b.Property<Guid>("PortfolioId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ProfolioId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("ShareId")
                         .HasColumnType("uniqueidentifier");
 
@@ -664,7 +661,7 @@ namespace PnFData.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProfolioId");
+                    b.HasIndex("PortfolioId");
 
                     b.HasIndex("ShareId");
 
@@ -1036,7 +1033,7 @@ namespace PnFData.Migrations
                 {
                     b.HasOne("PnFData.Model.Portfolio", "Portfolio")
                         .WithMany("Shares")
-                        .HasForeignKey("ProfolioId")
+                        .HasForeignKey("PortfolioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

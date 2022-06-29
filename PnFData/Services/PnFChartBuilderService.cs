@@ -46,13 +46,16 @@ namespace PnFData.Services
         public abstract bool UpdateChart(ref PnFChart chart, DateTime uptoDate);
 
 
-        protected void UpdateSignals(ref PnFChart chart, int columnIndex, DateTime day)
+        protected PnFSignalEnum UpdateSignals(ref PnFChart chart, int columnIndex, DateTime day, PnFSignalEnum previousSignals)
         {
             if (chart.Columns.Count == 0 || chart.Columns.Count < columnIndex + 1)
             {
-                return;
+                return PnFSignalEnum.NotSet;
             }
             PnFSignalEnum signals = PnFSignalEnum.NotSet;
+            bool doubleSignalSet = false;
+            bool tripleSignalSet = false;
+
             PnFColumn currentColumn = chart.Columns[columnIndex];
             int currentIndex = currentColumn.CurrentBoxIndex;
             if (currentColumn.ShowBullishSupport)
@@ -69,12 +72,16 @@ namespace PnFData.Services
                     if (currentIndex < chart.Columns[columnIndex - 2].CurrentBoxIndex)
                     {
                         signals |= PnFSignalEnum.DoubleBottom;
+                        // Switch off any previous tripleTop
+                        previousSignals &= ~PnFSignalEnum.TripleTop;
+                        doubleSignalSet = true;
                         // Triple Bottom
                         if (currentColumn.Index > 3)
                         {
-                            if (currentIndex < chart.Columns[columnIndex - 4].CurrentBoxIndex)
+                            if (currentIndex < chart.Columns[columnIndex - 4].CurrentBoxIndex && chart.Columns[columnIndex - 2].CurrentBoxIndex < chart.Columns[columnIndex - 4].CurrentBoxIndex)
                             {
                                 signals |= PnFSignalEnum.TripleBottom;
+                                tripleSignalSet = true;
                             }
                         }
                     }
@@ -90,17 +97,47 @@ namespace PnFData.Services
                     if (currentIndex > chart.Columns[columnIndex - 2].CurrentBoxIndex)
                     {
                         signals |= PnFSignalEnum.DoubleTop;
+                        // Switch off any previous tripleBottom
+                        previousSignals &= ~PnFSignalEnum.TripleBottom;
+                        doubleSignalSet = true;
                         // Triple Top
                         if (currentColumn.Index > 3)
                         {
-                            if (currentIndex > chart.Columns[columnIndex - 4].CurrentBoxIndex)
+                            if (currentIndex > chart.Columns[columnIndex - 4].CurrentBoxIndex && chart.Columns[columnIndex - 2].CurrentBoxIndex > chart.Columns[columnIndex - 4].CurrentBoxIndex)
                             {
                                 signals |= PnFSignalEnum.TripleTop;
+                                tripleSignalSet = true;
                             }
                         }
                     }
                 }
             }
+
+            // Roll forward the buy/sell signal is a new signal is not set
+            if (!doubleSignalSet)
+            {
+                if ((previousSignals & PnFSignalEnum.DoubleBottom) == PnFSignalEnum.DoubleBottom)
+                {
+                    signals |= PnFSignalEnum.DoubleBottom;
+                }
+                else if ((previousSignals & PnFSignalEnum.DoubleTop) == PnFSignalEnum.DoubleTop)
+                {
+                    signals |= PnFSignalEnum.DoubleTop;
+                }
+            }
+
+            if (!tripleSignalSet)
+            {
+                if ((previousSignals & PnFSignalEnum.TripleBottom) == PnFSignalEnum.TripleBottom)
+                {
+                    signals |= PnFSignalEnum.TripleBottom;
+                }
+                else if ((previousSignals & PnFSignalEnum.TripleTop) == PnFSignalEnum.TripleTop)
+                {
+                    signals |= PnFSignalEnum.TripleTop;
+                }
+            }
+
             chart.Signals.Add(new PnFSignal()
             {
                 PnFChart = chart,
@@ -108,6 +145,7 @@ namespace PnFData.Services
                 Signals = signals,
                 Value = GetValueNormal(currentIndex)
             });
+            return signals;
         }
 
         #region Helper methods ...
@@ -190,7 +228,8 @@ namespace PnFData.Services
         {
             Debug.Assert(BaseValue.HasValue, "You must set the BaseValue to use GetValueLogarithmic");
             int index = seedIndex;
-            if (falling) {
+            if (falling)
+            {
                 double indexValue = GetValueLogarithmic(index);
                 while (indexValue > value)
                 {

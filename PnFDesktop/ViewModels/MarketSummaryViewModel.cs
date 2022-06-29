@@ -50,6 +50,27 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+
+        private DateTime _customDay;
+
+        public DateTime CustomDay
+        {
+            get => _customDay;
+            set
+            {
+                if (SetProperty(ref _customDay, value))
+                {
+                    DayDTO selectedDay = Days.FirstOrDefault(d => d.Day == _customDay.Date);
+                    if (selectedDay == null)
+                    {
+                        selectedDay = new DayDTO() { Day = _customDay.Date };
+                        SimpleIoc.Default.GetInstance<MainViewModel>().AvailableDays.Add(selectedDay);
+                    }
+                    SelectedDay = selectedDay;
+                }
+            }
+        }
+
         public ObservableCollection<MarketSummaryDTO> Indices { get; } = new ObservableCollection<MarketSummaryDTO>();
 
         readonly IDataService? _DataService;
@@ -89,6 +110,7 @@ namespace PnFDesktop.ViewModels
                 if (message.Notification == Constants.MarketSummaryUILoaded && !_dataLoaded)
                 {
                     this._selectedDay = this.Days.FirstOrDefault();
+                    this.CustomDay = this._selectedDay.Day;
                     await LoadMarketSummaryDataAsync();
                 }
                 else if (message.Notification == Constants.RefreshMarketSummary && _dataLoaded)

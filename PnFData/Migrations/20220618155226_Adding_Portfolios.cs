@@ -30,7 +30,6 @@ namespace PnFData.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newid()"),
                     PortfolioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProfolioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ShareId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Holding = table.Column<double>(type: "float", nullable: false),
                     Version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false),
@@ -41,8 +40,8 @@ namespace PnFData.Migrations
                 {
                     table.PrimaryKey("PK_PortfolioShares", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PortfolioShares_Portfolios_ProfolioId",
-                        column: x => x.ProfolioId,
+                        name: "FK_PortfolioShares_Portfolios_PortfolioId",
+                        column: x => x.PortfolioId,
                         principalTable: "Portfolios",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -55,9 +54,9 @@ namespace PnFData.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_PortfolioShares_ProfolioId",
+                name: "IX_PortfolioShares_PortfolioId",
                 table: "PortfolioShares",
-                column: "ProfolioId");
+                column: "PortfolioId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PortfolioShares_ShareId",

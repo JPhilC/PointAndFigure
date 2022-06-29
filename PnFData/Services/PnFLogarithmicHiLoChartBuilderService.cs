@@ -29,7 +29,7 @@ namespace PnFData.Services
         public PnFLogarithmicHiLoChartBuilderService(List<Eod> eodList)
         {
             this._eodList = eodList;
-            this.BaseValue = Math.Max(0.00001d, eodList.Min(d=>d.Low)*0.9);
+            this.BaseValue = Math.Max(0.00001d, eodList.Min(d => d.Low) * 0.9);
         }
 
 
@@ -53,6 +53,7 @@ namespace PnFData.Services
             PnFColumn currentColumn = new PnFColumn();
             PnFColumn prevColumnOne = null;
             PnFColumn prevColumnTwo = null;
+            PnFSignalEnum previousSignals = PnFSignalEnum.NotSet;
 
             DateTime firstDay = DateTime.MinValue;
             bool firstEod = true;
@@ -62,7 +63,6 @@ namespace PnFData.Services
             double firstLow = 0;
             double firstLowTarget = 0;
             int lastMonthRecorded = 0;
-            int lastYearRecorded = 0;
             int columnIndex = -1;
             int firstLowIndex = 0;
             int firstHighIndex = 0;
@@ -115,7 +115,7 @@ namespace PnFData.Services
                     }
 
                     // Update signal states
-                    UpdateSignals(ref chart, columnIndex, eod.Day);
+                    previousSignals = UpdateSignals(ref chart, columnIndex, eod.Day, previousSignals);
                 }
                 else
                 {
@@ -235,16 +235,14 @@ namespace PnFData.Services
                     }
 
                     // Update signal states
-                    UpdateSignals(ref chart, columnIndex, eod.Day);
+                    previousSignals = UpdateSignals(ref chart, columnIndex, eod.Day, previousSignals);
 
-                    // See if we had a year change in the current column.
-                    if (eod.Day.Year != lastYearRecorded)
-                    {
-                        currentColumn.ContainsNewYear = true;
-                    }
                 }
                 currentColumn.Volume += eod.Volume;
-                lastYearRecorded = eod.Day.Year;
+                if (prevColumnOne != null && currentColumn.EndAt.HasValue && prevColumnOne.EndAt.HasValue && prevColumnOne.EndAt.Value.Year < currentColumn.EndAt.Value.Year)
+                {
+                    currentColumn.ContainsNewYear = true;
+                }
                 chart.GeneratedDate = eod.Day;
 
             }
@@ -273,7 +271,6 @@ namespace PnFData.Services
             int reversal = chart.Reversal;
             DateTime lastUpdate = chart.GeneratedDate;
             int lastMonthRecorded = lastUpdate.Month;
-            int lastYearRecorded = lastUpdate.Year;
 
             // Get the column settings.
             int columnIndex = chart.Columns.Max(c => c.Index);
@@ -295,6 +292,7 @@ namespace PnFData.Services
                 return true;
             }
 
+            PnFSignalEnum previousSignals = chart.Signals.OrderByDescending(s => s.Day).Select(s => s.Signals).FirstOrDefault();
 
             foreach (Eod eod in sortedList)
             {
@@ -413,17 +411,16 @@ namespace PnFData.Services
                     }
 
                     // See if we had a year change in the current column.
-                    if (eod.Day.Year != lastYearRecorded)
-                    {
-                        currentColumn.ContainsNewYear = true;
-                    }
                 }
                 currentColumn.Volume += eod.Volume;
-                lastYearRecorded = eod.Day.Year;
+                if (prevColumnOne != null && currentColumn.EndAt.HasValue && prevColumnOne.EndAt.HasValue && prevColumnOne.EndAt.Value.Year < currentColumn.EndAt.Value.Year)
+                {
+                    currentColumn.ContainsNewYear = true;
+                }
                 chart.GeneratedDate = eod.Day;
 
                 // Update signal states
-                UpdateSignals(ref chart, columnIndex, eod.Day);
+                previousSignals = UpdateSignals(ref chart, columnIndex, eod.Day, previousSignals);
 
             }
             return !errors;

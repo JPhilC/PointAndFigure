@@ -14,7 +14,7 @@ namespace PnFDesktop.ViewModels
         public Portfolio? Portfolio
         {
             get => _portfolio;
-            private set => SetProperty(ref _portfolio, value);
+            set => SetProperty(ref _portfolio, value);
         }
 
         public string Name

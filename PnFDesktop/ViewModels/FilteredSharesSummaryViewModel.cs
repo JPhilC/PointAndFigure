@@ -111,7 +111,7 @@ namespace PnFDesktop.ViewModels
                             }
                             else if (message.Notification == Constants.RefreshFilteredSharesSummary && _dataLoaded)
                             {
-                                await RefeshSharesSummaryDataAsync();
+                                await RefreshSharesSummaryDataAsync();
                             }
                         });
             Control = new FilteredSharesSummaryView(this);
@@ -123,7 +123,7 @@ namespace PnFDesktop.ViewModels
             {
                 if (this.Days.Any())
                 {
-                    var list = await _DataService.GetEventFilteredSharesAsync(this.EventFilter, this.SelectedDay!.Day, this.SelectedExchangeCode);
+                    var list = await _DataService!.GetEventFilteredSharesAsync(this.EventFilter, this.SelectedDay!.Day, this.SelectedExchangeCode);
                     lock (_ItemsLock)
                     {
                         App.Current.Dispatcher.Invoke(() => Shares.Clear());
@@ -149,7 +149,7 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        private async Task RefeshSharesSummaryDataAsync()
+        private async Task RefreshSharesSummaryDataAsync()
         {
             try
             {
