@@ -27,7 +27,7 @@ SELECT i.[Id] IndexId, si.[Day]
 		, CONVERT(FLOAT, SUM(COALESCE(si.[AboveBullSupport], 0))) [AboveBullSupport]
     INTO #Sectors
 	FROM [PnFData].[dbo].[Indices] i
-	RIGHT OUTER JOIN [PnFData].[dbo].[Shares] s on s.ExchangeSubCode = i.ExchangeSubCode and s.SuperSector = i.SuperSector
+	RIGHT OUTER JOIN [PnFData].[dbo].[Shares] s on s.ExchangeCode = i.ExchangeCode and s.ExchangeSubCode = i.ExchangeSubCode and s.SuperSector = i.SuperSector
 	RIGHT OUTER JOIN [PnFData].[dbo].[ShareIndicators] si on si.ShareId = s.Id 
     WHERE i.[SuperSector] IS NOT NULL
 	GROUP BY i.Id, si.[Day]
@@ -71,7 +71,7 @@ SELECT i.[Id] IndexId, si.[Day]
 		, CONVERT(FLOAT, SUM(COALESCE(si.[AboveBullSupport], 0))) [AboveBullSupport]
     INTO #Markets
 	FROM [PnFData].[dbo].[Indices] i
-	RIGHT OUTER JOIN [PnFData].[dbo].[Shares] s on s.ExchangeSubCode = i.ExchangeSubCode
+	RIGHT OUTER JOIN [PnFData].[dbo].[Shares] s on s.ExchangeCode = i.ExchangeCode and s.ExchangeSubCode = i.ExchangeSubCode
 	RIGHT OUTER JOIN [PnFData].[dbo].[ShareIndicators] si on si.ShareId = s.Id  
     WHERE i.[SuperSector] IS NULL
 	GROUP BY i.[Id], si.[Day]

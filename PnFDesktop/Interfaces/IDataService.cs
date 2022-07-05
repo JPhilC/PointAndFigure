@@ -32,7 +32,7 @@ namespace PnFDesktop.Interfaces
 
         Task<Portfolio?> GetPortfolioAsync(Guid itemId);
 
-        Task<IEnumerable<ShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day);
+        Task<IEnumerable<PortfolioShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day);
 
         Task<IEnumerable<string>> GetExchangeCodesAsync();
 

@@ -173,30 +173,35 @@ UPDATE si
 
 -- Now update the Events code with notifications of new events.
 SELECT si.[ShareId], si.[Day], si.DoubleTop, si.TripleTop, si.RsBuy, si.PeerRsBuy, si.DoubleBottom, si.TripleBottom, si.RsSell, si.PeerRsSell, si.ClosedAboveEma10, si.ClosedAboveEma30, si.[AboveBullSupport]
+		, si.[WeeklyMomentum]
 		, ROW_NUMBER() OVER(PARTITION BY si.[ShareId] ORDER BY si.[Day] ASC) as Ordinal#
 	INTO #today
 	FROM [dbo].[ShareIndicators] si
 	WHERE si.[Day] >= @fromDate;
 
-DECLARE @NewDoubleTop AS INT			= 0x0001;
-DECLARE @NewTripleTop AS INT			= 0x0002;
-DECLARE @NewRsBuy AS INT				= 0x0004;
-DECLARE @NewPeerRsBuy AS INT			= 0x0008;
-DECLARE @NewDoubleBottom AS INT			= 0x0010;
-DECLARE @NewTripleBottom AS INT			= 0x0020;
-DECLARE @NewRsSell AS INT				= 0x0040;
-DECLARE @NewPeerRsSell AS INT			= 0x0080;
-DECLARE @NewCloseAboveEma10 AS INT		= 0x0100;
-DECLARE @NewCloseAboveEma30 AS INT		= 0x0200;
-DECLARE @NewDropBelowEma10 AS INT		= 0x0400;
-DECLARE @NewDropBelowEma30 AS INT		= 0x0800;
-DECLARE @NewBullSupportBreach AS INT	= 0x1000;
-DECLARE @High52Week AS INT				= 0x2000;
-DECLARE @Low52Week AS INT				= 0x4000;
+DECLARE @NewDoubleTop AS INT			= 0x00001;
+DECLARE @NewTripleTop AS INT			= 0x00002;
+DECLARE @NewRsBuy AS INT				= 0x00004;
+DECLARE @NewPeerRsBuy AS INT			= 0x00008;
+DECLARE @NewDoubleBottom AS INT			= 0x00010;
+DECLARE @NewTripleBottom AS INT			= 0x00020;
+DECLARE @NewRsSell AS INT				= 0x00040;
+DECLARE @NewPeerRsSell AS INT			= 0x00080;
+DECLARE @NewCloseAboveEma10 AS INT		= 0x00100;
+DECLARE @NewCloseAboveEma30 AS INT		= 0x00200;
+DECLARE @NewDropBelowEma10 AS INT		= 0x00400;
+DECLARE @NewDropBelowEma30 AS INT		= 0x00800;
+DECLARE @NewBullSupportBreach AS INT	= 0x01000;
+DECLARE @High52Week AS INT				= 0x02000;
+DECLARE @Low52Week AS INT				= 0x04000;
+DECLARE @MomentumGonePositive AS INT    = 0x08000;
+DECLARE @MomentumGoneNegative AS INT	= 0x10000;
 
 
 UPDATE [dbo].[ShareIndicators]
 		SET [UpdatedAt] = GETDATE()
+		,	[MomentumRising] = IIF(td.[WeeklyMomentum] > yd.[WeeklyMomentum], 1, 0)
+		,   [MomentumFalling] = IIF(td.[WeeklyMomentum] < yd.[WeeklyMomentum], 1, 0)
 		,	[NewEvents] = iif(td.[DoubleTop]^yd.[DoubleTop]=1 and td.[DoubleTop]=1, @NewDoubleTop, 0)
 		+ iif(td.[TripleTop]^yd.[TripleTop]=1 and td.[TripleTop]=1, @NewTripleTop, 0)
 		+ iif(td.[RsBuy]^yd.[RsBuy]=1 and td.[RsBuy]=1, @NewRsBuy, 0) 
@@ -212,6 +217,8 @@ UPDATE [dbo].[ShareIndicators]
 		+ iif(td.[AboveBullSupport]^yd.[AboveBullSupport]=1 and yd.[AboveBullSupport]=1, @NewBullSupportBreach, 0)
 		+ iif(p.[New52WeekHigh]=1, @High52Week, 0)
 		+ iif(p.[New52WeekLow]=1, @Low52Week, 0)
+		+ iif(td.[WeeklyMomentum] < 0 AND yd.[WeeklyMomentum] >= 0, @MomentumGoneNegative, 0)
+		+ iif(td.[WeeklyMomentum] > 0 AND yd.[WeeklyMomentum] <= 0, @MomentumGonePositive, 0)
 	FROM [dbo].[ShareIndicators] si
 	LEFT JOIN [dbo].[EodPrices] p ON p.[ShareId] = si.[ShareId] AND p.[Day] = si.[Day]
 	LEFT JOIN #today td ON td.[ShareId] = si.[ShareId] AND td.[Day] = si.[Day]

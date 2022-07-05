@@ -66,6 +66,13 @@ namespace PnFDesktop.DTOs
 
         public bool? AboveBullSupport { get; set; }
 
+        public double? WeeklyMomentum { get; set; }
+
+        public bool? MomentumRising { get; set; }
+
+        public bool? MomentumFalling { get; set; }
+
+
         public int? NewEvents {get;set;}
 
         public int? Score {get;set;}

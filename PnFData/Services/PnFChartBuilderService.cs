@@ -28,15 +28,20 @@ namespace PnFData.Services
         public bool DontResize { get; set; } = false;
 
         private double _boxSize = 2.0d;
-        private double _boxSizeAsPercent = 1.02d;   // As used in logarithmic value
         public double BoxSize
         {
             get => _boxSize;
             protected set
             {
                 _boxSize = value;
-                _boxSizeAsPercent = 1d + (_boxSize * 0.01);
+                _logBoxSize = Math.Log(1d + (_boxSize * 0.01));
             }
+        }
+
+        private double _logBoxSize = Math.Log(1.02d);
+        public double LogBoxSize
+        {
+            get => _logBoxSize;
         }
 
         public double? BaseValue { get; protected set; } = null;
@@ -224,35 +229,19 @@ namespace PnFData.Services
             return index;
         }
 
-        protected int GetLogarithmicIndex(double value, int seedIndex, bool falling = false)
+        /// <summary>
+        /// Returns the next logarithmic based box size
+        /// </summary>
+        /// <param name="value">Log of the value</param>
+        /// <param name="falling"></param>
+        /// <returns></returns>
+        protected int GetLogarithmicIndex(double value, bool falling = false)
         {
-            Debug.Assert(BaseValue.HasValue, "You must set the BaseValue to use GetValueLogarithmic");
-            int index = seedIndex;
-            if (falling)
+            Debug.Assert(this.BaseValue.HasValue, "BaseValue has not been set");
+            int index = (int)((value - this.BaseValue.Value) / LogBoxSize);
+            if (falling && (value > (index * LogBoxSize)))
             {
-                double indexValue = GetValueLogarithmic(index);
-                while (indexValue > value)
-                {
-                    index--;
-                    indexValue = GetValueLogarithmic(index);
-                }
-                if (indexValue < value) // We over shot
-                {
-                    index++;   // The loop when one step beyond
-                }
-            }
-            else
-            {
-                double indexValue = GetValueLogarithmic(index);
-                while (indexValue < value)
-                {
-                    index++;
-                    indexValue = GetValueLogarithmic(index);
-                }
-                if (indexValue > value) // We over shot
-                {
-                    index--;   // The loop when one step beyond
-                }
+                index++;
             }
             return index;
         }
@@ -262,10 +251,15 @@ namespace PnFData.Services
             return index * BoxSize;
         }
 
+        /// <summary>
+        /// Return the log associated with the index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         protected double GetValueLogarithmic(int index)
         {
-            Debug.Assert(BaseValue.HasValue, "You must set the BaseValue to use GetValueLogarithmic");
-            return BaseValue.Value * Math.Pow(_boxSizeAsPercent, index);
+            Debug.Assert(this.BaseValue.HasValue, "BaseValue has not been set");
+            return this.BaseValue.Value + (index * this.LogBoxSize);
         }
 
 

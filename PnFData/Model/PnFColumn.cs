@@ -36,9 +36,9 @@ namespace PnFData.Model
 
         public DateTime? EndAt { get; set; }
 
-        public int BullSupportIndex {get; set;}
+        public int BullSupportIndex { get; set; }
 
-        public bool ShowBullishSupport {get;set;}
+        public bool ShowBullishSupport { get; set; }
 
         public bool ContainsNewYear { get; set; }
 
@@ -103,7 +103,7 @@ namespace PnFData.Model
                 // Push the bullish support index down if necessary.
                 if (index <= BullSupportIndex)
                 {
-                    BullSupportIndex = index-1;
+                    BullSupportIndex = index - 1;
                     ShowBullishSupport = false;
                 }
             }
@@ -141,11 +141,16 @@ namespace PnFData.Model
             if (this.PnFChart.BoxSize == null) return "";
             int boxCount = Boxes.Count;
             double boxSize = this.PnFChart.BoxSize.Value;
-            double minValue = Boxes.Min(b=>b.Value);
-            double maxValue = Boxes.Max(b=>b.Value);
+            double minValue = Boxes.Min(b => b.Value);
+            double maxValue = Boxes.Max(b => b.Value);
             double fromValue = 0d;
             double toValue = 0d;
             string columnType = "";
+            if (this.PnFChart.PriceScale == PnFChartPriceScale.Logarithmic)
+            {
+                minValue = Math.Exp(minValue);
+                maxValue = Math.Exp(maxValue);
+            }
             switch (ColumnType)
             {
                 case PnFColumnType.O:

@@ -24,7 +24,7 @@ namespace PnFDesktop.Classes
       /// <exception cref="ArgumentException"></exception>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            
+            if ((value == null)) return false;
             if (parameter == null) throw new ArgumentNullException("ConverterParameter");
             if (!(parameter is System.Enum)) throw new ArgumentException("Enum value required required", "ConverterParameter");
             int boundValue = (int)value;

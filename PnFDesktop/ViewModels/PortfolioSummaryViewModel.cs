@@ -73,7 +73,7 @@ namespace PnFDesktop.ViewModels
         }
 
 
-        public ObservableCollection<ShareSummaryDTO> Shares { get; } = new ObservableCollection<ShareSummaryDTO>();
+        public ObservableCollection<PortfolioShareSummaryDTO> Shares { get; } = new ObservableCollection<PortfolioShareSummaryDTO>();
 
         readonly IDataService? _DataService;
         private readonly object _ItemsLock = new object();
@@ -136,7 +136,7 @@ namespace PnFDesktop.ViewModels
                     lock (_ItemsLock)
                     {
                         App.Current.Dispatcher.Invoke(() => Shares.Clear());
-                        foreach (ShareSummaryDTO share in list.OrderBy(s => s.Tidm))
+                        foreach (PortfolioShareSummaryDTO share in list.OrderBy(s => s.Tidm))
                         {
                             App.Current.Dispatcher.Invoke(() =>
                             {
@@ -166,7 +166,7 @@ namespace PnFDesktop.ViewModels
                 lock (_ItemsLock)
                 {
                     App.Current.Dispatcher.Invoke(() => Shares.Clear());
-                    foreach (ShareSummaryDTO share in list)
+                    foreach (PortfolioShareSummaryDTO share in list)
                     {
                         App.Current.Dispatcher.Invoke(() =>
                         {
@@ -182,13 +182,15 @@ namespace PnFDesktop.ViewModels
         }
 
         #region Relay commands ...
-        private RelayCommand<ShareSummaryDTO> _loadShareChartCommand;
 
-        public RelayCommand<ShareSummaryDTO> LoadShareChartCommand
+        #region Share related commands ...
+        private RelayCommand<PortfolioShareSummaryDTO> _loadShareChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadShareChartCommand
         {
             get
             {
-                return _loadShareChartCommand ?? (_loadShareChartCommand = new RelayCommand<ShareSummaryDTO>(currentShare =>
+                return _loadShareChartCommand ?? (_loadShareChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
                 {
                     WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
                         new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.Share)
@@ -197,13 +199,13 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        private RelayCommand<ShareSummaryDTO> _loadSharePeerRsChartCommand;
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSharePeerRsChartCommand;
 
-        public RelayCommand<ShareSummaryDTO> LoadSharePeerRsChartCommand
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSharePeerRsChartCommand
         {
             get
             {
-                return _loadSharePeerRsChartCommand ?? (_loadSharePeerRsChartCommand = new RelayCommand<ShareSummaryDTO>(currentShare =>
+                return _loadSharePeerRsChartCommand ?? (_loadSharePeerRsChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
                 {
                     WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
                         new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.RSStockVSector)
@@ -212,13 +214,13 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        private RelayCommand<ShareSummaryDTO> _loadShareMarketRsChartCommand;
+        private RelayCommand<PortfolioShareSummaryDTO> _loadShareMarketRsChartCommand;
 
-        public RelayCommand<ShareSummaryDTO> LoadShareMarketRsChartCommand
+        public RelayCommand<PortfolioShareSummaryDTO> LoadShareMarketRsChartCommand
         {
             get
             {
-                return _loadShareMarketRsChartCommand ?? (_loadShareMarketRsChartCommand = new RelayCommand<ShareSummaryDTO>(currentShare =>
+                return _loadShareMarketRsChartCommand ?? (_loadShareMarketRsChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
                 {
                     WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
                         new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.RSStockVMarket)
@@ -226,6 +228,285 @@ namespace PnFDesktop.ViewModels
                 }));
             }
         }
+
+        #endregion
+
+        #region Market related relay commands ...
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadMarketIndexChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadMarketIndexChartCommand
+        {
+            get
+            {
+                return _loadMarketIndexChartCommand ?? (_loadMarketIndexChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.MarketIndexId, PnFData.Model.PnFChartSource.Index)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadMarketIndexRSChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadMarketIndexRSChartCommand
+        {
+            get
+            {
+                return _loadMarketIndexRSChartCommand ?? (_loadMarketIndexRSChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.MarketIndexId, PnFData.Model.PnFChartSource.RSSectorVMarket)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadMarketBullishPercentChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadMarketBullishPercentChartCommand
+        {
+            get
+            {
+                return _loadMarketBullishPercentChartCommand ?? (_loadMarketBullishPercentChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.MarketIndexId, PnFData.Model.PnFChartSource.IndexBullishPercent)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadMarketPercentAbove10EmaChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadMarketPercentAbove10EmaChartCommand
+        {
+            get
+            {
+                return _loadMarketPercentAbove10EmaChartCommand ?? (_loadMarketPercentAbove10EmaChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.MarketIndexId, PnFData.Model.PnFChartSource.IndexPercentShareAbove10)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadMarketPercentAbove30EmaChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadMarketPercentAbove30EmaChartCommand
+        {
+            get
+            {
+                return _loadMarketPercentAbove30EmaChartCommand ?? (_loadMarketPercentAbove30EmaChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.MarketIndexId, PnFData.Model.PnFChartSource.IndexPercentShareAbove30)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadMarketHighLowIndexChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadMarketHighLowIndexChartCommand
+        {
+            get
+            {
+                return _loadMarketHighLowIndexChartCommand ?? (_loadMarketHighLowIndexChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.MarketIndexId, PnFData.Model.PnFChartSource.HighLowIndex)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadMarketPercentRSBuyChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadMarketPercentRSBuyChartCommand
+        {
+            get
+            {
+                return _loadMarketPercentRSBuyChartCommand ?? (_loadMarketPercentRSBuyChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.MarketIndexId, PnFData.Model.PnFChartSource.IndexPercentShareRsBuy)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadMarketPercentRSRisingChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadMarketPercentRSRisingChartCommand
+        {
+            get
+            {
+                return _loadMarketPercentRSRisingChartCommand ?? (_loadMarketPercentRSRisingChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.MarketIndexId, PnFData.Model.PnFChartSource.IndexPercentShareRsX)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadMarketPercentPTChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadMarketPercentPTChartCommand
+        {
+            get
+            {
+                return _loadMarketPercentPTChartCommand ?? (_loadMarketPercentPTChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.MarketIndexId, PnFData.Model.PnFChartSource.IndexPercentSharePT)
+                        );
+                }));
+            }
+        }
+        #endregion
+
+        #region Sector related relay commands ...
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSectorIndexChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSectorIndexChartCommand
+        {
+            get
+            {
+                return _loadSectorIndexChartCommand ?? (_loadSectorIndexChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.SectorIndexId, PnFData.Model.PnFChartSource.Index)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSectorIndexRSChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSectorIndexRSChartCommand
+        {
+            get
+            {
+                return _loadSectorIndexRSChartCommand ?? (_loadSectorIndexRSChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.SectorIndexId, PnFData.Model.PnFChartSource.RSSectorVMarket)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSectorBullishPercentChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSectorBullishPercentChartCommand
+        {
+            get
+            {
+                return _loadSectorBullishPercentChartCommand ?? (_loadSectorBullishPercentChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.SectorIndexId, PnFData.Model.PnFChartSource.IndexBullishPercent)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSectorPercentAbove10EmaChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSectorPercentAbove10EmaChartCommand
+        {
+            get
+            {
+                return _loadSectorPercentAbove10EmaChartCommand ?? (_loadSectorPercentAbove10EmaChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.SectorIndexId, PnFData.Model.PnFChartSource.IndexPercentShareAbove10)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSectorPercentAbove30EmaChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSectorPercentAbove30EmaChartCommand
+        {
+            get
+            {
+                return _loadSectorPercentAbove30EmaChartCommand ?? (_loadSectorPercentAbove30EmaChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.SectorIndexId, PnFData.Model.PnFChartSource.IndexPercentShareAbove30)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSectorHighLowIndexChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSectorHighLowIndexChartCommand
+        {
+            get
+            {
+                return _loadSectorHighLowIndexChartCommand ?? (_loadSectorHighLowIndexChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.SectorIndexId, PnFData.Model.PnFChartSource.HighLowIndex)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSectorPercentRSBuyChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSectorPercentRSBuyChartCommand
+        {
+            get
+            {
+                return _loadSectorPercentRSBuyChartCommand ?? (_loadSectorPercentRSBuyChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.SectorIndexId, PnFData.Model.PnFChartSource.IndexPercentShareRsBuy)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSectorPercentRSRisingChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSectorPercentRSRisingChartCommand
+        {
+            get
+            {
+                return _loadSectorPercentRSRisingChartCommand ?? (_loadSectorPercentRSRisingChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.SectorIndexId, PnFData.Model.PnFChartSource.IndexPercentShareRsX)
+                        );
+                }));
+            }
+        }
+
+        private RelayCommand<PortfolioShareSummaryDTO> _loadSectorPercentPTChartCommand;
+
+        public RelayCommand<PortfolioShareSummaryDTO> LoadSectorPercentPTChartCommand
+        {
+            get
+            {
+                return _loadSectorPercentPTChartCommand ?? (_loadSectorPercentPTChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
+                {
+                    WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
+                        new OpenPointAndFigureChartMessage(this, currentShare.SectorIndexId, PnFData.Model.PnFChartSource.IndexPercentSharePT)
+                        );
+                }));
+            }
+        }
+        #endregion
+
         #endregion
 
 

@@ -38,8 +38,12 @@ namespace PnFData.Model
         High52Week = 0x2000,
         [Description("52 Week Low")]
         Low52Week = 0x4000,
+        [Description("Momentum positive")]
+        MomentumGonePositive = 0x8000,
+        [Description("Momentum positive")]
+        MomentumGoneNegative = 0x10000,
         [Description("All Signals")]
-        AllShareSignals = NewDoubleTop|NewDoubleBottom|NewTripleTop|NewTripleBottom|NewBullSupportBreach|High52Week|Low52Week
+        AllShareSignals = NewDoubleTop|NewDoubleBottom|NewTripleTop|NewTripleBottom|NewBullSupportBreach|High52Week|Low52Week|MomentumGonePositive|MomentumGoneNegative
 
     }
 
@@ -48,6 +52,12 @@ namespace PnFData.Model
     public class ShareIndicator: EntityData
     {
         public DateTime Day { get; set; }
+
+        public double? Ema1 { get; set; }
+
+        public double? Ema5 { get; set; }
+
+        public double? WeeklyMomentum { get; set; }
 
         public double? Ema10 {get; set;}
 
@@ -88,6 +98,10 @@ namespace PnFData.Model
         public bool AboveBullSupport {get;set;}
         
         public int NewEvents{get;set;}
+
+        public bool? MomentumRising { get; set; }
+
+        public bool? MomentumFalling { get; set; }
 
         [Required]
         public Guid ShareId { get; set; }

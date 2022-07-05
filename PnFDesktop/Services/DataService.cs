@@ -420,15 +420,15 @@ namespace PnFDesktop.Services
             {
                 using (var db = new PnFDataContext())
                 {
-                    shares = await (from si in db.ShareIndicators
-                                    join s in db.Shares on si.ShareId equals s.Id
-                                    from rs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Market).DefaultIfEmpty()
-                                    from prs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Sector).DefaultIfEmpty()
-                                    from q in db.EodPrices.Where(r => r.ShareId == si.ShareId && r.Day == si.Day).DefaultIfEmpty()
+                    DateTime day = marketSummaryDTO.Day;
+                    shares = await (from s in db.Shares
+                                    from si in db.ShareIndicators.Where(r => r.ShareId == s.Id && r.Day == day).DefaultIfEmpty()
+                                    from rs in db.ShareRSIValues.Where(r => r.ShareId == s.Id && r.Day == day && r.RelativeTo == RelativeToEnum.Market).DefaultIfEmpty()
+                                    from prs in db.ShareRSIValues.Where(r => r.ShareId == s.Id && r.Day == day && r.RelativeTo == RelativeToEnum.Sector).DefaultIfEmpty()
+                                    from q in db.EodPrices.Where(r => r.ShareId == s.Id && r.Day == day).DefaultIfEmpty()
                                     from idx in db.Indices.Where(r => r.ExchangeCode == s.ExchangeCode && r.ExchangeSubCode == s.ExchangeSubCode && r.SuperSector == s.SuperSector).DefaultIfEmpty()
-                                    from ii in db.IndexIndicators.Where(r => r.IndexId == idx.Id && r.Day == si.Day)
-                                    where si.Day == marketSummaryDTO.Day
-                                        && s.ExchangeCode == marketSummaryDTO.ExchangeCode
+                                    from ii in db.IndexIndicators.Where(r => r.IndexId == idx.Id && r.Day == day)
+                                    where s.ExchangeCode == marketSummaryDTO.ExchangeCode
                                         && s.ExchangeSubCode == marketSummaryDTO.ExchangeSubCode
                                         && (s.SuperSector == marketSummaryDTO.SuperSector || marketSummaryDTO.SuperSector == null)
                                     orderby s.Tidm
@@ -463,6 +463,9 @@ namespace PnFDesktop.Services
                                         PeerRsFalling = si.PeerRsFalling ?? false,
                                         PeerRsSell = si.PeerRsSell ?? false,
                                         AboveBullSupport = si.AboveBullSupport,
+                                        WeeklyMomentum = si.WeeklyMomentum,
+                                        MomentumFalling = si.MomentumFalling,
+                                        MomentumRising = si.MomentumRising,
                                         NewEvents = si.NewEvents,
                                         Score = 0 + (si.Rising == true ? 1 : 0)
                                                   + (si.Falling == true ? -1 : 0)
@@ -487,6 +490,8 @@ namespace PnFDesktop.Services
                                             + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
+                                            + ((si.NewEvents & (int)ShareEvents.MomentumGonePositive) == (int)ShareEvents.MomentumGonePositive ? "Moment Positive" : "")
+                                            + ((si.NewEvents & (int)ShareEvents.MomentumGoneNegative) == (int)ShareEvents.MomentumGoneNegative ? "Moment Negative" : "")
                                     }).ToListAsync();
                 }
             }
@@ -545,6 +550,9 @@ namespace PnFDesktop.Services
                                         PeerRsFalling = si.PeerRsFalling ?? false,
                                         PeerRsSell = si.PeerRsSell ?? false,
                                         AboveBullSupport = si.AboveBullSupport,
+                                        WeeklyMomentum = si.WeeklyMomentum,
+                                        MomentumFalling = si.MomentumFalling,
+                                        MomentumRising = si.MomentumRising,
                                         NewEvents = si.NewEvents,
                                         Score = 0 + (si.Rising == true ? 1 : 0)
                                                   + (si.Falling == true ? -1 : 0)
@@ -569,6 +577,8 @@ namespace PnFDesktop.Services
                                             + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
                                             + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
+                                            + ((si.NewEvents & (int)ShareEvents.MomentumGonePositive) == (int)ShareEvents.MomentumGonePositive ? "Moment Positive" : "")
+                                            + ((si.NewEvents & (int)ShareEvents.MomentumGoneNegative) == (int)ShareEvents.MomentumGoneNegative ? "Moment Negative" : "")
                                     }).ToListAsync();
                 }
             }
@@ -600,25 +610,29 @@ namespace PnFDesktop.Services
         }
 
 
-        public async Task<IEnumerable<ShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day)
+        public async Task<IEnumerable<PortfolioShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day)
         {
-            IEnumerable<ShareSummaryDTO> shares = new List<ShareSummaryDTO>();
+            IEnumerable<PortfolioShareSummaryDTO> shares = new List<PortfolioShareSummaryDTO>();
             try
             {
                 using (var db = new PnFDataContext())
                 {
                     shares = await (from ps in db.PortfolioShares
-                                    join si in db.ShareIndicators on ps.ShareId equals si.ShareId
-                                    join s in db.Shares on si.ShareId equals s.Id
-                                    from rs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Market).DefaultIfEmpty()
-                                    from prs in db.ShareRSIValues.Where(r => r.ShareId == si.ShareId && r.Day == si.Day && r.RelativeTo == RelativeToEnum.Sector).DefaultIfEmpty()
-                                    from q in db.EodPrices.Where(r => r.ShareId == si.ShareId && r.Day == si.Day).DefaultIfEmpty()
-                                    from idx in db.Indices.Where(r => r.ExchangeCode == s.ExchangeCode && r.ExchangeSubCode == s.ExchangeSubCode && r.SuperSector == s.SuperSector).DefaultIfEmpty()
-                                    from ii in db.IndexIndicators.Where(r => r.IndexId == idx.Id && r.Day == si.Day)
+                                    join s in db.Shares on ps.ShareId equals s.Id
+                                    from si in db.ShareIndicators.Where(r => r.ShareId == ps.ShareId && r.Day==day).DefaultIfEmpty()
+                                    from rs in db.ShareRSIValues.Where(r => r.ShareId == ps.ShareId && r.Day == day && r.RelativeTo == RelativeToEnum.Market).DefaultIfEmpty()
+                                    from prs in db.ShareRSIValues.Where(r => r.ShareId == ps.ShareId && r.Day == day && r.RelativeTo == RelativeToEnum.Sector).DefaultIfEmpty()
+                                    from q in db.EodPrices.Where(r => r.ShareId == ps.ShareId && r.Day == day).DefaultIfEmpty()
+                                    from mkt in db.Indices.Where(r => r.ExchangeCode == s.ExchangeCode && r.ExchangeSubCode == s.ExchangeSubCode && r.SuperSector == null).DefaultIfEmpty()
+                                    from mktv in db.IndexValues.Where(r => r.IndexId == mkt.Id && r.Day == day).DefaultIfEmpty()
+                                    from mkti in db.IndexIndicators.Where(r => r.IndexId == mkt.Id && r.Day == day).DefaultIfEmpty()
+                                    from sec in db.Indices.Where(r => r.ExchangeCode == s.ExchangeCode && r.ExchangeSubCode == s.ExchangeSubCode && r.SuperSector == s.SuperSector).DefaultIfEmpty()
+                                    from secv in db.IndexValues.Where(r => r.IndexId == sec.Id && r.Day == day).DefaultIfEmpty()
+                                    from seci in db.IndexIndicators.Where(r => r.IndexId == sec.Id && r.Day == day).DefaultIfEmpty()
+                                    from secrs in db.IndexRSIValues.Where(r => r.IndexId == sec.Id && r.Day == day).DefaultIfEmpty()
                                     where ps.PortfolioId == portfolio.Id
-                                        && si.Day == day
                                     orderby s.Tidm
-                                    select new ShareSummaryDTO()
+                                    select new PortfolioShareSummaryDTO()
                                     {
                                         Id = s.Id,
                                         Tidm = s.Tidm,
@@ -649,6 +663,9 @@ namespace PnFDesktop.Services
                                         PeerRsFalling = si.PeerRsFalling ?? false,
                                         PeerRsSell = si.PeerRsSell ?? false,
                                         AboveBullSupport = si.AboveBullSupport,
+                                        WeeklyMomentum = si.WeeklyMomentum,
+                                        MomentumFalling = si.MomentumFalling,
+                                        MomentumRising = si.MomentumRising,
                                         NewEvents = si.NewEvents,
                                         Score = 0 + (si.Rising == true ? 1 : 0)
                                                   + (si.Falling == true ? -1 : 0)
@@ -667,12 +684,70 @@ namespace PnFDesktop.Services
                                                   + (si.ClosedAboveEma10 == true ? 1 : 0)
                                                   + (si.ClosedAboveEma30 == true ? 1 : 0)
                                                   + (si.AboveBullSupport == true ? 1 : 0),
-                                        Notices = ((ii.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Bull Alert " : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Bull Confirmed " : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "Bull Confirmed (Below 30%)" : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Bear Alert " : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Bear Confirmed " : "")
-                                            + ((ii.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "Bear Confirmed (Above 70%)" : "")
+                                        #region Market indicators ...
+                                        MarketIndexId = mktv.IndexId,
+                                        MarketBullishPercent = mktv.BullishPercent,
+                                        MarketPercentAboveEma10 = mktv.PercentAboveEma10,
+                                        MarketPercentAboveEma30 = mktv.PercentAboveEma30,
+                                        MarketPercentRsBuy = mktv.PercentRsBuy,
+                                        MarketPercentRsRising = mktv.PercentRsRising,
+                                        MarketPercentPositiveTrend = mktv.PercentPositiveTrend,
+                                        MarketHighLowIndexValue = mktv.HighLowEma10,
+                                        MarketRsRising = mkti.RsRising,
+                                        MarketRsBuy = mkti.RsBuy,
+                                        MarketRsFalling = mkti.RsFalling,
+                                        MarketRsSell = mkti.RsSell,
+                                        MarketBullishPercentRising = mkti.BullishPercentRising,
+                                        MarketPercentRsBuyRising = mkti.PercentRSBuyRising,
+                                        MarketPercentRsRisingRising = mkti.PercentRsRisingRising,
+                                        MarketPercentPositiveTrendRising = mkti.PercentPositiveTrendRising,
+                                        MarketPercentAbove30EmaRising = mkti.PercentAbove30EmaRising,
+                                        MarketPercentAbove10EmaRising = mkti.PercentAbove10EmaRising,
+                                        MarketBullishPercentFalling = mkti.BullishPercentFalling,
+                                        MarketPercentRsBuyFalling = mkti.PercentRSBuyFalling,
+                                        MarketPercentRsRisingFalling = mkti.PercentRsRisingFalling,
+                                        MarketPercentPositiveTrendFalling = mkti.PercentPositiveTrendFalling,
+                                        MarketPercentAbove30EmaFalling = mkti.PercentAbove30EmaFalling,
+                                        MarketPercentAbove10EmaFalling = mkti.PercentAbove10EmaFalling,
+                                        MarketHighLowIndexRising = mkti.HighLowIndexRising,
+                                        MarketHighLowIndexFalling = mkti.HighLowIndexFalling,
+                                        MarketNewEvents = mkti.NewEvents,
+                                        #endregion
+                                        #region Sector indicators ...
+                                        SectorIndexId = secv.IndexId,
+                                        SectorBullishPercent = secv.BullishPercent,
+                                        SectorPercentRsBuy = secv.PercentRsBuy,
+                                        SectorPercentRsRising = secv.PercentRsRising,
+                                        SectorPercentPositiveTrend = secv.PercentPositiveTrend,
+                                        SectorRsValue = secrs.Value,
+                                        SectorRsRising = seci.RsRising,
+                                        SectorRsBuy = seci.RsBuy,
+                                        SectorRsFalling = seci.RsFalling,
+                                        SectorRsSell = seci.RsSell,
+                                        SectorBullishPercentRising = seci.BullishPercentRising,
+                                        SectorPercentRsBuyRising = seci.PercentRSBuyRising,
+                                        SectorPercentRsRisingRising = seci.PercentRsRisingRising,
+                                        SectorPercentPositiveTrendRising = seci.PercentPositiveTrendRising,
+                                        SectorBullishPercentFalling = seci.BullishPercentFalling,
+                                        SectorPercentRsBuyFalling = seci.PercentRSBuyFalling,
+                                        SectorPercentRsRisingFalling = seci.PercentRsRisingFalling,
+                                        SectorPercentPositiveTrendFalling = seci.PercentPositiveTrendFalling,
+                                        SectorNewEvents = seci.NewEvents,
+                                        #endregion
+                                        Notices = ((mkti.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Market Bull Alert " : "")
+                                            + ((mkti.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Market Bull Confirmed " : "")
+                                            + ((mkti.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "(Below 30%)" : "")
+                                            + ((mkti.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Market Bear Alert " : "")
+                                            + ((mkti.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Market Bear Confirmed " : "")
+                                            + ((mkti.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "(Above 70%)" : "")
+                                            + ((seci.NewEvents & (int)IndexEvents.BullAlert) == (int)IndexEvents.BullAlert ? "Sector Bull Alert " : "")
+                                            + ((seci.NewEvents & (int)IndexEvents.BullConfirmed) == (int)IndexEvents.BullConfirmed ? "Sector Bull Confirmed " : "")
+                                            + ((seci.NewEvents & (int)IndexEvents.BullConfirmedLt30) == (int)IndexEvents.BullConfirmedLt30 ? "(Below 30%)" : "")
+                                            + ((seci.NewEvents & (int)IndexEvents.BearAlert) == (int)IndexEvents.BearAlert ? "Sector Bear Alert " : "")
+                                            + ((seci.NewEvents & (int)IndexEvents.BearConfirmed) == (int)IndexEvents.BearConfirmed ? "Sector Bear Confirmed " : "")
+                                            + ((seci.NewEvents & (int)IndexEvents.BearConfirmedGt70) == (int)IndexEvents.BearConfirmedGt70 ? "(Above 70%)" : "")
+                                            + ((si.NewEvents & (int)ShareEvents.MomentumGonePositive) == (int)ShareEvents.MomentumGonePositive ? "Moment Positive" : "")
+                                            + ((si.NewEvents & (int)ShareEvents.MomentumGoneNegative) == (int)ShareEvents.MomentumGoneNegative ? "Moment Negative" : "")
                                     }).ToListAsync();
                 }
             }

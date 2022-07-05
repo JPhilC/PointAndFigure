@@ -36,16 +36,18 @@ SELECT [ShareId]
 	,	[Day]
 	,	[AdjustedClose]
 	,	MIN([AdjustedClose]) OVER (
+			PARTITION BY [ShareId]
 			ORDER BY [ShareId], [Day]
 			ROWS BETWEEN 258 PRECEDING AND CURRENT ROW
 			) Low52w
 	,	MAX([AdjustedClose]) OVER (
+			PARTITION BY [ShareId]
 			ORDER BY [ShareId], [Day]
 			ROWS BETWEEN 258 PRECEDING AND CURRENT ROW
 			) High52w
 	INTO #highlows
 	FROM [EodPrices]
-	WHERE [High52Week] IS NULL
+	WHERE [Day] > DATEADD(YEAR, -1, GETDATE())
 	ORDER BY [ShareId], [Day] DESC
 
 RAISERROR (N'Updating share 52 week highs and lows ...', 0, 0) WITH NOWAIT;
@@ -55,7 +57,7 @@ UPDATE [EodPrices]
 	,	[Low52Week] = hl.[Low52w]
 FROM [EodPrices] q
 LEFT JOIN #highlows hl ON hl.[ShareId] = q.[ShareId] AND hl.[Day] = q.[Day]
-WHERE q.[High52Week] IS NULL
+-- WHERE q.[High52Week] IS NULL
 
 DROP TABLE #highlows;
 
@@ -70,6 +72,7 @@ SELECT q.[ShareId]
 	,	ROW_NUMBER() OVER(PARTITION BY q.[ShareId] ORDER BY q.[Day] ASC) as Ordinal#
 INTO #today
 FROM [EodPrices] q
+WHERE q.[Day] > DATEADD(YEAR, -1, GETDATE())
 
 SELECT td.[Id]
 		,	IIF(td.[AdjustedClose] > yd.[High52Week], 1, 0) AS New52WeekHigh
@@ -77,13 +80,14 @@ SELECT td.[Id]
 	INTO #newValues
 	FROM #today td
 	LEFT JOIN #today yd ON yd.[ShareId] = td.[ShareId] and yd.[Ordinal#] = td.[Ordinal#]-1
+	
 
 UPDATE [EodPrices]
 	SET [New52WeekHigh] = nv.[New52WeekHigh]
 	,	[New52WeekLow] = nv.[New52WeekLow]
 FROM [EodPrices] q
 LEFT JOIN #newValues nv on nv.[Id] = q.[Id]
-WHERE q.[New52WeekHigh] IS NULL
+-- WHERE q.[New52WeekHigh] IS NULL
 
 DROP TABLE #today;
 DROP TABLE #newValues;

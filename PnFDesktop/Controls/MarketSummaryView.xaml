@@ -235,45 +235,6 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="% 10 EMA" SortMemberPath="PercentAboveEma10">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.PercentOf10Gt30}}"/>
-                                <TextBlock Margin="5,0,5,0">
-                                    <Hyperlink Command="{Binding DataContext.LoadPercentAbove10EmaChartCommand, RelativeSource={RelativeSource AncestorType=local:MarketSummaryView}}"
-                                                   CommandParameter="{Binding}">
-                                            <TextBlock Text="{Binding PercentAboveEma10, StringFormat={}{0:N2}}"/>
-                                            <Hyperlink.ToolTip>
-                                                <TextBlock Text="Open % of shares above their own 10 week EMA P &amp; F Chart" />
-                                            </Hyperlink.ToolTip>
-                                     </Hyperlink>
-                                </TextBlock>
-                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.PercentOf10Lt70}}"/>
-                                <StackPanel.Style>
-                                    <Style TargetType="StackPanel">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding PercentAbove10EmaRising}" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding PercentAbove10EmaFalling}" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </StackPanel.Style>
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="% 30 EMA" SortMemberPath="PercentAboveEma30">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -300,6 +261,45 @@
                                                 </Setter>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentAbove30EmaFalling}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="% 10 EMA" SortMemberPath="PercentAboveEma10">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.PercentOf10Gt30}}"/>
+                                <TextBlock Margin="5,0,5,0">
+                                    <Hyperlink Command="{Binding DataContext.LoadPercentAbove10EmaChartCommand, RelativeSource={RelativeSource AncestorType=local:MarketSummaryView}}"
+                                                   CommandParameter="{Binding}">
+                                            <TextBlock Text="{Binding PercentAboveEma10, StringFormat={}{0:N2}}"/>
+                                            <Hyperlink.ToolTip>
+                                                <TextBlock Text="Open % of shares above their own 10 week EMA P &amp; F Chart" />
+                                            </Hyperlink.ToolTip>
+                                     </Hyperlink>
+                                </TextBlock>
+                                <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:IndexEvents.PercentOf10Lt70}}"/>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding PercentAbove10EmaRising}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PercentAbove10EmaFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>

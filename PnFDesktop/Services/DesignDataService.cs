@@ -130,7 +130,7 @@ namespace PnFDesktop.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<ShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day)
+        public Task<IEnumerable<PortfolioShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day)
         {
             throw new NotImplementedException();
         }

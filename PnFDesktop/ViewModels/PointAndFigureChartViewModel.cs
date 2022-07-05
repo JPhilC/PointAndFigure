@@ -434,13 +434,13 @@ namespace PnFDesktop.ViewCharts
                 else
                 {
                     // Logarithmic
-                    double increment = 1d + (this.Chart!.BoxSize!.Value * 0.01);    // Calculate the boxsize and a percentage incrementor (e,g, 2 => 1.02)
+                    double increment = Math.Log(1d + (this.Chart!.BoxSize!.Value * 0.01));    // Calculate the boxsize and a percentage incrementor (e,g, 2 => 1.02)
                     for (int i = minRowIndex; i <= maxRowIndex; i++)
                     {
                         RowData rowData = _chartLayoutManager.GetRowData(i);
                         if (i % 5 == 0) // Add a row and labels every 5 rows
                         {
-                            double rowValue = this.Chart!.BaseValue!.Value * Math.Pow(increment,  i-1);
+                            double rowValue = Math.Exp(this.Chart!.BaseValue!.Value + (increment * i));
                             Highlights.Add(new PointAndFigureHighlightViewModel(rowData.RowHighlight, Orientation.Horizontal));
                             AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{rowValue:F}", AxisLabelLocation.Left, rowData.LeftLabel.X, rowData.LeftLabel.Y));
                             AxisLabels.Add(new PointAndFigureAxisLabelViewModel($"{rowValue:F}", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
