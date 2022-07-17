@@ -39,7 +39,7 @@ namespace PnFDesktop.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<MarketSummaryDTO>> GetMarketValuesAsync(DateTime day, string exchangeCode)
+        public Task<IEnumerable<MarketSummaryDTO>> GetSectorValuesAsync(DateTime day, string exchangeCode)
         {
             throw new NotImplementedException();
         }
@@ -146,6 +146,11 @@ namespace PnFDesktop.Services
         }
 
         public Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<StdDevResult> GetStandardDeviationAsync(Guid shareId, int days)
         {
             throw new NotImplementedException();
         }

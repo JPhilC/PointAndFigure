@@ -57,21 +57,37 @@ namespace PnFDesktop.DTOs
         public bool? RsSell { get; set; }
 
         public bool? BullishPercentRising { get; set; }
+        public bool? BullishPercentBuy { get; set; }
         public bool? PercentRSBuyRising { get; set; }
+        public bool? PercentRSBuyBuy { get; set; }
         public bool? PercentRsRisingRising { get; set; }
+        public bool? PercentRsRisingBuy { get; set; }
         public bool? PercentPositiveTrendRising { get; set; }
+        public bool? PercentPositiveTrendBuy { get; set; }
         public bool? PercentAbove30EmaRising { get; set; }
+        public bool? PercentAbove30EmaBuy { get; set; }
         public bool? PercentAbove10EmaRising { get; set; }
+        public bool? PercentAbove10EmaBuy { get; set; }
         public bool? BullishPercentFalling { get; set; }
+        public bool? BullishPercentSell { get; set; }
         public bool? PercentRSBuyFalling { get; set; }
+        public bool? PercentRSBuySell { get; set; }
         public bool? PercentRsRisingFalling { get; set; }
+        public bool? PercentRsRisingSell { get; set; }
         public bool? PercentPositiveTrendFalling { get; set; }
+        public bool? PercentPositiveTrendSell { get; set; }
         public bool? PercentAbove30EmaFalling { get; set; }
+        public bool? PercentAbove30EmaSell { get; set; }
         public bool? PercentAbove10EmaFalling { get; set; }
+        public bool? PercentAbove10EmaSell { get; set; }
         public bool? HighLowIndexRising { get; set; }
+        public bool? HighLowIndexBuy { get; set; }
         public bool? HighLowIndexFalling { get; set; }
+        public bool? HighLowIndexSell { get; set; }
 
         public int? NewEvents { get; set; }
+
+        public int? Score { get; set;}
 
         public string? Notices {get; set;}
 

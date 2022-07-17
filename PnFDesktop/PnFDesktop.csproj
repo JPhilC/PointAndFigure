@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <None Remove="Resources\Images\icons8-plus-math-32.png" />
+    <None Remove="Resources\Images\icons8-refresh-32.png" />
     <None Remove="Resources\Images\icons8-trash-can-32.png" />
     <None Remove="Resources\Images\P_FDesktop32.ico" />
   </ItemGroup>
@@ -33,6 +34,7 @@
       <PackagePath>\</PackagePath>
     </Content>
     <Resource Include="Resources\Images\icons8-plus-math-32.png" />
+    <Resource Include="Resources\Images\icons8-refresh-32.png" />
     <Resource Include="Resources\Images\icons8-trash-can-32.png" />
     <Resource Include="Resources\Images\P_FDesktop32.ico" />
   </ItemGroup>

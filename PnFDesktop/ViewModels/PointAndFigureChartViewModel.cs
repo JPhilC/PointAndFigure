@@ -59,6 +59,10 @@ namespace PnFDesktop.ViewCharts
         /// 
         private double _contentViewportHeight = 0;
 
+        private double? _mean;
+
+        private double? _stdDev;
+
         #endregion Internal Data Members
         private PnFChart? _chart;
 
@@ -368,9 +372,11 @@ namespace PnFDesktop.ViewCharts
             }
         }
 
-        public PointAndFigureChartViewModel(PnFChart chart)
+        public PointAndFigureChartViewModel(PnFChart chart, double? mean, double? stdDev)
         {
             Chart = chart;
+            _mean = mean;
+            _stdDev = stdDev;
             ContentId = $"{Constants.PointAndFigureChart}_{chart.Id}";
             _chartLayoutManager.Initialize(chart, 5d, 10d, 25d);
 
@@ -387,6 +393,7 @@ namespace PnFDesktop.ViewCharts
             AxisLabels.Clear();
             AddColumns(out int minRowIndex, out int maxRowIndex);
             AddRowData(minRowIndex, maxRowIndex);
+            AddTradingBands();
         }
 
         #region Helper methods ...
@@ -449,6 +456,66 @@ namespace PnFDesktop.ViewCharts
                 }
             }
 
+        }
+
+        private void AddTradingBands()
+        {
+            if (_mean.HasValue && _stdDev.HasValue)
+            {
+                double top = _mean.Value + (3 * _stdDev.Value);
+                double bottom = _mean.Value - (3 * _stdDev.Value);
+                double mid = _mean.Value;
+                if (Chart.PriceScale == PnFChartPriceScale.Normal)
+                {
+                    RowData rowData = _chartLayoutManager.GetRowData(GetNormalIndex(top));
+                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel("Top", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
+                    rowData = _chartLayoutManager.GetRowData(GetNormalIndex(mid));
+                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel("Mid", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
+                    rowData = _chartLayoutManager.GetRowData(GetNormalIndex(bottom));
+                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel("Bot", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
+                }
+                else
+                {
+                    top = Math.Log(top);
+                    bottom = Math.Log(bottom);
+                    mid = Math.Log(mid);
+                    RowData rowData = _chartLayoutManager.GetRowData(GetLogarithmicIndex(top));
+                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel("Top", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
+                    rowData = _chartLayoutManager.GetRowData(GetLogarithmicIndex(mid));
+                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel("Mid", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
+                    rowData = _chartLayoutManager.GetRowData(GetLogarithmicIndex(bottom));
+                    AxisLabels.Add(new PointAndFigureAxisLabelViewModel("Bot", AxisLabelLocation.Right, rowData.RightLabel.X, rowData.RightLabel.Y));
+                }
+
+            }
+        }
+
+
+        private int GetNormalIndex(double value, bool falling = false)
+        {
+            int index = (int)(value / Chart.BoxSize.Value);
+            if (falling && (value > (index * Chart.BoxSize.Value)))
+            {
+                index++;
+            }
+            return index;
+        }
+
+        /// <summary>
+        /// Returns the next logarithmic based box size
+        /// </summary>
+        /// <param name="value">Log of the value</param>
+        /// <param name="falling"></param>
+        /// <returns></returns>
+        private int GetLogarithmicIndex(double value, bool falling = false)
+        {
+            double logBoxSize = Math.Log(1+(Chart.BoxSize.Value * 0.01));
+            int index = (int)((value - Chart.BaseValue.Value) / logBoxSize);
+            if (falling && (value > (index * logBoxSize)))
+            {
+                index++;
+            }
+            return index;
         }
 
         #endregion

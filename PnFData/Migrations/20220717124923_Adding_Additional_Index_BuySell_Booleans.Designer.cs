@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220717124923_Adding_Additional_Index_BuySell_Booleans")]
+    partial class Adding_Additional_Index_BuySell_Booleans
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -507,6 +507,20 @@ namespace PnFDesktop.ViewModels
         }
         #endregion
 
+        private RelayCommand _refreshCommand;
+
+        public RelayCommand RefreshCommand
+        {
+            get
+            {
+                return _refreshCommand ?? (_refreshCommand = new RelayCommand(async () =>
+                {
+                    await RefreshPortfolioSharesSummaryDataAsync();
+                }));
+            }
+        }
+
+
         #endregion
 
 

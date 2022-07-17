@@ -116,6 +116,22 @@ namespace PnFDesktop.DTOs
         public bool? MarketPercentAbove10EmaFalling { get; set; }
         public bool? MarketHighLowIndexRising { get; set; }
         public bool? MarketHighLowIndexFalling { get; set; }
+
+        public bool? MarketBullishPercentBuy { get; set; }
+        public bool? MarketPercentRsBuyBuy { get; set; }
+        public bool? MarketPercentRsRisingBuy { get; set; }
+        public bool? MarketPercentPositiveTrendBuy { get; set; }
+        public bool? MarketPercentAbove30EmaBuy { get; set; }
+        public bool? MarketPercentAbove10EmaBuy { get; set; }
+        public bool? MarketBullishPercentSell { get; set; }
+        public bool? MarketPercentRsBuySell { get; set; }
+        public bool? MarketPercentRsRisingSell { get; set; }
+        public bool? MarketPercentPositiveTrendSell { get; set; }
+        public bool? MarketPercentAbove30EmaSell { get; set; }
+        public bool? MarketPercentAbove10EmaSell { get; set; }
+        public bool? MarketHighLowIndexBuy { get; set; }
+        public bool? MarketHighLowIndexSell { get; set; }
+
         public int? MarketNewEvents { get; set; }
 
         #endregion
@@ -125,6 +141,9 @@ namespace PnFDesktop.DTOs
         public double? SectorBullishPercent { get; set; }
         public bool? SectorBullishPercentRising { get; set; }
         public bool? SectorBullishPercentFalling { get; set; }
+
+        public bool? SectorBullishPercentBuy { get; set; }
+        public bool? SectorBullishPercentSell { get; set; }
 
         public double? SectorRsValue { get; set; }
 
@@ -139,14 +158,26 @@ namespace PnFDesktop.DTOs
         public bool? SectorPercentRsBuyRising { get; set; }
         public bool? SectorPercentRsBuyFalling { get; set; }
 
+        public bool? SectorPercentRsBuyBuy { get; set; }
+        public bool? SectorPercentRsBuySell { get; set; }
+
         public double? SectorPercentRsRising { get; set; }
         public bool? SectorPercentRsRisingRising { get; set; }
         public bool? SectorPercentRsRisingFalling { get; set; }
+
+        public bool? SectorPercentRsRisingBuy { get; set; }
+        public bool? SectorPercentRsRisingSell { get; set; }
 
 
         public double? SectorPercentPositiveTrend { get; set; }
         public bool? SectorPercentPositiveTrendRising { get; set; }
         public bool? SectorPercentPositiveTrendFalling { get; set; }
+
+
+        public bool? SectorPercentPositiveTrendBuy { get; set; }
+        public bool? SectorPercentPositiveTrendSell { get; set; }
+
+
         public int? SectorNewEvents { get; set; }
 
         #endregion

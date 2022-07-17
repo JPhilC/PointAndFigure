@@ -32,7 +32,34 @@ namespace PnFData.Model
         HighLowGt30 = 0x0400,
         [Description("High-low dropped below 70")]
         HighLowLt70 = 0x0800,
-
+        [Description("Percent RS X Buy")]
+        PercentRsXBuy = 0x001000,
+        [Description("Percent RS X Sell")]
+        PercentRsXSell = 0x002000,
+        [Description("Percent on RS Buy Buy")]
+        PercentRsBuyBuy = 0x004000,
+        [Description("Percent on RS Buy Sell")]
+        PercentRsBuySell = 0x008000,
+        [Description("PT Buy")]
+        PercentPtBuy = 0x010000,
+        [Description("PT Sell")]
+        PercentPtSell = 0x020000,
+        [Description("Percent Above EMA 10 Buy")]
+        PercentEma10Buy = 0x040000,
+        [Description("Percent Above EMA 10 Sell")]
+        PercentEma10Sell = 0x080000,
+        [Description("Percent Above EMA 30 Buy")]
+        PercentEma30Buy = 0x100000,
+        [Description("Percent Above EMA 30 Sell")]
+        PercentEma30Sell = 0x200000,
+        [Description("High Low Index Buy")]
+        HiLoBuy = 0x400000,
+        [Description("High Low Index Sell")]
+        HiLoSell = 0x800000,
+        [Description("RS Buy")]
+        RsBuy = 0x1000000,
+        [Description("RS Sell")]
+        RsSell = 0x2000000
     }
 
     [Index(nameof(Day))]
@@ -59,21 +86,33 @@ namespace PnFData.Model
         public bool? BullishPercentRising { get; set; }
         public bool? BullishPercentDoubleTop { get; set; }
         public bool? PercentRSBuyRising { get; set; }
+        public bool? PercentRSBuyBuy { get; set; }
         public bool? PercentRsRisingRising { get; set; }
+        public bool? PercentRsRisingBuy { get; set; }
         public bool? PercentPositiveTrendRising { get; set; }
+        public bool? PercentPositiveTrendBuy { get; set; }
         public bool? PercentAbove30EmaRising { get; set; }
+        public bool? PercentAbove30EmaBuy { get; set; }
         public bool? PercentAbove10EmaRising { get; set; }
+        public bool? PercentAbove10EmaBuy { get; set; }
         public bool? BullishPercentFalling { get; set; }
         public bool? BullishPercentDoubleBottom { get; set; }
         public bool? PercentRSBuyFalling { get; set; }
+        public bool? PercentRSBuySell { get; set; }
         public bool? PercentRsRisingFalling { get; set; }
+        public bool? PercentRsRisingSell { get; set; }
         public bool? PercentPositiveTrendFalling { get; set; }
+        public bool? PercentPositiveTrendSell { get; set; }
         public bool? PercentAbove30EmaFalling { get; set; }
+        public bool? PercentAbove30EmaSell { get; set; }
         public bool? PercentAbove10EmaFalling { get; set; }
+        public bool? PercentAbove10EmaSell { get; set; }
         public bool? HighLowIndexRising { get; set; }
+        public bool? HighLowIndexBuy { get; set; }
         public bool? HighLowIndexFalling { get; set; }
+        public bool? HighLowIndexSell { get; set; }
 
-        public int NewEvents {get;set;}
+        public int NewEvents { get; set; }
 
 
         [Required]

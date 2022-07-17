@@ -98,7 +98,7 @@ namespace PnFDesktop.ViewModels
         /// <summary>
         /// This is just used to support design mode in the case designer.
         /// </summary>
-        public PointAndFigureChartViewModel GetPointAndFigureChartViewModel(PnFChart newChart, bool forceRefresh = false)
+        public PointAndFigureChartViewModel GetPointAndFigureChartViewModel(PnFChart newChart, double? mean, double? stdDev, bool forceRefresh = false)
         {
             string key = $"{Constants.PointAndFigureChart}_{newChart.Id}";
             PointAndFigureChartViewModel vm = null;
@@ -116,7 +116,7 @@ namespace PnFDesktop.ViewModels
             else
             {
                 // Otherwise create it and register it before returning
-                vm = new PointAndFigureChartViewModel(newChart);
+                vm = new PointAndFigureChartViewModel(newChart, mean, stdDev);
                 vm.BuildChartData();
                 SimpleIoc.Default.Register(() => vm, key, true);
             }

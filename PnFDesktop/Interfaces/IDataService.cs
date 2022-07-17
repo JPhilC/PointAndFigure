@@ -22,7 +22,10 @@ namespace PnFDesktop.Interfaces
         Task<IEnumerable<IndexDTO>> GetIndicesAsync();
 
         Task<IEnumerable<DayDTO>> GetMarketAvailableDates(DateTime cutOff);
-        Task<IEnumerable<MarketSummaryDTO>> GetMarketValuesAsync(DateTime day, string exchangeCode);
+        
+        Task<IEnumerable<MarketSummaryDTO>> GetSectorValuesAsync(DateTime day, string exchangeCode);
+
+        Task<IEnumerable<MarketSummaryDTO>> GetMarketValuesAsync(DateTime day);
 
         Task<IEnumerable<ShareSummaryDTO>> GetShareValuesAsync(MarketSummaryDTO marketSummaryDTO);
 
@@ -40,5 +43,6 @@ namespace PnFDesktop.Interfaces
 
         Task<bool> UpdatePortfolioAsync(Portfolio newPortfolio);
 
+        Task<StdDevResult> GetStandardDeviationAsync(Guid shareId, int days);
     }
 }

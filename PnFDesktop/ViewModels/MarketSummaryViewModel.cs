@@ -71,7 +71,9 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        public ObservableCollection<MarketSummaryDTO> Indices { get; } = new ObservableCollection<MarketSummaryDTO>();
+        public ObservableCollection<MarketSummaryDTO> Markets { get; } = new ObservableCollection<MarketSummaryDTO>();
+
+        public ObservableCollection<MarketSummaryDTO> Sectors { get; } = new ObservableCollection<MarketSummaryDTO>();
 
         readonly IDataService? _DataService;
         private readonly object _ItemsLock = new object();
@@ -97,7 +99,8 @@ namespace PnFDesktop.ViewModels
             ContentId = Constants.MarketSummary;
             Title = "Market Summary";
             BindingOperations.EnableCollectionSynchronization(Days, _ItemsLock);
-            BindingOperations.EnableCollectionSynchronization(Indices, _ItemsLock);
+            BindingOperations.EnableCollectionSynchronization(Markets, _ItemsLock);
+            BindingOperations.EnableCollectionSynchronization(Sectors, _ItemsLock);
 
         }
 
@@ -112,10 +115,12 @@ namespace PnFDesktop.ViewModels
                     this._selectedDay = this.Days.FirstOrDefault();
                     this.CustomDay = this._selectedDay.Day;
                     await LoadMarketSummaryDataAsync();
+                    await LoadSectorSummaryDataAsync();
                 }
                 else if (message.Notification == Constants.RefreshMarketSummary && _dataLoaded)
                 {
                     await RefreshMarketSummaryDataAsync();
+                    await RefreshSectorSummaryDataAsync();
                 }
             });
 
@@ -126,18 +131,17 @@ namespace PnFDesktop.ViewModels
         {
             try
             {
-                App.Current.Dispatcher.Invoke(() => IsBusy = true);
                 if (this.Days.Any())
                 {
-                    var list = await _DataService.GetMarketValuesAsync(this.SelectedDay!.Day, this.SelectedExchangeCode);
+                    var list = await _DataService.GetMarketValuesAsync(this.SelectedDay!.Day);
                     lock (_ItemsLock)
                     {
-                        App.Current.Dispatcher.Invoke(() => Indices.Clear());
+                        App.Current.Dispatcher.Invoke(() => Markets.Clear());
                         foreach (MarketSummaryDTO index in list)
                         {
                             App.Current.Dispatcher.Invoke(() =>
                             {
-                                Indices.Add(index);
+                                Markets.Add(index);
                             });
                         }
                     }
@@ -153,6 +157,39 @@ namespace PnFDesktop.ViewModels
             {
                 MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the market value data", ex);
             }
+        }
+
+        private async Task LoadSectorSummaryDataAsync()
+        {
+            try
+            {
+                App.Current.Dispatcher.Invoke(() => IsBusy = true);
+                if (this.Days.Any())
+                {
+                    var list = await _DataService.GetSectorValuesAsync(this.SelectedDay!.Day, this.SelectedExchangeCode);
+                    lock (_ItemsLock)
+                    {
+                        App.Current.Dispatcher.Invoke(() => Sectors.Clear());
+                        foreach (MarketSummaryDTO index in list)
+                        {
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                Sectors.Add(index);
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    MessageLog.LogMessage(this, LogType.Information, "There is no sector value data available");
+                }
+                App.Current.Dispatcher.Invoke(() => OnPropertyChanged(nameof(SelectedDay)));
+                _dataLoaded = true;
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the secto value data", ex);
+            }
             finally
             {
                 App.Current.Dispatcher.Invoke(() => IsBusy = false);
@@ -164,15 +201,15 @@ namespace PnFDesktop.ViewModels
             try
             {
                 App.Current.Dispatcher.Invoke(() => IsBusy = true);
-                var list = await _DataService!.GetMarketValuesAsync(this.SelectedDay!.Day, this.SelectedExchangeCode);
+                var list = await _DataService!.GetMarketValuesAsync(this.SelectedDay!.Day);
                 lock (_ItemsLock)
                 {
-                    App.Current.Dispatcher.Invoke(() => Indices.Clear());
+                    App.Current.Dispatcher.Invoke(() => Markets.Clear());
                     foreach (MarketSummaryDTO index in list)
                     {
                         App.Current.Dispatcher.Invoke(() =>
                         {
-                            Indices.Add(index);
+                            Markets.Add(index);
                         });
                     }
                 }
@@ -180,6 +217,34 @@ namespace PnFDesktop.ViewModels
             catch (Exception ex)
             {
                 MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the market value data", ex);
+            }
+            finally
+            {
+                App.Current.Dispatcher.Invoke(() => IsBusy = false);
+            }
+        }
+
+        private async Task RefreshSectorSummaryDataAsync()
+        {
+            try
+            {
+                App.Current.Dispatcher.Invoke(() => IsBusy = true);
+                var list = await _DataService!.GetSectorValuesAsync(this.SelectedDay!.Day, this.SelectedExchangeCode);
+                lock (_ItemsLock)
+                {
+                    App.Current.Dispatcher.Invoke(() => Sectors.Clear());
+                    foreach (MarketSummaryDTO index in list)
+                    {
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            Sectors.Add(index);
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred loading the sector value data", ex);
             }
             finally
             {

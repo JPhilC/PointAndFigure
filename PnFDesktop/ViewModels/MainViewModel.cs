@@ -102,10 +102,11 @@ namespace PnFDesktop.ViewModels
                 if (message.Sender != this)
                 {
                     PnFChart? chart = await _dataService.GetPointAndFigureChartAsync(message.InstrumentId, message.ChartSource);
+                    StdDevResult? stdDev = await _dataService.GetStandardDeviationAsync(message.InstrumentId, 50);   // Get 10 week Mean and StdDev
                     if (chart != null)
                     {
                         MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for {chart.Name} ...");
-                        OpenPointAndFigureChart(chart, true);
+                        OpenPointAndFigureChart(chart, stdDev, true);
                     }
                     else
                     {
@@ -306,11 +307,18 @@ namespace PnFDesktop.ViewModels
             OnPropertyChanged("PortfoliosAvailable");
         }
 
-        public void OpenPointAndFigureChart(PnFChart pnfChart, bool makeActive = false, bool forceRefresh = false)
+        public void OpenPointAndFigureChart(PnFChart pnfChart, StdDevResult? stdDevResult, bool makeActive = false, bool forceRefresh = false)
         {
+            double? mean = null;
+            double? stdDev = null;
+            if (stdDevResult != null)
+            {
+                mean = stdDevResult.Mean;
+                stdDev = stdDevResult.StdDev;
+            }
             // Get the ModelDesignerViewModel from the ViewModel locator instance. This is the definitive
             // source for viewpnfCharts.
-            IPointAndFigureChartViewModel pnfChartDesignerViewModel = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart, forceRefresh);
+            IPointAndFigureChartViewModel pnfChartDesignerViewModel = ViewModelLocator.Current.GetPointAndFigureChartViewModel(pnfChart, mean, stdDev, forceRefresh);
             if (pnfChartDesignerViewModel is PaneViewModel paneViewModel)
             {
                 if (!this.DocumentPanes.Contains(paneViewModel))
@@ -462,10 +470,11 @@ namespace PnFDesktop.ViewModels
                                    MessageLog.LogMessage(this, LogType.Information, $"Retrieving P & F chart data for {openChartVm.SelectedShare.Name} ...");
                                    //PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(new Guid("B9B46E45-2258-496D-9F6D-8D681A19926B"), PnFChartSource.RSSectorVMarket);
                                    PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(openChartVm.SelectedShare.Id, (PnFChartSource)openChartVm.ShareChartType);
+                                   StdDevResult? stdDev = await _dataService.GetStandardDeviationAsync(openChartVm.SelectedShare.Id, 50);
                                    if (testChart != null)
                                    {
                                        MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for {openChartVm.SelectedShare.Name} ...");
-                                       OpenPointAndFigureChart(testChart, true);
+                                       OpenPointAndFigureChart(testChart, stdDev, true);
                                    }
                                    else
                                    {
@@ -502,7 +511,7 @@ namespace PnFDesktop.ViewModels
                                    if (indexChart != null)
                                    {
                                        MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for {openChartVm.SelectedIndex.Description} ...");
-                                       OpenPointAndFigureChart(indexChart, true);
+                                       OpenPointAndFigureChart(indexChart, null, true);
                                    }
                                    else
                                    {
@@ -707,7 +716,7 @@ namespace PnFDesktop.ViewModels
                           );
                     if (chart != null)
                     {
-                        PointAndFigureChartViewModel pointAndFigureChartViewModel = ViewModelLocator.Current.GetPointAndFigureChartViewModel(chart);
+                        PointAndFigureChartViewModel pointAndFigureChartViewModel = ViewModelLocator.Current.GetPointAndFigureChartViewModel(chart, null, null);
                         if (!this.DocumentPanes.Contains(pointAndFigureChartViewModel))
                         {
                             this.DocumentPanes.Add(pointAndFigureChartViewModel);

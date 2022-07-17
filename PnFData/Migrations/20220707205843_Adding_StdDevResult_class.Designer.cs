@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PnFData.Model;
 
@@ -11,9 +12,10 @@ using PnFData.Model;
 namespace PnFData.Migrations
 {
     [DbContext(typeof(PnFDataContext))]
-    partial class PnFDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220707205843_Adding_StdDevResult_class")]
+    partial class Adding_StdDevResult_class
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,16 +208,10 @@ namespace PnFData.Migrations
                     b.Property<bool?>("Falling")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("HighLowIndexBuy")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("HighLowIndexFalling")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("HighLowIndexRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("HighLowIndexSell")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("IndexId")
@@ -224,19 +220,10 @@ namespace PnFData.Migrations
                     b.Property<int>("NewEvents")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("PercentAbove10EmaBuy")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("PercentAbove10EmaFalling")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("PercentAbove10EmaRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentAbove10EmaSell")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentAbove30EmaBuy")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("PercentAbove30EmaFalling")
@@ -245,22 +232,10 @@ namespace PnFData.Migrations
                     b.Property<bool?>("PercentAbove30EmaRising")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("PercentAbove30EmaSell")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentPositiveTrendBuy")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("PercentPositiveTrendFalling")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("PercentPositiveTrendRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentPositiveTrendSell")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRSBuyBuy")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("PercentRSBuyFalling")
@@ -269,19 +244,10 @@ namespace PnFData.Migrations
                     b.Property<bool?>("PercentRSBuyRising")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("PercentRSBuySell")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRsRisingBuy")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("PercentRsRisingFalling")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("PercentRsRisingRising")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("PercentRsRisingSell")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("Rising")

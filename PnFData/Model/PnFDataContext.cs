@@ -46,6 +46,10 @@ namespace PnFData.Model
         public DbSet<PortfolioShare> PortfolioShares { get; set; }
 
 
+        #region Result classes ...
+        public DbSet<StdDevResult> StdDevResults { get; set;}
+        #endregion
+
         // The following configures EF to create a Sqlite database file in the
         // special "local" folder for your platform.
         protected override void OnConfiguring(DbContextOptionsBuilder options)
@@ -117,6 +121,9 @@ namespace PnFData.Model
             modelBuilder.Entity<PortfolioShare>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("newid()");
+
+            modelBuilder.Entity<StdDevResult>()
+                .HasNoKey();
 
             // Define Db generated default values for CreatedAt
             modelBuilder.Entity<Share>()
