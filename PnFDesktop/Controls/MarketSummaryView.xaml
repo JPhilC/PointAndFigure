@@ -129,13 +129,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding Buy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding Falling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -147,6 +140,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Buy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -164,7 +164,12 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="% RS Buy" SortMemberPath="PercentRsBuy">
+                <DataGridTemplateColumn SortMemberPath="PercentRsBuy">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="% RS Buy" ToolTip="Percent of Stocks with RS Charts on Buy Signals"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -196,13 +201,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding PercentRSBuyBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentRSBuyFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -214,6 +212,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PercentRSBuyBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -231,7 +236,13 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="% RS Rising">
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="% RS X" ToolTip="Percent of Stocks with RS Charts in Xs"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -263,13 +274,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding PercentRsRisingBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentRsRisingFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -281,6 +285,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PercentRsRisingBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -298,7 +309,13 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="% PT" SortMemberPath="PercentPositiveTrend">
+                <DataGridTemplateColumn SortMemberPath="PercentPositiveTrend">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="% PT" ToolTip="Percent of Stocks with Positive Trends"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -330,13 +347,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding PercentPositiveTrendBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentPositiveTrendFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -348,6 +358,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PercentPositiveTrendBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -365,7 +382,13 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Bullish %" SortMemberPath="BullishPercent">
+                <DataGridTemplateColumn SortMemberPath="BullishPercent">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="Bullish %" ToolTip="Bullish Percent"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -398,13 +421,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding BullishPercentBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0 "/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding BullishPercentFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -416,6 +432,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding BullishPercentBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0 "/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -433,7 +456,12 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="% 30 EMA" SortMemberPath="PercentAboveEma30">
+                <DataGridTemplateColumn SortMemberPath="PercentAboveEma30">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="% 30 EMA" ToolTip="Percent of Stocks above their 30-week moving average"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -467,13 +495,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding PercentAbove30EmaBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentAbove30EmaFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -485,6 +506,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PercentAbove30EmaBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -502,7 +530,13 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="% 10 EMA" SortMemberPath="PercentAboveEma10">
+                <DataGridTemplateColumn SortMemberPath="PercentAboveEma10">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="% 10 EMA" ToolTip="Percent of Stocks above their 10-week moving average"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -536,13 +570,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding PercentAbove10EmaBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentAbove10EmaFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -554,6 +581,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PercentAbove10EmaBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -572,6 +606,12 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Hi-Low" SortMemberPath="HighLowIndexValue">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="Hi-Low" ToolTip="High-Low Index"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -605,13 +645,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding  HighLowIndexBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding HighLowIndexFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -623,6 +656,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding  HighLowIndexBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -670,7 +710,13 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Size" Binding="{Binding Contributors}" />
-                <DataGridTemplateColumn Header="Value" SortMemberPath="Value">
+                <DataGridTemplateColumn SortMemberPath="Value">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="Value" ToolTip="Sector Value"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -702,13 +748,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding Buy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding Falling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -720,6 +759,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Buy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -737,7 +783,13 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Bullish %" SortMemberPath="BullishPercent">
+                <DataGridTemplateColumn SortMemberPath="BullishPercent">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="Bullish %" ToolTip="Sector bullish percent"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -770,13 +822,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding BullishPercentBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding BullishPercentFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -788,6 +833,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding BullishPercentBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -805,7 +857,13 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="RS Value" SortMemberPath="RsValue">
+                <DataGridTemplateColumn SortMemberPath="RsValue">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="RS Value" ToolTip="Sector relative strength"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -837,13 +895,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding RsBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding RsFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -855,6 +906,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -872,7 +930,13 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="% RS Buy" SortMemberPath="PercentRsBuy">
+                <DataGridTemplateColumn SortMemberPath="PercentRsBuy">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="% RS Buy" ToolTip="Percent of stocks on RS buy signals"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -904,13 +968,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding PercentRSBuyBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentRSBuyFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -922,6 +979,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PercentRSBuyBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -939,7 +1003,13 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="% RS Rising">
+                <DataGridTemplateColumn SortMemberPath="PercentRsRising">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="% RS Rising" ToolTip="Percent of stocks with RS in Xs"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -971,13 +1041,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding PercentRsRisingBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentRsRisingFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -989,6 +1052,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PercentRsRisingBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -1006,7 +1076,13 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="% PT" SortMemberPath="PercentPositiveTrend">
+                <DataGridTemplateColumn SortMemberPath="PercentPositiveTrend">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="% PT" ToolTip="Percent of stocks with positive trend"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border BorderThickness="2">
@@ -1038,13 +1114,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding PercentPositiveTrendBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding PercentPositiveTrendFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -1056,6 +1125,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PercentPositiveTrendBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>

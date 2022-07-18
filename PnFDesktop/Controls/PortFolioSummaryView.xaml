@@ -182,13 +182,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding MarketPercentRsBuyBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding MarketPercentRsBuyFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -200,6 +193,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding MarketPercentRsBuyBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -249,13 +249,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding MarketPercentRsRisingBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding MarketPercentRsRisingFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -267,6 +260,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding MarketPercentRsRisingBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -316,13 +316,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding MarketPercentPositiveTrendBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding MarketPercentPositiveTrendFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -334,6 +327,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding MarketPercentPositiveTrendBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -384,13 +384,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding MarketBullishPercentBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding MarketBullishPercentFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -402,6 +395,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding MarketBullishPercentBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -453,13 +453,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding MarketPercentAbove30EmaBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding MarketPercentAbove30EmaFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -471,6 +464,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding MarketPercentAbove30EmaBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -522,13 +522,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding MarketPercentAbove10EmaBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding MarketPercentAbove10EmaFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -540,6 +533,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding MarketPercentAbove10EmaBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -591,13 +591,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding  MarketHighLowIndexBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding MarketHighLowIndexFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -609,6 +602,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding  MarketHighLowIndexBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -662,13 +662,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding SectorBullishPercentBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding SectorBullishPercentFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -680,6 +673,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SectorBullishPercentBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -729,13 +729,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding SectorRsBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding SectorRsFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -747,6 +740,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SectorRsBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -796,13 +796,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding SectorPercentRsBuyBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding SectorPercentRsBuyFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -814,6 +807,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SectorPercentRsBuyBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -863,13 +863,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding SectorPercentRsRisingBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding SectorPercentRsRisingFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -881,6 +874,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SectorPercentRsRisingBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -930,13 +930,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding SectorPercentPositiveTrendBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding SectorPercentPositiveTrendFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -948,6 +941,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SectorPercentPositiveTrendBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -1154,13 +1154,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding RsBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding RsFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -1172,6 +1165,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -1230,13 +1230,6 @@
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding PeerRsBuy}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding PeerRsFalling}" Value="True">
                                                 <Setter Property="Background">
                                                     <Setter.Value>
@@ -1248,6 +1241,13 @@
                                                 <Setter Property="BorderBrush">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PeerRsBuy}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
