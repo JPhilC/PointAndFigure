@@ -21,6 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Images\icons8-back-32.png" />
+    <None Remove="Resources\Images\icons8-double-left-32.png" />
+    <None Remove="Resources\Images\icons8-double-right-32.png" />
+    <None Remove="Resources\Images\icons8-forward-32.png" />
     <None Remove="Resources\Images\icons8-plus-math-32.png" />
     <None Remove="Resources\Images\icons8-refresh-32.png" />
     <None Remove="Resources\Images\icons8-trash-can-32.png" />
@@ -33,6 +37,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </Content>
+    <Resource Include="Resources\Images\icons8-back-32.png" />
+    <Resource Include="Resources\Images\icons8-double-left-32.png" />
+    <Resource Include="Resources\Images\icons8-double-right-32.png" />
+    <Resource Include="Resources\Images\icons8-forward-32.png" />
     <Resource Include="Resources\Images\icons8-plus-math-32.png" />
     <Resource Include="Resources\Images\icons8-refresh-32.png" />
     <Resource Include="Resources\Images\icons8-trash-can-32.png" />
@@ -56,6 +64,9 @@
 
   <ItemGroup>
     <Compile Update="Controls\CreatePortfolioWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Controls\MarketSummaryButtonView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Controls\PortfolioManagementView.xaml.cs">
@@ -87,6 +98,10 @@
 
   <ItemGroup>
     <Page Update="Controls\CreatePortfolioWindow.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\MarketSummaryButtonView.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>

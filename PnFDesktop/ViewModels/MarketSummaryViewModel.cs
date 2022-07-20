@@ -46,6 +46,12 @@ namespace PnFDesktop.ViewModels
                 if (SetProperty(ref _selectedDay, value))
                 {
                     WeakReferenceMessenger.Default.Send<NotificationMessage>(new NotificationMessage(Constants.RefreshMarketSummary));
+                    if (_selectedDay != null)
+                    {
+                        _customDay = _selectedDay.Day;
+                        OnPropertyChanged("CustomDay");
+                    }
+
                 }
             }
         }
@@ -116,6 +122,9 @@ namespace PnFDesktop.ViewModels
                     this.CustomDay = this._selectedDay.Day;
                     await LoadMarketSummaryDataAsync();
                     await LoadSectorSummaryDataAsync();
+                    MoveMonthCommand.NotifyCanExecuteChanged();
+                    MoveWeekCommand.NotifyCanExecuteChanged();
+
                 }
                 else if (message.Notification == Constants.RefreshMarketSummary && _dataLoaded)
                 {
@@ -124,7 +133,7 @@ namespace PnFDesktop.ViewModels
                 }
             });
 
-            Control = new MarketSummaryView(this);
+            Control = new MarketSummaryButtonView(this);
         }
 
         private async Task LoadMarketSummaryDataAsync()
@@ -253,7 +262,40 @@ namespace PnFDesktop.ViewModels
         }
 
 
-        #region LoadSharesCommand ...
+        #region Relay commands ...
+        private RelayCommand<int> _moveMonthCommand;
+
+        /// <summary>
+        /// Moves back or forward in multiples of 4 weeks.
+        /// </summary>
+        public RelayCommand<int> MoveMonthCommand
+        {
+            get
+            {
+                return _moveMonthCommand ?? (_moveMonthCommand = new RelayCommand<int>(increment =>
+                {
+                    CustomDay = CustomDay.AddDays(increment * 28);
+                },
+                (increment)=>{ return true;}
+                ));
+            }
+        }
+
+        private RelayCommand<int> _moveWeekCommand;
+
+        public RelayCommand<int> MoveWeekCommand
+        {
+            get
+            {
+                return _moveWeekCommand ?? (_moveWeekCommand = new RelayCommand<int>(increment =>
+                {
+                    CustomDay = CustomDay.AddDays(increment * 7);
+                }));
+            }
+        }
+
+
+
         private RelayCommand<MarketSummaryDTO> _loadSharesCommand;
 
         public RelayCommand<MarketSummaryDTO> LoadSharesCommand

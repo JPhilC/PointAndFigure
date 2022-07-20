@@ -74,7 +74,7 @@ namespace PnFData.Services
                 // Double Bottom
                 if (currentColumn.Index > 1)
                 {
-                    if (currentIndex < chart.Columns[columnIndex - 2].CurrentBoxIndex)
+                    if (currentIndex < chart.Columns[columnIndex - 2].EndAtIndex)
                     {
                         signals |= PnFSignalEnum.DoubleBottom;
                         // Switch off any previous tripleTop
@@ -83,7 +83,7 @@ namespace PnFData.Services
                         // Triple Bottom
                         if (currentColumn.Index > 3)
                         {
-                            if (currentIndex < chart.Columns[columnIndex - 4].CurrentBoxIndex && chart.Columns[columnIndex - 2].CurrentBoxIndex < chart.Columns[columnIndex - 4].CurrentBoxIndex)
+                            if (currentIndex < chart.Columns[columnIndex - 4].EndAtIndex && chart.Columns[columnIndex - 2].EndAtIndex < chart.Columns[columnIndex - 4].EndAtIndex)
                             {
                                 signals |= PnFSignalEnum.TripleBottom;
                                 tripleSignalSet = true;
@@ -99,7 +99,7 @@ namespace PnFData.Services
                 // Double Top
                 if (currentColumn.Index > 1)
                 {
-                    if (currentIndex > chart.Columns[columnIndex - 2].CurrentBoxIndex)
+                    if (currentIndex > chart.Columns[columnIndex - 2].EndAtIndex)
                     {
                         signals |= PnFSignalEnum.DoubleTop;
                         // Switch off any previous tripleBottom
@@ -108,7 +108,7 @@ namespace PnFData.Services
                         // Triple Top
                         if (currentColumn.Index > 3)
                         {
-                            if (currentIndex > chart.Columns[columnIndex - 4].CurrentBoxIndex && chart.Columns[columnIndex - 2].CurrentBoxIndex > chart.Columns[columnIndex - 4].CurrentBoxIndex)
+                            if (currentIndex > chart.Columns[columnIndex - 4].EndAtIndex && chart.Columns[columnIndex - 2].EndAtIndex > chart.Columns[columnIndex - 4].EndAtIndex)
                             {
                                 signals |= PnFSignalEnum.TripleTop;
                                 tripleSignalSet = true;
