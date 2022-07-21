@@ -4,7 +4,7 @@ using PnFData.Model;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace PnFImports.Services
+namespace PnFData.Services
 {
     public class AlphaVantageService
     {

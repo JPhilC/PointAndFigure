@@ -1,7 +1,9 @@
 ﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
+using Microsoft.Win32;
 using PnFData.Model;
+using PnFData.Services;
 using PnFDesktop.Classes;
 using PnFDesktop.Classes.Messaging;
 using PnFDesktop.Controls;
@@ -441,6 +443,69 @@ namespace PnFDesktop.ViewModels
                                UserOptionsWindow dialog = new UserOptionsWindow();
                                dialog.Owner = App.Current.MainWindow;
                                dialog.ShowDialog();
+                           }));
+            }
+        }
+
+
+        private RelayCommand _importShareScopeCompaniesCommand;
+
+        public RelayCommand ImportShareScopeCompaniesCommand
+        {
+            get
+            {
+                return _importShareScopeCompaniesCommand
+                       ?? (_importShareScopeCompaniesCommand = new RelayCommand(
+                           () =>
+                           {
+                               var dlg = new OpenFileDialog()
+                               {
+                                   Filter = "ShareScope Companies Export File|*.csv"
+                               };
+                               try
+                               {
+                                   if (dlg.ShowDialog().GetValueOrDefault())
+                                   {
+                                       MessageLog.LogMessage(null, LogType.Information, $"Importing company share data from {dlg.FileName}");
+                                       var results = ShareScopeImportService.ImportShares(dlg.FileName);
+                                       MessageLog.LogMessage(null, LogType.Information, $"Completed. {results.Item1} new records added, {results.Item2} records updated, {results.Item3} errors.");
+                                   }
+                               }
+                               catch (Exception ex)
+                               {
+                                   MessageLog.LogMessage(null, LogType.Error, "There was an error during the import.", ex);
+                               }
+                           }));
+            }
+        }
+
+        private RelayCommand _importShareScopeETFsCommand;
+
+        public RelayCommand ImportShareScopeETFsCommand
+        {
+            get
+            {
+                return _importShareScopeETFsCommand
+                       ?? (_importShareScopeETFsCommand = new RelayCommand(
+                           () =>
+                           {
+                               var dlg = new OpenFileDialog()
+                               {
+                                   Filter = "ShareScope ETFs Export File|*.csv"
+                               };
+                               try
+                               {
+                                   if (dlg.ShowDialog().GetValueOrDefault())
+                                   {
+                                       MessageLog.LogMessage(null, LogType.Information, $"Importing ETF share data from {dlg.FileName}");
+                                       var results = ShareScopeImportService.ImportETFs(dlg.FileName);
+                                       MessageLog.LogMessage(null, LogType.Information, $"Completed. {results.Item1} new records added, {results.Item2} records updated, {results.Item3} errors.");
+                                   }
+                               }
+                               catch (Exception ex)
+                               {
+                                   MessageLog.LogMessage(null, LogType.Error, "There was an error during the import.", ex);
+                               }
                            }));
             }
         }

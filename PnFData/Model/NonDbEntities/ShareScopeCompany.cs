@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CsvHelper.Configuration.Attributes;
+﻿using CsvHelper.Configuration.Attributes;
 
-namespace PnFImports.Model
+namespace PnFData.Model
 {
-    internal class ShareScopeCompany
+    public class ShareScopeCompany
     {
         // TIDM,Name,Shares in issue (m),Market Cap. (intraday) (m),Supersector,Sector,Currency (prices),Exchange code,ShareScope ID,
         [Name("TIDM")]

@@ -1,8 +1,7 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using PnFData.Model;
-using PnFImports.Model;
-using PnFImports.Services;
+using PnFData.Services;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -88,6 +87,95 @@ namespace PnFImports
                     share.MarketCapMillions = data.MarketCap;
                     share.SuperSector = data.Supersector;
                     share.Sector = data.Sector;
+                    share.PricesCurrency = data.Currency;
+                    db.Update(share);
+                    updates++;
+                }
+
+                try
+                {
+                    db.SaveChanges();
+                    Console.WriteLine(" OK.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(" Error!");
+                    Console.WriteLine(ex.Message);
+                    errors++;
+                    _LastReturnValue = 1;   // Signal an error.
+                }
+            }
+            Console.WriteLine($"Completed. {adds} new records added, {updates} records updated, {errors} errors.");
+        }
+
+        internal static void ImportETFs(string exchange)
+        {
+            Console.WriteLine("Importing ETFs");
+            int adds = 0;
+            int updates = 0;
+            int errors = 0;
+            string filename = null;
+            if (exchange == "LSE")
+            {
+                filename = @"C:\Users\phil\Downloads\Filtered_UK Exchange Traded Funds_ETFExport.csv";
+            }
+            else
+            {
+                Console.WriteLine($"Invalid exchange specified, '{exchange}");
+                return;
+            }
+            using var db = new PnFDataContext();
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                HasHeaderRecord = true,
+            };
+            using var reader = new StreamReader(filename);
+            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            var records = csv.GetRecords<ShareScopeETF>();
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            foreach (ShareScopeETF data in records)
+            {
+                string tidm = data.Tidm;
+                if (exchange == "LSE")
+                {
+                    tidm = data.Tidm + ".LON";
+                }
+                string shareScopeId = data.ShareScopeID.ToString();
+                var share = db.Shares.FirstOrDefault(b =>
+                    b.ShareDataSource == "SS" & b.ShareDataSourceId == shareScopeId);
+                if (share == null)
+                {
+                    Console.Write($"Inserting {tidm}: {data.Name} ...");
+                    db.Add(new Share()
+                    {
+                        Tidm = tidm,
+                        Name = data.Name,
+                        ExchangeCode = data.ExchangeCode,
+                        ExchangeSubCode = "ETFs",
+                        SharesInIssueMillions = data.EquityHoldings,
+                        MarketCapMillions = data.NAVShareClass,
+                        SuperSector = data.ETFSector,
+                        Sector = data.ETFSector,
+                        PricesCurrency = data.Currency,
+                        ShareDataSource = "SS", // Share Scope
+                        ShareDataSourceId = data.ShareScopeID.ToString() // Share Scope ID
+
+                    }
+                    );
+                    adds++;
+                }
+                else
+                {
+                    Console.Write($"Updating {tidm}: {data.Name} ...");
+                    share.Tidm = tidm;
+                    share.Name = data.Name;
+                    share.ExchangeCode = data.ExchangeCode;
+                    share.ExchangeSubCode = "ETFs";
+                    share.SharesInIssueMillions = data.EquityHoldings;
+                    share.MarketCapMillions = data.NAVShareClass;
+                    share.SuperSector = data.ETFSector;
+                    share.Sector = data.ETFSector;
                     share.PricesCurrency = data.Currency;
                     db.Update(share);
                     updates++;

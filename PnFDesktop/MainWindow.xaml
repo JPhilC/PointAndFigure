@@ -24,6 +24,10 @@
         </Grid.RowDefinitions>
         <Menu>
             <MenuItem Header="File">
+                <MenuItem Header="Import">
+                    <MenuItem Header="ShareScope Company Data" Command="{Binding ImportShareScopeCompaniesCommand}" ToolTip="Imports a company data file exported from ShareScope"/>
+                    <MenuItem Header="ShareScope ETF Data" Command="{Binding ImportShareScopeETFsCommand}" ToolTip="Imports an ETF data file exported from ShareScope"/>
+                </MenuItem>
                 <MenuItem Header="Open">
                     <MenuItem Header="Market Values Summary" Command="{Binding OpenMarketSummaryCommand}" ToolTip="Opens the market and sector summary page"/>
                     <MenuItem Header="Share New Events Summary" Command="{Binding OpenFilteredSharesSummaryCommand}" ToolTip="Opens a page showing shares with new events."/>

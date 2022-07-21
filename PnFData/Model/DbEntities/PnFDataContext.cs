@@ -6,7 +6,7 @@ namespace PnFData.Model
     public class PnFDataContext : DbContext
     {
         public static string ConnectionString =
-            @"Server=localhost\SQLEXPRESS;Database=PnFData;Trusted_Connection=True";
+            @"Server=localhost\SQLEXPRESS;Database=PnFData;Trusted_Connection=True;TrustServerCertificate=Yes;";
 
         public static readonly ILoggerFactory loggerFactory = LoggerFactory.Create(builder => {
                 builder.AddFilter("Database.Command", LogLevel.None)
@@ -72,6 +72,41 @@ namespace PnFData.Model
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Notify EFCore that the tables have triggers
+            modelBuilder.Entity<Share>()
+                .ToTable(tb=>tb.HasTrigger("Shares_UPDATE"));
+            modelBuilder.Entity<Eod>()
+                .ToTable(tb => tb.HasTrigger("EodPrices_UPDATE"));
+            modelBuilder.Entity<Index>()
+                .ToTable(tb => tb.HasTrigger("Indices_UPDATE"));
+            modelBuilder.Entity<IndexValue>()
+                .ToTable(tb => tb.HasTrigger("IndexValues_UPDATE"));
+            modelBuilder.Entity<ShareRSI>()
+                .ToTable(tb => tb.HasTrigger("ShareRSIValues_UPDATE"));
+            modelBuilder.Entity<IndexRSI>()
+                .ToTable(tb => tb.HasTrigger("IndiceRSIValues_UPDATE"));
+            modelBuilder.Entity<PnFChart>()
+                .ToTable(tb => tb.HasTrigger("PnFCharts_UPDATE"));
+            modelBuilder.Entity<PnFColumn>()
+                .ToTable(tb => tb.HasTrigger("PnFColumns_UPDATE"));
+            modelBuilder.Entity<PnFBox>()
+                .ToTable(tb => tb.HasTrigger("PnFBoxes_UPDATE"));
+            modelBuilder.Entity<PnFSignal>()
+                .ToTable(tb => tb.HasTrigger("PnFSignals_UPDATE"));
+            modelBuilder.Entity<ShareChart>()
+                .ToTable(tb => tb.HasTrigger("ShareCharts_UPDATE"));
+            modelBuilder.Entity<ShareIndicator>()
+                .ToTable(tb => tb.HasTrigger("ShareIndicators_UPDATE"));
+            modelBuilder.Entity<IndexChart>()
+                .ToTable(tb => tb.HasTrigger("IndexCharts_UPDATE"));
+            modelBuilder.Entity<IndexIndicator>()
+                .ToTable(tb => tb.HasTrigger("IndexIndicators_UPDATE"));
+            modelBuilder.Entity<Portfolio>()
+                .ToTable(tb => tb.HasTrigger("Portfolios_UPDATE"));
+            modelBuilder.Entity<PortfolioShare>()
+                .ToTable(tb => tb.HasTrigger("PortfolioShares_UPDATE"));
+
+
             // Define Db generated default values for Id
             modelBuilder.Entity<Share>()
                 .Property(b => b.Id)
