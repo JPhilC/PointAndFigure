@@ -55,6 +55,18 @@ namespace PnFData.Services
                         SuperSector = data.Supersector,
                         Sector = data.Sector,
                         PricesCurrency = data.Currency,
+                        ForecastYield = data.ForecastYield,
+                        ForecastYieldChange = data.ForecastYieldChange,
+                        DividendYearsPaid = data.DividendYearsPaid,
+                        DividendYearsGrowth = data.DividendYearsGrowth,
+                        ROCE = data.ROCE,
+                        CROCI = data.CROCI,
+                        EBITMargin = data.EBITMargin,
+                        FreeCashConversion = data.FreeCashConversion,
+                        FixChargeCover = data.FixChargeCover,
+                        DebtToMarketCap = data.DebtToMarketCap,
+                        PensionToMarketCap = data.PensionToMarketCap,
+                        BeneishMScore = data.BeneishMScore,
                         ShareDataSource = "SS", // Share Scope
                         ShareDataSourceId = data.ShareScopeID.ToString() // Share Scope ID
 
@@ -74,6 +86,18 @@ namespace PnFData.Services
                     share.SuperSector = data.Supersector;
                     share.Sector = data.Sector;
                     share.PricesCurrency = data.Currency;
+                    share.ForecastYield = data.ForecastYield;
+                    share.ForecastYieldChange = data.ForecastYieldChange;
+                    share.DividendYearsPaid = data.DividendYearsPaid;
+                    share.DividendYearsGrowth = data.DividendYearsGrowth;
+                    share.ROCE = data.ROCE;
+                    share.CROCI = data.CROCI;
+                    share.EBITMargin = data.EBITMargin;
+                    share.FreeCashConversion = data.FreeCashConversion;
+                    share.FixChargeCover = data.FixChargeCover;
+                    share.DebtToMarketCap = data.DebtToMarketCap;
+                    share.PensionToMarketCap = data.PensionToMarketCap;
+                    share.BeneishMScore = data.BeneishMScore;
                     db.Update(share);
                     updates++;
                 }

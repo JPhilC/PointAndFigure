@@ -1357,6 +1357,8 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Score" Binding="{Binding Score}"  IsReadOnly="True"/>
+                <DataGridTextColumn Header="fc Yield" Binding="{Binding ForecastYield, StringFormat={}{0:F1}}"  IsReadOnly="True"/>
+                <DataGridTextColumn Header="Yrs Paid" Binding="{Binding DividendYearsPaid}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Sector" Binding="{Binding SuperSector}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Market" Binding="{Binding ExchangeSubCode}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Exchange" Binding="{Binding ExchangeCode}"  IsReadOnly="True"/>

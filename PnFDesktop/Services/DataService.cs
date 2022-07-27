@@ -639,6 +639,8 @@ namespace PnFDesktop.Services
                                         WeeklyMomentum = si.WeeklyMomentum,
                                         MomentumFalling = si.MomentumFalling,
                                         MomentumRising = si.MomentumRising,
+                                        DividendYearsPaid = (int?)s.DividendYearsPaid,
+                                        ForecastYield = s.ForecastYield,
                                         NewEvents = si.NewEvents,
                                         Score = 0 + (si.Rising == true ? 1 : 0)
                                                   + (si.Falling == true ? -1 : 0)
@@ -728,6 +730,8 @@ namespace PnFDesktop.Services
                                             WeeklyMomentum = si.WeeklyMomentum,
                                             MomentumFalling = si.MomentumFalling,
                                             MomentumRising = si.MomentumRising,
+                                            DividendYearsPaid = (int?)s.DividendYearsPaid,
+                                            ForecastYield = s.ForecastYield,
                                             NewEvents = si.NewEvents,
                                             Score = 0 + (ii.BullishPercentRising == true ? 1 : 0)
                                                          + (ii.BullishPercentFalling == true ? -1 : 0)
@@ -828,6 +832,8 @@ namespace PnFDesktop.Services
                                             WeeklyMomentum = si.WeeklyMomentum,
                                             MomentumFalling = si.MomentumFalling,
                                             MomentumRising = si.MomentumRising,
+                                            DividendYearsPaid = (int?)s.DividendYearsPaid,
+                                            ForecastYield = s.ForecastYield,
                                             NewEvents = si.NewEvents,
                                             Score = 0 + (ii.BullishPercentRising == true ? 1 : 0)
                                                          + (ii.BullishPercentFalling == true ? -1 : 0)
@@ -969,6 +975,8 @@ namespace PnFDesktop.Services
                                         WeeklyMomentum = si.WeeklyMomentum,
                                         MomentumFalling = si.MomentumFalling,
                                         MomentumRising = si.MomentumRising,
+                                        ForecastYield = s.ForecastYield,
+                                        DividendYearsPaid = (int?)s.DividendYearsPaid,
                                         NewEvents = si.NewEvents,
                                         Score = 0
                                                 + (mkti.PercentRSBuyBuy == true ? 1 : 0)

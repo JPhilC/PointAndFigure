@@ -47,6 +47,32 @@ namespace PnFData.Model
         [MaxLength(4)]
         public string? ExchangeSubCode { get; set; }
 
+
+        public double? ForecastYield { get; set; }
+
+        public double? ForecastYieldChange { get; set; }
+
+        public double? DividendYearsPaid { get; set; }
+
+        public double? DividendYearsGrowth { get; set; }
+
+        public double? ROCE { get; set; }
+
+        public double? CROCI { get; set; }
+
+        public double? EBITMargin { get; set; }
+
+        public double? FreeCashConversion { get; set; }
+
+        public double? FixChargeCover { get; set; }
+
+        public double? DebtToMarketCap { get; set; }
+
+        public double? PensionToMarketCap { get; set; }
+
+        public double? BeneishMScore { get; set; }
+
+
         public List<Eod> EodPrices { get; } = new List<Eod>();
 
         public List<ShareRSI> RSIValues { get; } = new List<ShareRSI>();

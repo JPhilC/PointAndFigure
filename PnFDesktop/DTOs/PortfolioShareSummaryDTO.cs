@@ -76,6 +76,10 @@ namespace PnFDesktop.DTOs
 
         public int? Score {get;set;}
 
+        public double? ForecastYield { get;set;}
+
+        public int? DividendYearsPaid { get;set;}
+
         public string? Notices {get;set;}
 
         #region Market indicators ...
