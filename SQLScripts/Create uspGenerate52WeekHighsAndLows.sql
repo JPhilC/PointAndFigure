@@ -57,7 +57,7 @@ UPDATE [EodPrices]
 	,	[Low52Week] = hl.[Low52w]
 FROM [EodPrices] q
 LEFT JOIN #highlows hl ON hl.[ShareId] = q.[ShareId] AND hl.[Day] = q.[Day]
--- WHERE q.[High52Week] IS NULL
+WHERE q.[High52Week] <> hl.High52w OR q.Low52Week<>hl.Low52w
 
 DROP TABLE #highlows;
 
@@ -87,7 +87,7 @@ UPDATE [EodPrices]
 	,	[New52WeekLow] = nv.[New52WeekLow]
 FROM [EodPrices] q
 LEFT JOIN #newValues nv on nv.[Id] = q.[Id]
--- WHERE q.[New52WeekHigh] IS NULL
+WHERE q.[New52WeekHigh] <> nv.[New52WeekHigh] OR q.[New52WeekLow]<>nv.[New52WeekLow]
 
 DROP TABLE #today;
 DROP TABLE #newValues;

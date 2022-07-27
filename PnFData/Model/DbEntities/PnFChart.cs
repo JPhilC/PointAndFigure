@@ -40,7 +40,7 @@ namespace PnFData.Model
         AdvanceDeclineLine
     }
 
-    public class PnFChart: EntityData
+    public class PnFChart : EntityData
     {
         [MaxLength(100)]
         public string? Name { get; set; }
@@ -49,15 +49,16 @@ namespace PnFData.Model
         public DateTime GeneratedDate { get; set; }
 
         [DefaultValue(0)]
-        public PnFChartPriceScale PriceScale { get;set;}
+        public PnFChartPriceScale PriceScale { get; set; }
 
         public double? BoxSize { get; set; }
-        
+
         /// <summary>
         /// Base value used for Logarithmic scale
         /// </summary>
-        public double? BaseValue { get; set;}
+        public double? BaseValue { get; set; }
 
+        public PnFSignalEnum LastSignal { get; set; }
 
         public int Reversal { get; set; }
 

@@ -42,7 +42,6 @@ namespace PnFData.Services
             }
 
             this.BoxSize = boxSize;
-
             PnFChart chart = new PnFChart()
             {
                 BoxSize = boxSize,
@@ -87,7 +86,7 @@ namespace PnFData.Services
                     {
                         // Start with Os (down day)
                         this.BaseValue = firstLow;
-                        int newStartIndex = GetLogarithmicIndex(firstLow, true)+1;
+                        int newStartIndex = GetLogarithmicIndex(firstLow, true) + 1;
                         currentColumn = new PnFColumn() { PnFChart = chart, Index = 0, ColumnType = PnFColumnType.O, CurrentBoxIndex = newStartIndex, BullSupportIndex = newStartIndex - 1, ContainsNewYear = true };
                         chart.Columns.Add(currentColumn);
                         columnIndex++;
@@ -288,7 +287,7 @@ namespace PnFData.Services
                 return true;
             }
 
-            PnFSignalEnum previousSignals = chart.Signals.OrderByDescending(s => s.Day).Select(s => s.Signals).FirstOrDefault();
+            PnFSignalEnum previousSignals = chart.LastSignal;
 
 
             foreach (Eod eod in sortedList)
@@ -424,27 +423,5 @@ namespace PnFData.Services
             return !errors;
         }
 
-        /// <summary>
-        /// Compute the box size based on prices
-        /// </summary>
-        /// <returns></returns>
-        public override double ComputeNormalBoxSize()
-        {
-            double boxSize;
-            var stats = (from d in _eodList
-                         group d by 1
-                into g
-                         select new
-                         {
-                             BestLow = g.Min(l => l.Low),
-                             BestHigh = g.Max(h => h.High)
-                         }).First();
-
-            boxSize = RangeBoxSize((((stats.BestHigh - stats.BestLow) * 0.5) + stats.BestLow) * 0.01);   // Take 1% of the middle of the range
-            //int bs = (int)(boxSize + 0.5);
-            //boxSize = bs * 0.01d;
-            //boxSize = stats.SumHighLessLow / _eodList.Count;
-            return boxSize;
-        }
     }
 }

@@ -139,7 +139,7 @@ namespace PnFData.Services
                         ExchangeSubCode = "ETFs",
                         SharesInIssueMillions = data.EquityHoldings,
                         MarketCapMillions = data.NAVShareClass,
-                        SuperSector = data.ETFSector,
+                        SuperSector = "ETFs",
                         Sector = data.ETFSector,
                         PricesCurrency = data.Currency,
                         ShareDataSource = "SS", // Share Scope
@@ -158,7 +158,7 @@ namespace PnFData.Services
                     share.ExchangeSubCode = "ETFs";
                     share.SharesInIssueMillions = data.EquityHoldings;
                     share.MarketCapMillions = data.NAVShareClass;
-                    share.SuperSector = data.ETFSector;
+                    share.SuperSector = "ETFs";
                     share.Sector = data.ETFSector;
                     share.PricesCurrency = data.Currency;
                     db.Update(share);

@@ -1,5 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
+using PnFData.Interfaces;
 using PnFData.Model;
+using PnFData.Services;
 using System.Data;
 using System.Globalization;
 
@@ -125,9 +127,22 @@ namespace PnFImports
                         break;
 
                     case "test":
-                        DateTime TplusTwoDate = GetLastReliableDate("ALL");
+                        Guid indexId = new Guid("348DCCC4-D736-41D5-BA4C-45D6ED7AD796");
+                        IEnumerable<IndexValue> rawTickData = null;
+                        using (PnFDataContext db = new PnFDataContext())
+                        {
+                            rawTickData = db.IndexValues.Where(i => i.IndexId == indexId).ToList();
+                        }
+
                         // Generate values;
-                        // RunLongStoredProcedure("uspUpdateShareIndicators", TplusTwoDate, 60);
+                        List<IDayValue> tickData = rawTickData.Where(r => r.PercentRsRising.HasValue).Select(r => new SimpleDayValue()
+                        {
+                            Day = r.Day,
+                            Value = r.PercentRsRising.Value
+                        }
+                        ).ToList<IDayValue>();
+
+                        GeneratePercentChart(indexId, "Test", new DateTime(2022, 07, 20), tickData, PnFChartSource.IndexPercentShareRsX);
                         break;
 
                 }
@@ -139,7 +154,7 @@ namespace PnFImports
 
         internal static void FullRun(string exchangeCode, string? parameter)
         {
-            DateTime now = DateTime.Now.Date;
+            //DateTime now = DateTime.Now.Date;
 
             _LastReturnValue = 0;
             if (parameter != "SKIPPRICES")
@@ -167,9 +182,9 @@ namespace PnFImports
                 RunLongStoredProcedure("uspGenerateDailyValues", TplusTwoDate, 60);
             }
 
-
             if (_LastReturnValue == 0)
             {
+                // Only use data upto the T+2 date
                 GenerateAllHiLoCharts(exchangeCode, TplusTwoDate);
                 GenerateIndexCharts(exchangeCode, TplusTwoDate);
                 GenerateIndexRSCharts(exchangeCode, TplusTwoDate);
@@ -247,7 +262,7 @@ namespace PnFImports
                         .Where(s => s.LastEodDate > cutOff)
                         .Select(s => s.LastEodDate)
                         .Distinct()
-                        .OrderByDescending(s=>s!.Value)
+                        .OrderByDescending(s => s!.Value)
                         .ToList();
                 }
                 else
@@ -256,7 +271,7 @@ namespace PnFImports
                         .Where(s => s.ExchangeCode == exchangeCode && s.LastEodDate > cutOff)
                         .Select(s => s.LastEodDate)
                         .Distinct()
-                        .OrderByDescending(s=>s!.Value)
+                        .OrderByDescending(s => s!.Value)
                         .ToList();
                 }
             }
@@ -299,7 +314,7 @@ namespace PnFImports
             }
             catch (SqlException ex)
             {
-                Console.WriteLine($"Problem with executing {storedProcedure}! - [{ ex.Message}]");
+                Console.WriteLine($"Problem with executing {storedProcedure}! - [{ex.Message}]");
             }
             if (_LastReturnValue == 0)
             {
@@ -336,7 +351,7 @@ namespace PnFImports
             }
             catch (SqlException ex)
             {
-                Console.WriteLine($"Problem with executing {storedProcedure}! - [{ ex.Message}]");
+                Console.WriteLine($"Problem with executing {storedProcedure}! - [{ex.Message}]");
             }
             if (_LastReturnValue == 0)
             {

@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Transactions;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace PnFData.Model
 {
@@ -20,6 +18,7 @@ namespace PnFData.Model
 
     public class PnFSignal : EntityData
     {
+
         public DateTime Day { get; set; }
 
         public PnFSignalEnum Signals { get; set; }

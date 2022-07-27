@@ -59,13 +59,16 @@
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Grid.Column="0" Text="Share TIDM"/>
             <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding ShareTidm}" Style="{StaticResource TextBoxShort}"/>
-            <TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding SelectedShare.Name}" Width="400"/>
-            
+            <TextBlock Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="5" Text="{Binding SelectedShare.Name}" Width="400"/>
+
             <TextBlock Grid.Row="2" Grid.Column="0" Text="Chart type"/>
-            <ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" SelectedItem="{Binding ShareChartType, UpdateSourceTrigger=PropertyChanged}" 
+            <StackPanel Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="4" Orientation="Horizontal">
+                <ComboBox SelectedItem="{Binding ShareChartType, UpdateSourceTrigger=PropertyChanged}" 
                       ItemsSource="{Binding Source={local:EnumBindingSource {x:Type vm:ShareChartType}}}"
                       Width="200" HorizontalAlignment="Left"/>
-                       
+                <TextBlock Text="Use remote data" Margin="5,0,0,0" Visibility="{Binding ShowRemoteDataCheckBox, Converter={StaticResource BoolToVis}}"/>
+                <CheckBox IsChecked="{Binding UseRemoteData, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,0,0" Visibility="{Binding ShowRemoteDataCheckBox, Converter={StaticResource BoolToVis}}"/>
+            </StackPanel>
         </Grid>
     </DockPanel>
 </Window>

@@ -11,7 +11,7 @@ using PnFDesktop.Interfaces;
 
 namespace PnFDesktop.ViewModels
 {
-    public class PointAndFigureColumnViewModel: ObservableObject
+    public class PointAndFigureColumnViewModel : ObservableObject
     {
         #region Properties ...
         private PnFColumn _column;
@@ -85,6 +85,7 @@ namespace PnFDesktop.ViewModels
         {
             get
             {
+                if (!_showBullishSupportImage) { return null; }
                 DrawingImage image = Application.Current.TryFindResource(_artworkKey) as DrawingImage;
                 if (image == null)
                 {
@@ -98,7 +99,38 @@ namespace PnFDesktop.ViewModels
 
         private Size _size = new Size(0, 0);
 
-        public string Tooltip => Column.GetTooltip();
+        private bool _isLoading = true;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set
+            {
+                if (SetProperty(ref _isLoading, value))
+                {
+                    OnPropertyChanged("Tooltip");
+                }
+            }
+        }
+
+
+
+        private string _tooltip = null;
+
+        public string Tooltip
+        {
+            get
+            {
+                if (IsLoading)
+                {
+                    return "Loading tooltip ...";
+                }
+                if (_tooltip == null)
+                {
+                    _tooltip = Column.GetTooltip();
+                }
+                return _tooltip;
+            }
+        }
 
         /// <summary>
         /// The size of the node.
@@ -129,7 +161,7 @@ namespace PnFDesktop.ViewModels
         /// <summary>
         /// List of boxes the column.
         /// </summary>
-        public ImpObservableCollection<PointAndFigureBoxViewModel> Boxes { get; }= new ImpObservableCollection<PointAndFigureBoxViewModel>();
+        public ImpObservableCollection<PointAndFigureBoxViewModel> Boxes { get; } = new ImpObservableCollection<PointAndFigureBoxViewModel>();
         #endregion
 
         public PointAndFigureColumnViewModel(PnFColumn column, IChartLayoutManager layoutManager)
@@ -165,7 +197,7 @@ namespace PnFDesktop.ViewModels
         {
             PointAndFigureBoxViewModel boxVm = null;
             int i = 0;
-            foreach (var box in Column.Boxes.OrderByDescending(b=>b.Index))
+            foreach (var box in Column.Boxes.OrderByDescending(b => b.Index))
             {
                 boxVm = new PointAndFigureBoxViewModel(box, i * layoutManager.GridSize);
                 this.Boxes.Add(boxVm);

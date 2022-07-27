@@ -124,12 +124,18 @@ namespace PnFDesktop.Classes.Messaging
         public Object Sender { get; set; }
         public Guid InstrumentId { get; set; }
 
+        public string Tidm { get; set; }
+
+        public string Name { get; set; }
+
         public PnFChartSource ChartSource { get; set; }
 
-        public OpenPointAndFigureChartMessage(object sender, Guid instrumentId, PnFChartSource chartSource)
+        public OpenPointAndFigureChartMessage(object sender, Guid instrumentId, PnFChartSource chartSource, string tidm="", string name="" )
         {
             this.Sender = sender;
             this.InstrumentId = instrumentId;
+            this.Tidm = tidm;
+            this.Name = name;
             this.ChartSource = chartSource;
         }
 

@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using PnFDesktop.Classes.Messaging;
 using PnFDesktop.Controls;
+using System.Threading.Tasks;
 
 namespace PnFDesktop.ViewCharts
 {
@@ -393,7 +394,20 @@ namespace PnFDesktop.ViewCharts
             AxisLabels.Clear();
             AddColumns(out int minRowIndex, out int maxRowIndex);
             AddRowData(minRowIndex, maxRowIndex);
-            AddTradingBands();
+            if (this.Chart!.Source == PnFChartSource.Share)
+            {
+                AddTradingBands();
+            }
+        }
+
+        public void OnLoadCompleted()
+        {
+            // Mark each column as loaded so that the tooltip will be calculated when needed. These are
+            // disabled during the load to speed things up
+            Parallel.ForEach(Columns.Reverse(), (column) =>
+            {
+                column.IsLoading = false;
+            });
         }
 
         #region Helper methods ...
@@ -402,7 +416,7 @@ namespace PnFDesktop.ViewCharts
             minRowIndex = int.MaxValue;
             maxRowIndex = int.MinValue;
             Columns.Clear();
-            foreach (PnFColumn column in this.Chart.Columns.OrderBy(c => c.Index))
+            foreach (PnFColumn column in this.Chart!.Columns.OrderBy(c => c.Index))
             {
                 if (column.StartAtIndex < minRowIndex) minRowIndex = column.StartAtIndex;
                 if (column.EndAtIndex < minRowIndex) minRowIndex = column.EndAtIndex;
@@ -509,7 +523,7 @@ namespace PnFDesktop.ViewCharts
         /// <returns></returns>
         private int GetLogarithmicIndex(double value, bool falling = false)
         {
-            double logBoxSize = Math.Log(1+(Chart.BoxSize.Value * 0.01));
+            double logBoxSize = Math.Log(1 + (Chart.BoxSize.Value * 0.01));
             int index = (int)((value - Chart.BaseValue.Value) / logBoxSize);
             if (falling && (value > (index * logBoxSize)))
             {

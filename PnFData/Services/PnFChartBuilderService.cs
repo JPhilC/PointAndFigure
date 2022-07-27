@@ -46,6 +46,7 @@ namespace PnFData.Services
 
         public double? BaseValue { get; protected set; } = null;
 
+
         public abstract PnFChart? BuildChart(double boxSize, int reversal, DateTime uptoDate);
 
         public abstract bool UpdateChart(ref PnFChart chart, DateTime uptoDate);
@@ -142,7 +143,6 @@ namespace PnFData.Services
                     signals |= PnFSignalEnum.TripleTop;
                 }
             }
-
             chart.Signals.Add(new PnFSignal()
             {
                 PnFChart = chart,
@@ -150,6 +150,7 @@ namespace PnFData.Services
                 Signals = signals,
                 Value = GetValueNormal(currentIndex)
             });
+            chart.LastSignal = signals;
             return signals;
         }
 
@@ -217,7 +218,10 @@ namespace PnFData.Services
         /// Compute the box size based on prices using the normal scale
         /// </summary>
         /// <returns></returns>
-        public abstract double ComputeNormalBoxSize();
+        public virtual double ComputeNormalBoxSize()
+        {
+            throw new NotImplementedException();
+        }
 
         protected int GetNormalIndex(double value, bool falling = false)
         {

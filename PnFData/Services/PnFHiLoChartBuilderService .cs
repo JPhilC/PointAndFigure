@@ -48,6 +48,8 @@ namespace PnFData.Services
                 Reversal = reversal,
                 PriceScale = PnFChartPriceScale.Normal
             };
+
+
             PnFColumn currentColumn = new PnFColumn();
             PnFColumn prevColumnOne = null;
             PnFColumn prevColumnTwo = null;
@@ -279,7 +281,7 @@ namespace PnFData.Services
                 return true;
             }
 
-            PnFSignalEnum previousSignals = chart.Signals.OrderByDescending(s => s.Day).Select(s => s.Signals).FirstOrDefault();
+            PnFSignalEnum previousSignals = chart.LastSignal;
 
 
             foreach (Eod eod in sortedList)

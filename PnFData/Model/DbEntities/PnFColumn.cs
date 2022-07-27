@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Transactions;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace PnFData.Model
 {
@@ -141,15 +140,24 @@ namespace PnFData.Model
             if (this.PnFChart.BoxSize == null) return "";
             int boxCount = Boxes.Count;
             double boxSize = this.PnFChart.BoxSize.Value;
-            double minValue = Boxes.Min(b => b.Value);
-            double maxValue = Boxes.Max(b => b.Value);
+            double minIndex = Boxes.Min(b => b.Index);
+            double maxIndex = Boxes.Max(b => b.Index);
+            double minValue = 0;
+            double maxValue = 0;
             double fromValue = 0d;
             double toValue = 0d;
             string columnType = "";
             if (this.PnFChart.PriceScale == PnFChartPriceScale.Logarithmic)
             {
-                minValue = Math.Exp(minValue);
-                maxValue = Math.Exp(maxValue);
+                double baseValue = this.PnFChart!.BaseValue!.Value;
+                double logBoxSize = Math.Log(1d + (boxSize * 0.01));
+                minValue = Math.Exp(baseValue + (minIndex * logBoxSize));
+                maxValue = Math.Exp(baseValue + (maxIndex * logBoxSize));
+            }
+            else
+            {
+                minValue = minIndex * boxSize;
+                maxIndex = maxIndex * boxSize;
             }
             switch (ColumnType)
             {

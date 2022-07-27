@@ -39,6 +39,8 @@ namespace PnFDesktop.ViewModels
 
         public Action ExitApplicationAction { get; set; }
 
+        private Dictionary<string, Guid> _tempChartIds = new Dictionary<string, Guid>();
+
         private readonly IDataService _dataService;
         /// <summary>
         /// Initializes a new instance of the WorkspaceViewModel class.
@@ -99,12 +101,33 @@ namespace PnFDesktop.ViewModels
                 }
             });
 
+
             WeakReferenceMessenger.Default.Register<OpenPointAndFigureChartMessage>(this, async (r, message) =>
             {
                 if (message.Sender != this)
                 {
-                    PnFChart? chart = await _dataService.GetPointAndFigureChartAsync(message.InstrumentId, message.ChartSource);
+                    bool forceRefresh = false;
                     StdDevResult? stdDev = await _dataService.GetStandardDeviationAsync(message.InstrumentId, 50);   // Get 10 week Mean and StdDev
+                    PnFChart? chart = null;
+                    if (message.ChartSource == PnFChartSource.Share)    // By default generate a fresh up to date chart.
+                    {
+                        chart = await GenerateShareChart(message.Tidm);
+                        if (chart != null)
+                        {
+                            Guid chartId;
+                            if (!_tempChartIds.TryGetValue(message.Tidm, out chartId))
+                            {
+                                chartId = Guid.NewGuid();
+                                _tempChartIds.Add(message.Tidm, chartId);
+                            }
+                            chart.Name = message.Name;
+                            chart.Id = chartId;
+                        }
+                    }
+                    else
+                    {
+                        chart = await _dataService.GetPointAndFigureChartAsync(message.InstrumentId, message.ChartSource);
+                    }
                     if (chart != null)
                     {
                         MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for {chart.Name} ...");
@@ -114,7 +137,6 @@ namespace PnFDesktop.ViewModels
                     {
                         MessageLog.LogMessage(this, LogType.Information, "Chart does not exist.");
                     }
-
                 }
             });
 
@@ -530,24 +552,114 @@ namespace PnFDesktop.ViewModels
                                dialog.Owner = Application.Current.MainWindow;
                                bool? dialogResult = dialog.ShowDialog();
 
-                               if (dialogResult.HasValue && dialogResult.Value == true && openChartVm.SelectedShare != null)
+                               if (dialogResult.HasValue && dialogResult.Value == true)
                                {
-                                   MessageLog.LogMessage(this, LogType.Information, $"Retrieving P & F chart data for {openChartVm.SelectedShare.Name} ...");
-                                   //PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(new Guid("B9B46E45-2258-496D-9F6D-8D681A19926B"), PnFChartSource.RSSectorVMarket);
-                                   PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(openChartVm.SelectedShare.Id, (PnFChartSource)openChartVm.ShareChartType);
-                                   StdDevResult? stdDev = await _dataService.GetStandardDeviationAsync(openChartVm.SelectedShare.Id, 50);
-                                   if (testChart != null)
+                                   if (openChartVm.ShareChartType == ShareChartType.Share && openChartVm.UseRemoteData)
                                    {
-                                       MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for {openChartVm.SelectedShare.Name} ...");
-                                       OpenPointAndFigureChart(testChart, stdDev, true);
+                                       if (!string.IsNullOrEmpty(openChartVm.ShareTidm))
+                                       {
+                                           await GenerateAndOpenChart(openChartVm.ShareTidm, openChartVm.SelectedShare);
+                                       }
+                                       else
+                                       {
+                                           MessageLog.LogMessage(this, LogType.Warning, $"Share TIDM not specified.");
+                                       }
                                    }
                                    else
                                    {
-                                       MessageLog.LogMessage(this, LogType.Information, "Chart does not exist.");
+                                       if (openChartVm.SelectedShare != null)
+                                       {
+                                           await OpenStoredChart(openChartVm.SelectedShare, openChartVm.ShareChartType);
+                                       }
+                                       else
+                                       {
+                                           MessageLog.LogMessage(this, LogType.Warning, $"No share was selected.");
+                                       }
                                    }
                                }
                            }));
             }
+        }
+
+        private async Task<PnFChart?> GenerateShareChart(string shareTidm)
+        {
+            PnFChart? chart = null;
+            List<Eod> tickData = new List<Eod>();
+            MessageLog.LogMessage(this, LogType.Information, $"Retrieving P & F chart data for TIDM '{shareTidm}' ...");
+            try
+            {
+                var result = await AlphaVantageService.GetTimeSeriesDailyPrices(shareTidm, DateTime.Now.AddYears(-2), true);
+                if (result.InError)
+                {
+                    MessageLog.LogMessage(this, LogType.Warning, $"There was an error downloading the price data. {result.Reason}");
+                }
+                else
+                {
+                    var dayPrices = result.Prices as Eod[] ?? result.Prices.ToArray();
+                    if (dayPrices.Any())
+                    {
+                        foreach (Eod dayPrice in dayPrices)
+                        {
+                            tickData.Add(dayPrice);
+                        }
+                        DateTime maxDay = dayPrices.Max(p => p.Day);
+                    }
+                    else
+                    {
+                        MessageLog.LogMessage(this, LogType.Warning, $"No price data is available.");
+                    }
+                }
+                if (tickData.Any())
+                {
+                    MessageLog.LogMessage(this, LogType.Information, $"Building P & F chart data for TIDM '{shareTidm}' ...");
+                    PnFChartBuilderService chartBuilder = new PnFLogarithmicHiLoChartBuilderService(tickData);
+                    chart = chartBuilder.BuildChart(2d, 3, DateTime.Now);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, $"There was an error downloading the data or generating the chart", ex);
+            }
+            return chart;
+        }
+
+        /// <summary>
+        /// Download data from AlphaVantage API and build a chart.
+        /// </summary>
+        /// <param name="shareTidm"></param>
+        /// <returns></returns>
+        private async Task GenerateAndOpenChart(string shareTidm, ShareDTO? selectedShare)
+        {
+            PnFChart? chart = await GenerateShareChart(shareTidm);
+            StdDevResult? stdDev = null;
+            if (selectedShare != null)
+            {
+                stdDev = await _dataService.GetStandardDeviationAsync(selectedShare.Id, 50);
+            }
+            if (chart != null)
+            {
+                MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for TIDM '{shareTidm}' ...");
+                OpenPointAndFigureChart(chart, stdDev, true);
+            }
+        }
+
+
+        private async Task OpenStoredChart(ShareDTO selectedShare, ShareChartType shareChartType)
+        {
+            MessageLog.LogMessage(this, LogType.Information, $"Retrieving P & F chart data for {selectedShare.Name} ...");
+            //PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(new Guid("B9B46E45-2258-496D-9F6D-8D681A19926B"), PnFChartSource.RSSectorVMarket);
+            PnFChart? testChart = await _dataService.GetPointAndFigureChartAsync(selectedShare.Id, (PnFChartSource)shareChartType);
+            StdDevResult? stdDev = await _dataService.GetStandardDeviationAsync(selectedShare.Id, 50);
+            if (testChart != null)
+            {
+                MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for {selectedShare.Name} ...");
+                OpenPointAndFigureChart(testChart, stdDev, true);
+            }
+            else
+            {
+                MessageLog.LogMessage(this, LogType.Information, "Chart does not exist.");
+            }
+
         }
 
         private RelayCommand _openIndexChartCommand;

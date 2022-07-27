@@ -193,7 +193,7 @@ namespace PnFDesktop.ViewModels
                 return _loadShareChartCommand ?? (_loadShareChartCommand = new RelayCommand<PortfolioShareSummaryDTO>(currentShare =>
                 {
                     WeakReferenceMessenger.Default.Send<OpenPointAndFigureChartMessage>(
-                        new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.Share)
+                        new OpenPointAndFigureChartMessage(this, currentShare.Id, PnFData.Model.PnFChartSource.Share, currentShare.Tidm, currentShare.Name)
                         );
                 }));
             }

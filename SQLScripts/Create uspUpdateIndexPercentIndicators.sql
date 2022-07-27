@@ -237,8 +237,8 @@ UPDATE [dbo].[IndexIndicators]
 	,	[PercentAbove10EmaSell] = sr.[PercentAbove10EmaSell]
 	,	[HighLowIndexRising] = sr.[HighLowIndex10EmaRising]
 	,	[HighLowIndexBuy] = sr.[HighLowIndex10EmaBuy]
-	,	[HighLowIndexFalling] = sr.[PercentAbove10EmaFalling]
-	,	[HighLowIndexSell] = sr.[PercentAbove10EmaSell]
+	,	[HighLowIndexFalling] = sr.[HighLowIndex10EmaFalling]
+	,	[HighLowIndexSell] = sr.[HighLowIndex10EmaSell]
 FROM [dbo].[IndexIndicators] si
 INNER JOIN #IndexResults sr ON sr.[IndexId] = si.[IndexId] AND sr.[Day] = si.[Day]
 WHERE si.[Day] >= @cutoffDate;

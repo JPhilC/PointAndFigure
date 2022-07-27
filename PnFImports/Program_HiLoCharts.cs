@@ -17,11 +17,11 @@ namespace PnFImports
                 {
                     if (exchangeCode == "ALL")
                     {
-                        tidms = db.Shares.Where(s => s.EodPrices.Any()).Select(s => s.Tidm).ToList();
+                        tidms = db.Shares.Where(s => s.EodPrices.Any()).OrderBy(s => s.Tidm).Select(s => s.Tidm).ToList();
                     }
                     else
                     {
-                        tidms = db.Shares.Where(s => s.ExchangeCode == exchangeCode && s.EodPrices.Any()).Select(s => s.Tidm).ToList();
+                        tidms = db.Shares.Where(s => s.ExchangeCode == exchangeCode && s.EodPrices.Any()).OrderBy(s => s.Tidm).Select(s => s.Tidm).ToList();
                     }
                 }
                 _total = tidms.Count();
@@ -32,6 +32,11 @@ namespace PnFImports
                         GenerateHiLoChart(tidm, toDate);
                         UpdateProgress();
                     });
+                //foreach (string tidm in tidms)
+                //{
+                //    GenerateHiLoChart(tidm, toDate);
+                //    UpdateProgress();
+                //};
             }
             catch (Exception ex)
             {
@@ -102,12 +107,47 @@ namespace PnFImports
 
                         if (chart != null)
                         {
-                            // Update the existing chart
-                            if (chartBuilder.UpdateChart(ref chart, uptoDate))
+                            if (chart.Columns.Count > 0)
                             {
-                                // Try to save any changes
-                                db.Update(chart);
+                                // Update the existing chart
+                                if (chartBuilder.UpdateChart(ref chart, uptoDate))
+                                {
+                                    // Try to save any changes
+                                    db.Update(chart);
 
+                                    bool saved = false;
+                                    int trys = 0;
+                                    while (!saved && trys < 5)
+                                    {
+                                        try
+                                        {
+                                            int saveResult = db.SaveChanges();
+                                            saved = true;
+                                        }
+                                        catch (DbUpdateConcurrencyException updateEx)
+                                        {
+                                            foreach (var entry in updateEx.Entries)
+                                            {
+                                                var proposedValues = entry.CurrentValues;
+                                                var databaseValues = entry.GetDatabaseValues();
+                                                proposedValues["Version"] = databaseValues["Version"];
+                                                entry.OriginalValues.SetValues(proposedValues);
+                                            }
+                                        }
+                                        catch (SqlException sqex)
+                                        {
+                                            trys++;
+                                            System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                            Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Delete chart with no columns and treat as a new chart
+                                Console.WriteLine("Note: Removing chart with zero columns");
+                                db.PnFCharts.Remove(chart);
                                 bool saved = false;
                                 int trys = 0;
                                 while (!saved && trys < 5)
@@ -116,6 +156,7 @@ namespace PnFImports
                                     {
                                         int saveResult = db.SaveChanges();
                                         saved = true;
+                                        chart = null;
                                     }
                                     catch (DbUpdateConcurrencyException updateEx)
                                     {
@@ -134,6 +175,7 @@ namespace PnFImports
                                         Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
                                     }
                                 }
+
                             }
                         }
                     }

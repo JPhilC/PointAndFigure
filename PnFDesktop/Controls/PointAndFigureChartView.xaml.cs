@@ -263,6 +263,7 @@ namespace PnFDesktop.Controls
         {
             if (_viewModel != null)
             {
+                _viewModel.OnLoadCompleted();
                 WeakReferenceMessenger.Default.Send<ActivePointAndFigureChartChangedMessage>(new ActivePointAndFigureChartChangedMessage(this, _viewModel.Chart));
             }
             else

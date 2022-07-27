@@ -2,7 +2,7 @@
   "profiles": {
     "PnFImports": {
       "commandName": "Project",
-      "commandLineArgs": "hilochart BATG.LON 2022-07-21"
+      "commandLineArgs": "fullrun ALL SKIPPRICES"
     }
   }
 }

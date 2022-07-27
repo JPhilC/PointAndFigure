@@ -104,6 +104,11 @@ namespace PnFData.Services
                             }
                             result.Prices = data;
                         }
+                        else
+                        {
+                            result.InError = true;
+                            result.Reason = "No prices returned.";
+                        }
                     }
                 }
                 else

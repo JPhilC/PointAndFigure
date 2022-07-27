@@ -38,7 +38,16 @@ SELECT NEWID() as Id, ixsv.[Day], ixsv.[Value]/m.[Value] * 1000 as [Value], ixh.
 	WHERE ixsv.[Day] <= @CutOffDate AND ixsv.IndexId IN (SELECT ixs.[Id] FROM Indices ixs WHERE ixs.[SuperSector] IS NOT NULL)
 	ORDER BY ixh.Id, [Day]
 
+-- Update existing records (within the last month)
+UPDATE iv
+	SET iv.[Value] = nv.[Value]
+FROM [dbo].[IndexRSIValues] iv
+LEFT JOIN [Indices] i ON i.[Id] = iv.[IndexId]
+LEFT JOIN #rsivalues nv ON nv.[IndexId] = iv.[IndexId]
+	AND nv.[Day] = iv.[Day]
+WHERE nv.[Value] IS NOT NULL AND nv.[Value]<>iv.[Value]
 
+-- Insert any new records
 INSERT INTO IndexRSIValues ([Id], [Day], [Value], [IndexId])
 SELECT nv.[Id], nv.[Day], nv.[Value], nv.[IndexId]
 	FROM #rsivalues nv

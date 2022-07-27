@@ -199,8 +199,8 @@ namespace PnFImports
 
         private static object _lock = new object();
         private static Stopwatch _stopwatch = new Stopwatch();
-        private static long _nextSlot = 400;
-        private static long _minInterval = 400;    // Milliseconds.
+        private static long _nextSlot = 600;
+        private static long _minInterval = 600;    // Milliseconds.
         internal static void ImportEodDailyPrices(string exchangeCode, string? tidm, bool retryErrors = false, bool fullImport = false)
         {
             try

@@ -42,7 +42,12 @@ namespace PnFDesktop.ViewModels
         public ShareChartType ShareChartType
         {
             get => _shareChartType;
-            set => SetProperty(ref _shareChartType, value);
+            set {
+                if (SetProperty(ref _shareChartType, value))
+                {
+                    ShowRemoteDataCheckBox = (_shareChartType == ShareChartType.Share);
+                }
+            }
         }
 
         public ObservableCollection<ShareDTO> Shares { get; } = new ObservableCollection<ShareDTO>();
@@ -52,6 +57,21 @@ namespace PnFDesktop.ViewModels
         {
             get => _selectedShare;
             set => SetProperty(ref _selectedShare, value);
+        }
+
+        private bool _showRemoteDataCheckBox = true;
+
+        public bool ShowRemoteDataCheckBox
+        {
+            get => _showRemoteDataCheckBox;
+            set => SetProperty(ref _showRemoteDataCheckBox, value);
+        }
+
+        private bool _useRemoteData;
+        public bool UseRemoteData
+        {
+            get => _useRemoteData;
+            set => SetProperty(ref _useRemoteData, value);
         }
 
         IDataService _DataService;

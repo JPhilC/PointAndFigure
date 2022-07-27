@@ -96,8 +96,8 @@ namespace PnFImports
             if (tickData != null && tickData.Any())
             {
                 // Create the chart.
-                PnFChartBuilderService chartBuilder = new PnFSingleValueChartBuilderService(tickData);
-                double boxSize = chartBuilder.ComputeNormalBoxSize();
+                PnFChartBuilderService chartBuilder = new PnFLogarithmicValueChartBuilderService(tickData);
+                double boxSize = 2d;
                 PnFChart chart = null;
                 try
                 {
@@ -123,19 +123,56 @@ namespace PnFImports
                                 .Select(c => c.Chart.Id)
                                 .FirstOrDefault();
                                 chart = db.PnFCharts
-                                    .Include(c => c.Columns.OrderBy(c=>c.Index)).ThenInclude(l => l.Boxes.OrderBy(b=>b.Index))
+                                    .Include(c => c.Columns.OrderBy(c => c.Index)).ThenInclude(l => l.Boxes.OrderBy(b => b.Index))
                                     .SingleOrDefault(c => c.Id == chartId);
                             }
 
                         }
                         if (chart != null)
                         {
-                            // Update the existing chart
-                            if (chartBuilder.UpdateChart(ref chart, uptoDate))
+                            if (chart.Columns.Count > 0)
                             {
-                                // Try to save any changes
-                                db.Update(chart);
+                                // Update the existing chart
+                                if (chartBuilder.UpdateChart(ref chart, uptoDate))
+                                {
+                                    // Try to save any changes
+                                    db.Update(chart);
 
+                                    bool saved = false;
+                                    int trys = 0;
+                                    while (!saved && trys < 5)
+                                    {
+                                        try
+                                        {
+                                            int saveResult = db.SaveChanges();
+                                            saved = true;
+                                        }
+                                        catch (DbUpdateConcurrencyException updateEx)
+                                        {
+                                            foreach (var entry in updateEx.Entries)
+                                            {
+                                                var proposedValues = entry.CurrentValues;
+                                                var databaseValues = entry.GetDatabaseValues();
+                                                proposedValues["Version"] = databaseValues["Version"];
+                                                entry.OriginalValues.SetValues(proposedValues);
+                                            }
+                                        }
+                                        catch (SqlException sqex)
+                                        {
+                                            trys++;
+                                            System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                            Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                        }
+
+                                    }
+
+                                }
+                            }
+                            else
+                            {
+                                // Delete chart with no columns and treat as a new chart
+                                Console.WriteLine("Note: Removing chart with zero columns");
+                                db.PnFCharts.Remove(chart);
                                 bool saved = false;
                                 int trys = 0;
                                 while (!saved && trys < 5)
@@ -144,6 +181,7 @@ namespace PnFImports
                                     {
                                         int saveResult = db.SaveChanges();
                                         saved = true;
+                                        chart = null;
                                     }
                                     catch (DbUpdateConcurrencyException updateEx)
                                     {
@@ -161,10 +199,10 @@ namespace PnFImports
                                         System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
                                         Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
                                     }
-
                                 }
 
                             }
+
                         }
                     }
                 }
@@ -197,7 +235,7 @@ namespace PnFImports
                 {
                     newChart.Source = chartSource;
                     // Sector RS charts
-                    newChart.Name = $"{indexName} {chartSource} ({newChart.BoxSize}, {reversal} rev)";
+                    newChart.Name = $"{indexName} {chartSource} ({newChart.BoxSize}%, {reversal} rev)";
                     try
                     {
                         // Save the chart
@@ -461,17 +499,53 @@ namespace PnFImports
                                     .Select(c => c.Chart.Id)
                                     .FirstOrDefault();
                                 chart = db.PnFCharts
-                                    .Include(c => c.Columns.OrderBy(c=>c.Index)).ThenInclude(l => l.Boxes.OrderBy(b=>b.Index))
+                                    .Include(c => c.Columns.OrderBy(c => c.Index)).ThenInclude(l => l.Boxes.OrderBy(b => b.Index))
                                     .SingleOrDefault(c => c.Id == chartId);
                             }
 
                             if (chart != null)
                             {
-                                // Update the existing chart
-                                if (chartBuilder.UpdateChart(ref chart, uptoDate))
+                                if (chart.Columns.Count > 0)
                                 {
-                                    db.Update(ndx);
+                                    // Update the existing chart
+                                    if (chartBuilder.UpdateChart(ref chart, uptoDate))
+                                    {
+                                        db.Update(ndx);
 
+                                        bool saved = false;
+                                        int trys = 0;
+                                        while (!saved && trys < 5)
+                                        {
+                                            try
+                                            {
+                                                int saveResult = db.SaveChanges();
+                                                saved = true;
+                                            }
+                                            catch (DbUpdateConcurrencyException updateEx)
+                                            {
+                                                foreach (var entry in updateEx.Entries)
+                                                {
+                                                    var proposedValues = entry.CurrentValues;
+                                                    var databaseValues = entry.GetDatabaseValues();
+                                                    proposedValues["Version"] = databaseValues["Version"];
+                                                    entry.OriginalValues.SetValues(proposedValues);
+                                                }
+                                            }
+                                            catch (SqlException sqex)
+                                            {
+                                                trys++;
+                                                System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
+                                                Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
+                                            }
+
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // Delete chart with no columns and treat as a new chart
+                                    Console.WriteLine("Note: Removing chart with zero columns");
+                                    db.PnFCharts.Remove(chart);
                                     bool saved = false;
                                     int trys = 0;
                                     while (!saved && trys < 5)
@@ -480,6 +554,7 @@ namespace PnFImports
                                         {
                                             int saveResult = db.SaveChanges();
                                             saved = true;
+                                            chart = null;
                                         }
                                         catch (DbUpdateConcurrencyException updateEx)
                                         {
@@ -497,9 +572,10 @@ namespace PnFImports
                                             System.Diagnostics.Debug.WriteLine($"SQLException {sqex.GetType()}, message {sqex.Message}");
                                             Thread.Sleep(PnFChartBuilderService.GetRandomDelay()); // Wait a randomn delay between 1 and 5 seconds
                                         }
-
                                     }
+
                                 }
+
                             }
                         }
                     }

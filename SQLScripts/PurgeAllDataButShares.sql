@@ -16,3 +16,5 @@ truncate table PnFSignals
 truncate table PnFBoxes
 delete from PnFColumns
 delete from PnFCharts
+
+
