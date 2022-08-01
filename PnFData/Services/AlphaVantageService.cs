@@ -36,7 +36,6 @@ namespace PnFData.Services
         static AlphaVantageService()
         {
             ApiKey = (string)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User)["AlphaVantageAPIKey"];
-            System.Diagnostics.Debug.WriteLine($"ApiKey = {ApiKey}");
         }
 
         public static async Task<TimeSeriesDailyResult> GetTimeSeriesDailyPrices(string symbol, DateTime cutoffDate, bool full = false)

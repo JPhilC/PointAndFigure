@@ -4,6 +4,7 @@ using Microsoft.Toolkit.Mvvm.Messaging;
 using Microsoft.Win32;
 using PnFData.Model;
 using PnFData.Services;
+using PnFData.Services.RapidAPIGoogleFinance;
 using PnFDesktop.Classes;
 using PnFDesktop.Classes.Messaging;
 using PnFDesktop.Controls;
@@ -640,6 +641,14 @@ namespace PnFDesktop.ViewModels
             {
                 MessageLog.LogMessage(this, LogType.Information, $"Generating P & F chart for TIDM '{shareTidm}' ...");
                 OpenPointAndFigureChart(chart, stdDev, true);
+            }
+            if (selectedShare != null)
+            {
+                GoogleTickerPriceResult googleTickerPrice = await GoogleFinanceService.GetLastPrice(shareTidm, selectedShare.ExchangeCode);
+                if (!googleTickerPrice.InError)
+                {
+                    MessageLog.LogMessage(this, LogType.Information, $"Current price for TIDM '{shareTidm}' = {googleTickerPrice.Price:F4}");
+                }
             }
         }
 

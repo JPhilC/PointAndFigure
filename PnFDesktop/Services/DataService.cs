@@ -116,7 +116,8 @@ namespace PnFDesktop.Services
                     {
                         Id = s.Id,
                         Tidm = s.Tidm,
-                        Name = s.Name
+                        Name = s.Name,
+                        ExchangeCode = s.ExchangeCode
                     })
                     .OrderBy(s => s.Tidm)
                     .ToListAsync();

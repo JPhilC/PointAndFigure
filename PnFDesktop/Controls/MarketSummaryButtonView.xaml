@@ -692,7 +692,7 @@
 
         </DataGrid>
         <GridSplitter Grid.Row="3" Grid.ColumnSpan="20" HorizontalAlignment="Stretch" Height="5" Opacity="0"/>
-        <DataGrid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="20"
+        <DataGrid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="20" x:Name="SectorGrid"
                   ItemsSource="{Binding Source={StaticResource cvsSectors}}"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
@@ -772,141 +772,6 @@
                                                 <Setter Property="Background">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn SortMemberPath="BullishPercent">
-                    <DataGridTemplateColumn.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="Bullish %" ToolTip="Sector bullish percent"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.HeaderTemplate>
-
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Command="{Binding DataContext.LoadBullishPercentChartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}"
-                                    ToolTip="Open bullish percent chart">
-                                <Button.Content>
-                                    <TextBlock Text="{Binding BullishPercent, StringFormat={}{0:F0}%, Converter={StaticResource RoundingConverter}}"/>
-                                </Button.Content>
-
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource IndicatorButton}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding BullishPercentRising}" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding BullishPercentRising}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding BullishPercentFalling}" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding BullishPercentFalling}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding BullishPercentBuy}" Value="True">
-                                                <Setter Property="Foreground">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="{Binding BullishPercent, Converter={StaticResource OpacityConverter}, ConverterParameter={x:Static classes:SignalOpacitySignal.Buy}}"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding BullishPercentSell}" Value="True">
-                                                <Setter Property="Foreground">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="{Binding BullishPercent, Converter={StaticResource OpacityConverter}, ConverterParameter={x:Static classes:SignalOpacitySignal.Sell}}"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn SortMemberPath="RsValue">
-                    <DataGridTemplateColumn.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="RS Value" ToolTip="Sector relative strength"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.HeaderTemplate>
-
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button  Command="{Binding DataContext.LoadIndexRSChartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                     CommandParameter="{Binding}"
-                                     ToolTip="Open index RS value P &amp; F Chart">
-                                <Button.Content>
-                                    <TextBlock Text="{Binding RsValue, StringFormat={}{0:F0}%, Converter={StaticResource RoundingConverter}}"/>
-                                </Button.Content>
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource IndicatorButton}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding RsRising}" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding RsRising}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding RsFalling}" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding RsFalling}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding RsBuy}" Value="True">
-                                                <Setter Property="Foreground">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="{Binding RsValue, Converter={StaticResource OpacityConverter}, ConverterParameter={x:Static classes:SignalOpacitySignal.Buy}}"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding RsSell}" Value="True">
-                                                <Setter Property="Foreground">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="{Binding RsValue, Converter={StaticResource OpacityConverter}, ConverterParameter={x:Static classes:SignalOpacitySignal.Sell}}"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
@@ -1108,6 +973,139 @@
                                                 <Setter Property="Foreground">
                                                     <Setter.Value>
                                                         <SolidColorBrush Color="Red" Opacity="{Binding PercentPositiveTrend, Converter={StaticResource OpacityConverter}, ConverterParameter={x:Static classes:SignalOpacitySignal.Sell}}"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn SortMemberPath="BullishPercent">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="Bullish %" ToolTip="Sector bullish percent"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Command="{Binding DataContext.LoadBullishPercentChartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip="Open bullish percent chart">
+                                <Button.Content>
+                                    <TextBlock Text="{Binding BullishPercent, StringFormat={}{0:F0}%, Converter={StaticResource RoundingConverter}}"/>
+                                </Button.Content>
+
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource IndicatorButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding BullishPercentRising}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding BullishPercentRising}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding BullishPercentFalling}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding BullishPercentFalling}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding BullishPercentBuy}" Value="True">
+                                                <Setter Property="Foreground">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="{Binding BullishPercent, Converter={StaticResource OpacityConverter}, ConverterParameter={x:Static classes:SignalOpacitySignal.Buy}}"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding BullishPercentSell}" Value="True">
+                                                <Setter Property="Foreground">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="{Binding BullishPercent, Converter={StaticResource OpacityConverter}, ConverterParameter={x:Static classes:SignalOpacitySignal.Sell}}"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn SortMemberPath="RsValue">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="Sector RS" ToolTip="Sector relative strength"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button  Command="{Binding DataContext.LoadIndexRSChartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                     CommandParameter="{Binding}"
+                                     ToolTip="Open index RS value P &amp; F Chart"
+                                     BorderThickness="8">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource IndicatorButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RsRising}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsRising}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsFalling}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsFalling}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsBuy}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RsSell}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="1"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>

@@ -170,11 +170,20 @@ namespace PnFImports
                 else
                 {
                     ImportEodDailyPrices(exchangeCode, null);
+                    // Second pass to retry any errors
+                    ImportEodDailyPrices(exchangeCode, null, true);
+
                 }
             }
 
             // Determine the last reliable date (T+2 settlement etc)
             DateTime TplusTwoDate = GetLastReliableDate(exchangeCode);
+
+            if (_LastReturnValue == 0)
+            {
+                // Delete the existing charts in case indexes are updated affecting RS values.
+                RunLongStoredProcedure("uspDeleteAllCharts", 60);
+            }
 
             if (_LastReturnValue == 0)
             {

@@ -244,7 +244,8 @@ namespace PnFImports
                 _stopwatch.Start();
                 _nextSlot = 0;
                 _progress = 0;
-
+                object errorlock = new object();
+                Dictionary<string, string?> errors = new Dictionary<string, string?>();
                 Parallel.ForEach(shareIds,
                     new ParallelOptions { MaxDegreeOfParallelism = 5 },
                     shareData =>
@@ -259,15 +260,6 @@ namespace PnFImports
                         {
                             if (!shareData.EodErrors)
                             {
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            if (shareData.EodErrors)
-                            {
-                                Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ... Skipped, previously in error!");
-                                // continue; // Skip as were no eod prices last time
                                 return;
                             }
                         }
@@ -299,6 +291,10 @@ namespace PnFImports
                                         share.EodError = true;
                                         db.Update(share);
                                         await db.SaveChangesAsync();
+                                        lock (errorlock)
+                                        {
+                                            errors.Add(shareData.Tidm, result.Reason);
+                                        }
                                         Console.WriteLine($"Processing {shareData.Tidm}: {shareData.Name} ...  Error! {result.Reason}");
                                     }
                                     else
@@ -328,6 +324,10 @@ namespace PnFImports
                             }
                             catch (Exception ex)
                             {
+                                lock (errorlock)
+                                {
+                                    errors.Add(shareData.Tidm, ex.Message);
+                                }
                                 Console.WriteLine(ex.ToString());
                             }
                         })).Wait();
@@ -338,6 +338,20 @@ namespace PnFImports
 
                 }
                 _stopwatch.Stop();
+
+                if (errors.Any())
+                {
+
+                    string errorFile = Path.Combine(Path.GetTempPath(), $"PnFDesktopImport{(retryErrors?"_Retry":"")}.err");
+                    using (StreamWriter writer = System.IO.File.CreateText(errorFile))
+                    {
+                        writer.WriteLine($"Import errors for: {DateTime.Now.ToShortDateString()}");
+                        foreach(var error in errors)
+                        {
+                            writer.WriteLine($"{error.Key}\t{error.Value}");
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
