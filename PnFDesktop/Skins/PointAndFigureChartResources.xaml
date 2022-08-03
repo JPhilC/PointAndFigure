@@ -57,6 +57,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:PointAndFigureColumnItem}" >
                     <Grid HorizontalAlignment="Left" VerticalAlignment="Top" ToolTip="{Binding Tooltip}">
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Show Risk/Reward" Command="{Binding ShowRiskRewardCommand}" CommandParameter="{Binding}"/>
+                            </ContextMenu>
+                        </Grid.ContextMenu>
                         <Grid.RenderTransform>
                             <TranslateTransform X="{Binding X}" 
                                                     Y="{Binding Y}" />

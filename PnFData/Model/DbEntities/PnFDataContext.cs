@@ -62,8 +62,8 @@ namespace PnFData.Model
                 sqlServerOptionsAction: sqlOptions =>
                 {
                     sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount:2,
-                        maxRetryDelay:TimeSpan.FromSeconds(5),
+                        maxRetryCount:5,
+                        maxRetryDelay:TimeSpan.FromSeconds(20),
                         errorNumbersToAdd:null
                         )
                     .CommandTimeout((int)TimeSpan.FromMinutes(1).TotalSeconds);

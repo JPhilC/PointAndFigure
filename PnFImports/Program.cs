@@ -127,7 +127,7 @@ namespace PnFImports
                         break;
 
                     case "test":
-                        Guid indexId = new Guid("348DCCC4-D736-41D5-BA4C-45D6ED7AD796");
+                        Guid indexId = new Guid("922EC9E9-31A1-42E9-A559-08AD9F69925B");
                         IEnumerable<IndexValue> rawTickData = null;
                         using (PnFDataContext db = new PnFDataContext())
                         {
@@ -178,6 +178,12 @@ namespace PnFImports
 
             // Determine the last reliable date (T+2 settlement etc)
             DateTime TplusTwoDate = GetLastReliableDate(exchangeCode);
+
+            if (_LastReturnValue == 0)
+            {
+                // Fill in any blanks using the last non-null values.
+                RunLongStoredProcedure("uspApproximateMissingPriceData", 60);
+            }
 
             if (_LastReturnValue == 0)
             {

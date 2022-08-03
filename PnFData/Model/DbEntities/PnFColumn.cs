@@ -157,7 +157,7 @@ namespace PnFData.Model
             else
             {
                 minValue = minIndex * boxSize;
-                maxIndex = maxIndex * boxSize;
+                maxValue = maxIndex * boxSize;
             }
             switch (ColumnType)
             {

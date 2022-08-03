@@ -45,7 +45,6 @@ SET @fromDate = CONVERT(DATETIME, '2005-01-01')	-- Process all
 SELECT sc.[ShareId]
 	,	s.[Day]
 	,	s.[Signals]
-	,	s.[Value]
 	INTO #PriceSignals
 	FROM [PnFCharts] c
 	JOIN [ShareCharts] sc ON sc.[ChartId] = c.[Id]
@@ -55,7 +54,6 @@ SELECT sc.[ShareId]
 SELECT sc.[ShareId]
 	,	s.[Day]
 	,	s.[Signals]
-	,	s.[Value]
 	INTO #RsSignals
 	FROM [PnFCharts] c
 	JOIN [ShareCharts] sc ON sc.[ChartId] = c.[Id]
@@ -65,7 +63,6 @@ SELECT sc.[ShareId]
 SELECT sc.[ShareId]
 	,	s.[Day]
 	,	s.[Signals]
-	,	s.[Value]
 	INTO #PeerRsSignals
 	FROM [PnFCharts] c
 	INNER JOIN [ShareCharts] sc ON sc.[ChartId] = c.[Id]
@@ -76,11 +73,8 @@ SELECT sc.[ShareId]
 SELECT q.[ShareId]
 	,	q.[Day]
 	,	vs.[Signals] PriceSignals
-	,	vs.[Value] PriceValue
 	,	rs.[Signals] RsSignals
-	,	rs.[Value] RsValue
 	,	prs.[Signals] PrsSignals
-	,	prs.[Value] PrsValue
 INTO #pivot
 FROM [EodPrices] q
 LEFT JOIN #PriceSignals vs ON vs.ShareId = q.[ShareId] AND vs.[Day] = q.[Day]		
@@ -119,7 +113,7 @@ select [ShareId]
 into #ShareResults
 from #pivot
 
-UPDATE [dbo].[ShareIndicators]
+UPDATE si
 	SET [Rising] = sr.[Rising]
 	,	[DoubleTop] = sr.[DoubleTop]
 	,	[TripleTop] = sr.[TripleTop]
@@ -198,7 +192,7 @@ DECLARE @MomentumGonePositive AS INT    = 0x08000;
 DECLARE @MomentumGoneNegative AS INT	= 0x10000;
 
 
-UPDATE [dbo].[ShareIndicators]
+UPDATE si
 		SET [UpdatedAt] = GETDATE()
 		,	[MomentumRising] = IIF(td.[WeeklyMomentum] > yd.[WeeklyMomentum], 1, 0)
 		,   [MomentumFalling] = IIF(td.[WeeklyMomentum] < yd.[WeeklyMomentum], 1, 0)

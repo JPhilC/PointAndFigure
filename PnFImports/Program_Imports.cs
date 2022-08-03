@@ -304,8 +304,25 @@ namespace PnFImports
                                         {
                                             foreach (Eod dayPrice in dayPrices)
                                             {
-                                                dayPrice.ShareId = shareData.Id;
-                                                db.EodPrices.Add(dayPrice);
+                                                // See if price record already exists
+                                                Eod? existingPrice = db.EodPrices.FirstOrDefault(p=> p.ShareId == shareData.Id && p.Day == dayPrice.Day);
+                                                if (existingPrice != null)
+                                                {
+                                                    existingPrice.Close = dayPrice.Close;
+                                                    existingPrice.AdjustedClose = dayPrice.AdjustedClose;
+                                                    existingPrice.Open = dayPrice.Open;
+                                                    existingPrice.High = dayPrice.High;
+                                                    existingPrice.Low = dayPrice.Low;
+                                                    existingPrice.Volume = dayPrice.Volume;
+                                                    existingPrice.SplitCoefficient = dayPrice.SplitCoefficient;
+                                                    existingPrice.DividendAmount = dayPrice.DividendAmount;
+                                                    db.Update(existingPrice);
+                                                }
+                                                else
+                                                {
+                                                    dayPrice.ShareId = shareData.Id;
+                                                    db.EodPrices.Add(dayPrice);
+                                                }
                                             }
                                             DateTime maxDay = dayPrices.Max(p => p.Day);
                                             share.LastEodDate = maxDay;

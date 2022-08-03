@@ -24,17 +24,6 @@
             <RoutedUICommand x:Key="Commands.FitContent" />
             <RoutedUICommand x:Key="Commands.Fill" />
             <RoutedUICommand x:Key="Commands.OneHundredPercent" />
-
-            <DataTemplate DataType="{x:Type vm:PointAndFigureColumnViewModel}">
-                <controls:PointAndFigureColumnItem 
-                    BoxesSource="{Binding Boxes}"/>
-            </DataTemplate>
-
-            <!-- <DataTemplate DataType="{x:Type vm:PointAndFigureBoxViewModel}">
-                <controls:PointAndFigureBoxItem />
-            </DataTemplate>-->
-
-
         </ResourceDictionary>
     </UserControl.Resources>
 

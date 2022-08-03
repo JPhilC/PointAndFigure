@@ -2,7 +2,7 @@
   "profiles": {
     "PnFImports": {
       "commandName": "Project",
-      "commandLineArgs": "sharerschart ABDP.LON MARKET"
+      "commandLineArgs": "daily LSE "
     }
   }
 }
