@@ -112,7 +112,7 @@ namespace PnFDesktop.ViewModels
                     PnFChart? chart = null;
                     if (message.ChartSource == PnFChartSource.Share)    // By default generate a fresh up to date chart.
                     {
-                        chart = await GenerateShareChart(message.Tidm);
+                        chart = await GenerateShareChart(message.Tidm, message.Name);
                         if (chart != null)
                         {
                             Guid chartId;
@@ -121,7 +121,6 @@ namespace PnFDesktop.ViewModels
                                 chartId = Guid.NewGuid();
                                 _tempChartIds.Add(message.Tidm, chartId);
                             }
-                            chart.Name = message.Name;
                             chart.Id = chartId;
                         }
                     }
@@ -582,7 +581,7 @@ namespace PnFDesktop.ViewModels
             }
         }
 
-        private async Task<PnFChart?> GenerateShareChart(string shareTidm)
+        private async Task<PnFChart?> GenerateShareChart(string shareTidm, string shareName)
         {
             PnFChart? chart = null;
             List<Eod> tickData = new List<Eod>();
@@ -615,6 +614,10 @@ namespace PnFDesktop.ViewModels
                     MessageLog.LogMessage(this, LogType.Information, $"Building P & F chart data for TIDM '{shareTidm}' ...");
                     PnFChartBuilderService chartBuilder = new PnFLogarithmicHiLoChartBuilderService(tickData);
                     chart = chartBuilder.BuildChart(2d, 3, DateTime.Now);
+                    if (chart != null)
+                    {
+                        chart.Name = $"{shareName} ({shareTidm.Replace(".LON", "")}) Daily (H/L) ({chart.BoxSize}%, {chart.Reversal} rev)";
+                    }
                 }
             }
             catch (Exception ex)
@@ -631,7 +634,7 @@ namespace PnFDesktop.ViewModels
         /// <returns></returns>
         private async Task GenerateAndOpenChart(string shareTidm, ShareDTO? selectedShare)
         {
-            PnFChart? chart = await GenerateShareChart(shareTidm);
+            PnFChart? chart = await GenerateShareChart(shareTidm, selectedShare?.Name);
             StdDevResult? stdDev = null;
             if (selectedShare != null)
             {

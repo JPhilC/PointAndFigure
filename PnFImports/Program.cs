@@ -177,7 +177,7 @@ namespace PnFImports
             }
 
             // Determine the last reliable date (T+2 settlement etc)
-            DateTime TplusTwoDate = GetLastReliableDate(exchangeCode);
+            DateTime uptoDate = DateTime.Now.AddDays(-1).Date; // GetLastReliableDate(exchangeCode);
 
             if (_LastReturnValue == 0)
             {
@@ -194,29 +194,29 @@ namespace PnFImports
             if (_LastReturnValue == 0)
             {
                 // Generate values;
-                RunLongStoredProcedure("uspGenerateDailyValues", TplusTwoDate, 60);
+                RunLongStoredProcedure("uspGenerateDailyValues", uptoDate, 60);
             }
 
             if (_LastReturnValue == 0)
             {
                 // Only use data upto the T+2 date
-                GenerateAllHiLoCharts(exchangeCode, TplusTwoDate);
-                GenerateIndexCharts(exchangeCode, TplusTwoDate);
-                GenerateIndexRSCharts(exchangeCode, TplusTwoDate);
-                GenerateShareRSCharts(exchangeCode, TplusTwoDate);
+                GenerateAllHiLoCharts(exchangeCode, uptoDate);
+                GenerateIndexCharts(exchangeCode, uptoDate);
+                GenerateIndexRSCharts(exchangeCode, uptoDate);
+                GenerateShareRSCharts(exchangeCode, uptoDate);
 
             }
 
             if (_LastReturnValue == 0)
             {
                 // Generate SIB Indicators
-                RunLongStoredProcedure("uspUpdateSIBIndicators", TplusTwoDate, 60);
+                RunLongStoredProcedure("uspUpdateSIBIndicators", uptoDate, 60);
             }
 
             if (_LastReturnValue == 0)
             {
                 // Generate index percent Charts
-                GenerateIndexPercentCharts(exchangeCode, TplusTwoDate);
+                GenerateIndexPercentCharts(exchangeCode, uptoDate);
             }
 
             if (_LastReturnValue == 0)
@@ -228,7 +228,7 @@ namespace PnFImports
             if (_LastReturnValue == 0)
             {
                 Console.WriteLine($"\nFull run for ({exchangeCode}) completed OK.");
-                Console.WriteLine($"T+2 day used was {TplusTwoDate:d}");
+                Console.WriteLine($"Up to day used was {uptoDate:d}");
             }
             else
             {
