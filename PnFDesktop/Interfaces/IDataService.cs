@@ -44,5 +44,7 @@ namespace PnFDesktop.Interfaces
         Task<bool> UpdatePortfolioAsync(Portfolio newPortfolio);
 
         Task<StdDevResult> GetStandardDeviationAsync(Guid shareId, int days);
+
+        Task<IEnumerable<PortfolioEventResult>> GetNewPortfolioEvents();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using PnFData.Interfaces;
 using PnFData.Model;
 using PnFData.Services;
@@ -127,23 +128,24 @@ namespace PnFImports
                         break;
 
                     case "test":
-                        Guid indexId = new Guid("922EC9E9-31A1-42E9-A559-08AD9F69925B");
-                        IEnumerable<IndexValue> rawTickData = null;
-                        using (PnFDataContext db = new PnFDataContext())
+                        IEnumerable<PortfolioEventResult> results = new List<PortfolioEventResult>();
+                        try
                         {
-                            rawTickData = db.IndexValues.Where(i => i.IndexId == indexId).ToList();
+                            using (var db = new PnFDataContext())
+                            {
+                                results = db.PortfolioEventResults.FromSqlRaw("EXEC [uspGetPortfolioEvents]").ToList();
+                            }
+                            foreach (PortfolioEventResult result in results)
+                            {
+                                Console.WriteLine($"{result.ShareName} => {result.NewEvents}");
+                            }
                         }
-
-                        // Generate values;
-                        List<IDayValue> tickData = rawTickData.Where(r => r.PercentRsRising.HasValue).Select(r => new SimpleDayValue()
+                        catch (Exception ex)
                         {
-                            Day = r.Day,
-                            Value = r.PercentRsRising.Value
+                            Console.WriteLine("An error occurred getting the new portfolio events.", ex);
                         }
-                        ).ToList<IDayValue>();
-
-                        GeneratePercentChart(indexId, "Test", new DateTime(2022, 07, 20), tickData, PnFChartSource.IndexPercentShareRsX);
                         break;
+
 
                 }
             }

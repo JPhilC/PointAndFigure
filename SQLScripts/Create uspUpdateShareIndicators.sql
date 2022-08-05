@@ -166,7 +166,7 @@ UPDATE si
 		WHERE si.[CreatedAt] > @fromDate
 
 -- Now update the Events code with notifications of new events.
-SELECT si.[ShareId], si.[Day], si.DoubleTop, si.TripleTop, si.RsBuy, si.PeerRsBuy, si.DoubleBottom, si.TripleBottom, si.RsSell, si.PeerRsSell, si.ClosedAboveEma10, si.ClosedAboveEma30, si.[AboveBullSupport]
+SELECT si.[ShareId], si.[Day], si.[Rising], si.DoubleTop, si.TripleTop, si.RsBuy, si.PeerRsBuy, si.[Falling], si.DoubleBottom, si.TripleBottom, si.RsSell, si.PeerRsSell, si.ClosedAboveEma10, si.ClosedAboveEma30, si.[AboveBullSupport]
 		, si.[WeeklyMomentum]
 		, ROW_NUMBER() OVER(PARTITION BY si.[ShareId] ORDER BY si.[Day] ASC) as Ordinal#
 	INTO #today
@@ -190,6 +190,8 @@ DECLARE @High52Week AS INT				= 0x02000;
 DECLARE @Low52Week AS INT				= 0x04000;
 DECLARE @MomentumGonePositive AS INT    = 0x08000;
 DECLARE @MomentumGoneNegative AS INT	= 0x10000;
+DECLARE @SwitchedToRising AS INT		= 0x20000;
+DECLARE @SwitchedToFalling AS INT		= 0x40000;
 
 
 UPDATE si
@@ -213,6 +215,8 @@ UPDATE si
 		+ iif(p.[New52WeekLow]=1, @Low52Week, 0)
 		+ iif(td.[WeeklyMomentum] < 0 AND yd.[WeeklyMomentum] >= 0, @MomentumGoneNegative, 0)
 		+ iif(td.[WeeklyMomentum] > 0 AND yd.[WeeklyMomentum] <= 0, @MomentumGonePositive, 0)
+		+ iif(td.[Rising]^yd.[Rising] = 1 AND td.[Rising]=1, @SwitchedToRising, 0)
+		+ iif(td.[Falling]^yd.[Falling] = 1 AND td.[Falling]=1, @SwitchedToFalling, 0)
 	FROM [dbo].[ShareIndicators] si
 	LEFT JOIN [dbo].[EodPrices] p ON p.[ShareId] = si.[ShareId] AND p.[Day] = si.[Day]
 	LEFT JOIN #today td ON td.[ShareId] = si.[ShareId] AND td.[Day] = si.[Day]

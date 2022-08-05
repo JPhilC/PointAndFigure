@@ -48,6 +48,7 @@ namespace PnFData.Model
 
         #region Result classes ...
         public DbSet<StdDevResult> StdDevResults { get; set;}
+        public DbSet<PortfolioEventResult> PortfolioEventResults { get; set; }
         #endregion
 
         // The following configures EF to create a Sqlite database file in the
@@ -158,6 +159,9 @@ namespace PnFData.Model
                 .HasDefaultValueSql("newid()");
 
             modelBuilder.Entity<StdDevResult>()
+                .HasNoKey();
+
+            modelBuilder.Entity<PortfolioEventResult>()
                 .HasNoKey();
 
             // Define Db generated default values for CreatedAt

@@ -1198,5 +1198,23 @@ namespace PnFDesktop.Services
             return result;
 
         }
+
+        public async Task<IEnumerable<PortfolioEventResult>> GetNewPortfolioEvents()
+        {
+            IEnumerable<PortfolioEventResult> result = new List<PortfolioEventResult>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    result = await db.PortfolioEventResults.FromSqlRaw("EXEC [uspGetPortfolioEvents]").ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageLog.LogMessage(this, LogType.Error, "An error occurred getting the new portfolio events.", ex);
+            }
+            return result;
+
+        }
     }
 }

@@ -159,5 +159,10 @@ namespace PnFDesktop.Services
         {
             throw new NotImplementedException();
         }
+
+        public Task<IEnumerable<PortfolioEventResult>> GetNewPortfolioEvents()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
