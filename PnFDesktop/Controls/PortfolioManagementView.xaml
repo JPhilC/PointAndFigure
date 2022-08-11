@@ -64,8 +64,7 @@
                   CanUserDeleteRows="False"
                   AutoGenerateColumns="False"
                   SelectionMode="Single"
-                  SelectionUnit="FullRow"
-                  IsReadOnly="True">
+                  SelectionUnit="FullRow">
             <DataGrid.Columns>
                 <DataGridTemplateColumn>
                     <DataGridTemplateColumn.CellTemplate>
@@ -83,8 +82,9 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="TIDM" Binding="{Binding Tidm}"  IsReadOnly="True" Width="80"/>
-                <DataGridTextColumn Header="Holding" Binding="{Binding Holding, StringFormat={}{0:N4}}"  IsReadOnly="True"/>
+                <DataGridTextColumn Header="Holding" Binding="{Binding Holding, StringFormat={}{0:N4}}"/>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="300" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Remarks" Binding="{Binding Remarks}" Width="300"/>
             </DataGrid.Columns>
             </DataGrid>
 

@@ -62,6 +62,17 @@
                         </Style>
                     </MenuItem.ItemContainerStyle>
                 </MenuItem>
+                <Separator />
+                <MenuItem Header="Delete" ItemsSource="{Binding Portfolios}" Visibility="{Binding PortfoliosAvailable, Converter={StaticResource BoolToVis}}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type MenuItem}">
+                            <Setter Property="Header" Value="{Binding Path=Name}" />
+                            <Setter Property="Command" Value="{Binding DataContext.DeletePortfolioCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                            <Setter Property="CommandParameter" Value="{Binding .}" />
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+
             </MenuItem>
             <MenuItem Header="Tools">
                 <MenuItem Header="Messages" IsChecked="{Binding MessagePaneVm.IsVisible, Mode=TwoWay}" IsCheckable="True" ToolTip="Show or hide the messages pane."/>

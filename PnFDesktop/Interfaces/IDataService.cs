@@ -35,13 +35,18 @@ namespace PnFDesktop.Interfaces
 
         Task<Portfolio?> GetPortfolioAsync(Guid itemId);
 
+
         Task<IEnumerable<PortfolioShareSummaryDTO>> GetPortfolioValuesAsync(Portfolio portfolio, DateTime day);
 
         Task<IEnumerable<string>> GetExchangeCodesAsync();
 
+        Task<bool> DeletePortfolioAsync(Portfolio portfolio);
+
         Task<bool> DeletePortfolioShareAsync(PortfolioShare portfolioShare);
 
         Task<bool> UpdatePortfolioAsync(Portfolio newPortfolio);
+
+        Task<bool> UpdatePortfolioShareAsync(PortfolioShareDTO portfolioShare);
 
         Task<StdDevResult> GetStandardDeviationAsync(Guid shareId, int days);
 

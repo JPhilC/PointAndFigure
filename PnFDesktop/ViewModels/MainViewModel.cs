@@ -114,7 +114,7 @@ namespace PnFDesktop.ViewModels
                     {
                         chart = await GenerateShareChart(message.Tidm, message.Name);
                         if (chart != null)
-                        {
+                        { 
                             Guid chartId;
                             if (!_tempChartIds.TryGetValue(message.Tidm, out chartId))
                             {
@@ -446,6 +446,20 @@ namespace PnFDesktop.ViewModels
                     this.DocumentPanes.Add(paneViewModel);
                 }
                 ActiveDocument = paneViewModel;
+            }
+        }
+
+        public async Task DeletePortfolio(Portfolio portfolio)
+        {
+            MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete portfolio:\n{portfolio.Name}", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
+            if (result == MessageBoxResult.Yes)
+            {
+                bool deleted = await _dataService.DeletePortfolioAsync(portfolio);
+                if (deleted)
+                {
+                    await LoadPortfolios();
+                    MessageLog.LogMessage(this, LogType.Information, $"Portfolio '{portfolio.Name}' has been deleted.");
+                }
             }
         }
 
@@ -792,7 +806,7 @@ namespace PnFDesktop.ViewModels
         private RelayCommand<Portfolio> _viewPortfolioCommand;
 
         /// <summary>
-        /// Creates a new portfolio
+        /// View an existing portfolio
         /// </summary>
         public RelayCommand<Portfolio> ViewPortfolioCommand
         {
@@ -810,6 +824,26 @@ namespace PnFDesktop.ViewModels
             }
         }
 
+        private RelayCommand<Portfolio> _deletePortfolioCommand;
+
+        /// <summary>
+        /// Deletes the selected portfolio
+        /// </summary>
+        public RelayCommand<Portfolio> DeletePortfolioCommand
+        {
+            get
+            {
+                return _deletePortfolioCommand
+                       ?? (_deletePortfolioCommand = new RelayCommand<Portfolio>(
+                           (portfolio) =>
+                           {
+                               if (portfolio != null)
+                               {
+                                   DeletePortfolio(portfolio);
+                               }
+                           }));
+            }
+        }
         private RelayCommand _printPointAndFigureChartCommand;
 
         /// <summary>

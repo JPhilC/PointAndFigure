@@ -17,6 +17,7 @@
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
             <classes:BooleanInverterConverter x:Key="ReversedBoolean" />
             <classes:StringToVisibilityConverter x:Key="StringToVisibility" />
+            <classes:StringNotEmptyToBooleanConverter x:Key="StringNotEmpty" />
             <!--This converts from a scale value to a percentage value.
             It is used to convert the value of 'ContentScale' to the percentage zoom level that is displayed in the UI.-->
 

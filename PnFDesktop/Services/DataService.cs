@@ -199,10 +199,11 @@ namespace PnFDesktop.Services
                                     orderby s.Tidm
                                     select new PortfolioShareDTO()
                                     {
-                                        Id = s.Id,
+                                        Id = ps.Id,
                                         Tidm = s.Tidm,
                                         Name = s.Name,
-                                        Holding = ps.Holding
+                                        Holding = ps.Holding,
+                                        Remarks = ps.Remarks
                                     }).ToListAsync();
 
 
@@ -214,6 +215,7 @@ namespace PnFDesktop.Services
             }
             return shares;
         }
+
 
         public async Task<IEnumerable<IndexDTO>> GetIndicesAsync()
         {
@@ -947,6 +949,7 @@ namespace PnFDesktop.Services
                                         Id = s.Id,
                                         Tidm = s.Tidm,
                                         Name = s.Name,
+                                        Remarks = ps.Remarks,
                                         ExchangeCode = s.ExchangeCode,
                                         ExchangeSubCode = s.ExchangeSubCode,
                                         SuperSector = s.SuperSector,
@@ -1156,20 +1159,97 @@ namespace PnFDesktop.Services
             return result;
         }
 
-        public async Task<bool> DeletePortfolioShareAsync(PortfolioShare portfolioShare)
+        public async Task<bool> UpdatePortfolioShareAsync(PortfolioShareDTO portfolioShareDTO)
         {
             bool result = false;
             try
             {
                 using (var db = new PnFDataContext())
                 {
-                    db.PortfolioShares.Remove(portfolioShare);
-                    result = (await db.SaveChangesAsync() > 0);
+                    PortfolioShare? portfolioShare = await db.PortfolioShares.Where(ps => ps.Id == portfolioShareDTO.Id).FirstOrDefaultAsync();
+                    if (portfolioShare != null)
+                    {
+                        portfolioShare.Holding = (portfolioShareDTO.Holding ?? 0.0);
+                        portfolioShare.Remarks = (portfolioShareDTO.Remarks ?? "");
+                        db.PortfolioShares.Update(portfolioShare);
+                        result = (await db.SaveChangesAsync() > 0);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageLog.LogMessage(this, LogType.Error, "An error occurred deleting the portfolio share", ex);
+                MessageLog.LogMessage(this, LogType.Error, $"An error occurred updating portfolio share details.", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> DeletePortfolioAsync(Portfolio portfolio)
+        {
+            bool result = false;
+            bool saved = false;
+            int trys = 0;
+            while (!saved && trys < 5)
+            {
+                try
+                {
+                    using (var db = new PnFDataContext())
+                    {
+                        db.Portfolios.Remove(portfolio);
+                        result = (await db.SaveChangesAsync() > 0);
+                        saved = true;
+                    }
+                }
+                catch (DbUpdateConcurrencyException updateEx)
+                {
+                    foreach (var entry in updateEx.Entries)
+                    {
+                        var proposedValues = entry.CurrentValues;
+                        var databaseValues = entry.GetDatabaseValues();
+                        proposedValues["Version"] = databaseValues["Version"];
+                        entry.OriginalValues.SetValues(proposedValues);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageLog.LogMessage(this, LogType.Error, $"An error occurred deleting portfolio '{portfolio.Name}'", ex);
+                    break;
+                }
+            }
+            return result;
+
+        }
+
+        public async Task<bool> DeletePortfolioShareAsync(PortfolioShare portfolioShare)
+        {
+            bool result = false;
+            bool saved = false;
+            int trys = 0;
+            while (!saved && trys < 5)
+            {
+                try
+                {
+                    using (var db = new PnFDataContext())
+                    {
+                        db.PortfolioShares.Remove(portfolioShare);
+                        result = (await db.SaveChangesAsync() > 0);
+                        saved = true;
+                    }
+                }
+                catch (DbUpdateConcurrencyException updateEx)
+                {
+                    foreach (var entry in updateEx.Entries)
+                    {
+                        var proposedValues = entry.CurrentValues;
+                        var databaseValues = entry.GetDatabaseValues();
+                        proposedValues["Version"] = databaseValues["Version"];
+                        entry.OriginalValues.SetValues(proposedValues);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageLog.LogMessage(this, LogType.Error, "An error occurred deleting the portfolio share", ex);
+                    break;
+                }
             }
             return result;
         }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PnFData.Interfaces;
 using PnFData.Model;
 using PnFData.Services;
+using PnFImports.Services;
 using System.Data;
 using System.Globalization;
 
@@ -128,22 +129,7 @@ namespace PnFImports
                         break;
 
                     case "test":
-                        IEnumerable<PortfolioEventResult> results = new List<PortfolioEventResult>();
-                        try
-                        {
-                            using (var db = new PnFDataContext())
-                            {
-                                results = db.PortfolioEventResults.FromSqlRaw("EXEC [uspGetPortfolioEvents]").ToList();
-                            }
-                            foreach (PortfolioEventResult result in results)
-                            {
-                                Console.WriteLine($"{result.ShareName} => {result.NewEvents}");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("An error occurred getting the new portfolio events.", ex);
-                        }
+                        GenerateEmailAlerts();
                         break;
 
 
@@ -229,6 +215,7 @@ namespace PnFImports
 
             if (_LastReturnValue == 0)
             {
+                GenerateEmailAlerts();
                 Console.WriteLine($"\nFull run for ({exchangeCode}) completed OK.");
                 Console.WriteLine($"Up to day used was {uptoDate:d}");
             }
@@ -236,6 +223,28 @@ namespace PnFImports
             {
                 Console.WriteLine($"Error! Full run ({exchangeCode}) failed @.");
             }
+        }
+
+        internal static void GenerateEmailAlerts()
+        {
+            IEnumerable<PortfolioEventResult> results = new List<PortfolioEventResult>();
+            try
+            {
+                using (var db = new PnFDataContext())
+                {
+                    results = db.PortfolioEventResults.FromSqlRaw("EXEC [uspGetPortfolioEvents]").ToList();
+                }
+                foreach (PortfolioEventResult result in results)
+                {
+                    Console.WriteLine($"{result.ShareName}, holding {result.Holding}, last close {result.AdjustedClose} => {result.NewEvents} ");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred getting the new portfolio events.", ex);
+            }
+
+            Task.Run(() => AlertEmailService.ProcessAlerts(results));
         }
 
         #region Helper methods ...

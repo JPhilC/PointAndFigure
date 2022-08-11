@@ -243,7 +243,7 @@ namespace PnFData.Services
         {
             Debug.Assert(this.BaseValue.HasValue, "BaseValue has not been set");
             int index = (int)((value - this.BaseValue.Value) / LogBoxSize);
-            if (falling && (value > (index * LogBoxSize)))
+            if (falling && ((value - this.BaseValue.Value) > (index * LogBoxSize)))
             {
                 index++;
             }

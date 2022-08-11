@@ -164,5 +164,15 @@ namespace PnFDesktop.Services
         {
             throw new NotImplementedException();
         }
+
+        public Task<bool> UpdatePortfolioShareAsync(PortfolioShareDTO portfolioShare)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> DeletePortfolioAsync(Portfolio portfolio)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -83,75 +83,19 @@
                   SelectionUnit="FullRow"
                   IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="TIDM" Binding="{Binding Tidm}"  IsReadOnly="True"/>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}"  IsReadOnly="True"/>
-                <DataGridTextColumn Header="M Cap" Binding="{Binding MarketCapMillions, StringFormat={}{0:G7}}" IsReadOnly="True"/>
-                <DataGridTemplateColumn Header="Close" SortMemberPath="Close">
+                <DataGridTemplateColumn Header="TIDM" SortMemberPath="Tidm" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Command="{Binding DataContext.LoadShareChartCommand, RelativeSource={RelativeSource AncestorType=local:PortfolioSummaryView}}"
-                                    CommandParameter="{Binding}"
-                                    ToolTip="Open the share Hi/Lo P &amp; F Chart">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.High52Week}}"
-                                               ToolTip="Close was a new 52 week high."/>
-                                    <TextBlock Margin="5,0"
-                                               Text="{Binding Close, StringFormat={}{0:F0}}"/>
-                                    <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.Low52Week}}"
-                                               ToolTip="Close was a new 52 week low."/>
-                                </StackPanel>
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource IndicatorButton}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Rising}" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rising}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Falling}" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Falling}" Value="True">
-                                                <Setter Property="BorderBrush">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding DoubleTop}" Value="True">
-                                                <Setter Property="Foreground">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding DoubleBottom}" Value="True">
-                                                <Setter Property="Foreground">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="Red" Opacity="1.0"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
+                            <TextBlock Text="{Binding Tidm}" ToolTipService.IsEnabled="{Binding Remarks, Converter={StaticResource StringNotEmpty}}">
+                                <TextBlock.ToolTip>
+                                    <TextBlock Text="{Binding Remarks}" />
+                                </TextBlock.ToolTip>
+                            </TextBlock>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                </DataGridTemplateColumn> 
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}"  IsReadOnly="True"/>
+                <DataGridTextColumn Header="Notices" Binding="{Binding Notices}"  IsReadOnly="True"/>
                 <!--#region Market information -->
                 <DataGridTemplateColumn Header="Market&#x0a;%RS Buy" SortMemberPath="MarketPercentRsBuy">
                     <DataGridTemplateColumn.CellTemplate>
@@ -903,6 +847,72 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <!--#endregion-->
+                <DataGridTemplateColumn Header="Close" SortMemberPath="Close">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Command="{Binding DataContext.LoadShareChartCommand, RelativeSource={RelativeSource AncestorType=local:PortfolioSummaryView}}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip="Open the share Hi/Lo P &amp; F Chart">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="↑" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.High52Week}}"
+                                               ToolTip="Close was a new 52 week high."/>
+                                    <TextBlock Margin="5,0"
+                                               Text="{Binding Close, StringFormat={}{0:F0}}"/>
+                                    <TextBlock Text="↓" Visibility="{Binding NewEvents, Converter={StaticResource FlagConverter}, ConverterParameter={x:Static model:ShareEvents.Low52Week}}"
+                                               ToolTip="Close was a new 52 week low."/>
+                                </StackPanel>
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource IndicatorButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Rising}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Rising}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Falling}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Falling}" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding DoubleTop}" Value="True">
+                                                <Setter Property="Foreground">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Green" Opacity="1.0"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding DoubleBottom}" Value="True">
+                                                <Setter Property="Foreground">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="Red" Opacity="1.0"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Signal">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -1357,12 +1367,12 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Score" Binding="{Binding Score}"  IsReadOnly="True"/>
+                <DataGridTextColumn Header="M Cap" Binding="{Binding MarketCapMillions, StringFormat={}{0:G7}}" IsReadOnly="True"/>
                 <DataGridTextColumn Header="fc Yield" Binding="{Binding ForecastYield, StringFormat={}{0:F1}}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Yrs Paid" Binding="{Binding DividendYearsPaid}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Sector" Binding="{Binding SuperSector}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Market" Binding="{Binding ExchangeSubCode}"  IsReadOnly="True"/>
                 <DataGridTextColumn Header="Exchange" Binding="{Binding ExchangeCode}"  IsReadOnly="True"/>
-                <DataGridTextColumn Header="Notices" Binding="{Binding Notices}"  IsReadOnly="True"/>
             </DataGrid.Columns>
         </DataGrid>
 

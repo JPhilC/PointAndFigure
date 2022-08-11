@@ -109,13 +109,32 @@ namespace PnFDesktop.ViewModels
             get => _selectedPortfolioShare;
             set
             {
+                if (SelectedPortfolioShare != null)
+                {
+                    SelectedPortfolioShare.PropertyChanged -= SelectedPortfolioShare_PropertyChanged;
+                }
+
                 if (SetProperty(ref _selectedPortfolioShare, value))
                 {
                     DeletePorfolioShareCommand.NotifyCanExecuteChanged();
                 }
+                if (SelectedPortfolioShare != null)
+                {
+                    SelectedPortfolioShare.PropertyChanged += SelectedPortfolioShare_PropertyChanged;
+                }
             }
         }
 
+        private void SelectedPortfolioShare_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "RecordUpdated")
+            {
+                if (_DataService != null && SelectedPortfolioShare != null)
+                {
+                    Task.Run(() => _DataService.UpdatePortfolioShareAsync(SelectedPortfolioShare));
+                }
+            }
+        }
 
         IDataService _DataService;
         private object _SharesLock = new object();
@@ -171,7 +190,8 @@ namespace PnFDesktop.ViewModels
                         Id = share.Id,
                         Holding = share.Holding,
                         Tidm = share.Share.Tidm,
-                        Name = share.Share.Name
+                        Name = share.Share.Name,
+                        Remarks = share.Remarks
                     });
                     ;
                 }

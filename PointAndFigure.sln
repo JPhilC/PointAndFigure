@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLScripts", "SQLScripts", 
 		SQLScripts\Create uspGenerateRSIValues.sql = SQLScripts\Create uspGenerateRSIValues.sql
 		SQLScripts\Create uspGenerateSectorIndices.sql = SQLScripts\Create uspGenerateSectorIndices.sql
 		SQLScripts\Create uspGetMarketAndSectorStats.sql = SQLScripts\Create uspGetMarketAndSectorStats.sql
+		SQLScripts\Create uspGetPortfolioEvents.sql = SQLScripts\Create uspGetPortfolioEvents.sql
 		SQLScripts\Create uspGetRSDataStockVMarket.sql = SQLScripts\Create uspGetRSDataStockVMarket.sql
 		SQLScripts\Create uspGetRSDataStockVSector.sql = SQLScripts\Create uspGetRSDataStockVSector.sql
 		SQLScripts\Create uspGetRSSectorVMarket.sql = SQLScripts\Create uspGetRSSectorVMarket.sql

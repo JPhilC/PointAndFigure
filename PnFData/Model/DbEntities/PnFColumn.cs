@@ -132,7 +132,7 @@ namespace PnFData.Model
                 Column = this
             };
             Boxes.Add(currentBox);
-            //System.Diagnostics.Debug.Write(boxType.ToString());
+            System.Diagnostics.Debug.WriteLine($"Adding {boxType.ToString()} box");
         }
 
         public string GetTooltip()

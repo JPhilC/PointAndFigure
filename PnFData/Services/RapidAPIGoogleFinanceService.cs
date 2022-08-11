@@ -20,7 +20,7 @@ namespace PnFData.Services.RapidAPIGoogleFinance
     public class GoogleFinanceService
     {
         private static HttpClient _client;
-        private static string ApiKey = "DEMO";  // This is now taken from the USER environment variable "RapidAPIKey"
+        private static string ApiKey = "DEMO";  
         private static string RapidAPIHost = "google-finance4.p.rapidapi.com";
         private static readonly string ApiBaseUrl = @"https://google-finance4.p.rapidapi.com";
 
@@ -41,7 +41,7 @@ namespace PnFData.Services.RapidAPIGoogleFinance
 
         static GoogleFinanceService()
         {
-            ApiKey = (string)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User)["RapidAPIKey"];
+            ApiKey = AuthenticationSettings.Current.Config!.RapidAPIKey;
         }
 
         public static async Task<GoogleTickerPriceResult> GetLastPrice(string symbol, string exchangeCode)

@@ -12,6 +12,8 @@ namespace PnFDesktop.DTOs
         public string? Tidm { get; set; }
 
         public string? Name { get; set; }
+
+        public string? Remarks { get; set; }
         
         public string? ExchangeCode { get; set; }
 

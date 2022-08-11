@@ -40,11 +40,14 @@ namespace PnFData.Model
         Low52Week = 0x4000,
         [Description("Momentum positive")]
         MomentumGonePositive = 0x8000,
-        [Description("Momentum positive")]
+        [Description("Momentum negative")]
         MomentumGoneNegative = 0x10000,
+        [Description("Switched to rising")]
+        SwitchedToRising = 0x20000,
+        [Description("Switched to falling")]
+        SwitchedToFalling = 0x40000,
         [Description("All Signals")]
-        AllShareSignals = NewDoubleTop|NewDoubleBottom|NewTripleTop|NewTripleBottom|NewBullSupportBreach|High52Week|Low52Week|MomentumGonePositive|MomentumGoneNegative
-
+        AllShareSignals = NewDoubleTop|NewDoubleBottom|NewTripleTop|NewTripleBottom|NewBullSupportBreach|High52Week|Low52Week|MomentumGonePositive|MomentumGoneNegative|SwitchedToRising|SwitchedToFalling
     }
 
 
