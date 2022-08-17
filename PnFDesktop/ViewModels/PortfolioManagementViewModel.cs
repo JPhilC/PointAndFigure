@@ -131,7 +131,20 @@ namespace PnFDesktop.ViewModels
             {
                 if (_DataService != null && SelectedPortfolioShare != null)
                 {
-                    Task.Run(() => _DataService.UpdatePortfolioShareAsync(SelectedPortfolioShare));
+                    Task.Run(async () =>
+                    {
+                        bool success = await _DataService.UpdatePortfolioShareAsync(SelectedPortfolioShare);
+                        if (success)
+                        {
+                            // Refresh the portfolio
+                            var portfolio = await _DataService.GetPortfolioAsync(this.Portfolio.Id);
+                            if (portfolio != null)
+                            {
+                                this.Portfolio = portfolio;
+                            }
+
+                        }
+                    });
                 }
             }
         }
@@ -222,8 +235,11 @@ namespace PnFDesktop.ViewModels
                                        ShareId = SelectedShare.Id,
                                        Share = SelectedShare
                                    });
-                                   await _DataService.UpdatePortfolioAsync(this.Portfolio);
-                                   LoadPortfolioShares();
+                                   bool success = await _DataService.UpdatePortfolioAsync(this.Portfolio);
+                                   if (success)
+                                   {
+                                       LoadPortfolioShares();
+                                   }
                                }
                            },
                            () => SelectedShare != null));
@@ -244,12 +260,20 @@ namespace PnFDesktop.ViewModels
                            {
                                if (shareDTO != null)
                                {
-                                   PortfolioShare share = this.Portfolio.Shares.FirstOrDefault(s => s.Id == shareDTO.Id);
-                                   if (share != null)
+                                   if (shareDTO.Id == Guid.Empty)
                                    {
-                                       if (await _DataService.DeletePortfolioShareAsync(share))
+                                       // Share has not been saved.
+                                       LoadPortfolioShares();
+                                   }
+                                   else
+                                   {
+                                       PortfolioShare share = this.Portfolio.Shares.FirstOrDefault(s => s.Id == shareDTO.Id);
+                                       if (share != null)
                                        {
-                                           LoadPortfolioShares();
+                                           if (await _DataService.DeletePortfolioShareAsync(share))
+                                           {
+                                               LoadPortfolioShares();
+                                           }
                                        }
                                    }
                                }

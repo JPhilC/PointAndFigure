@@ -22,6 +22,6 @@ namespace PnFData.Model
         [DefaultValue(0d)]
         public double Holding { get; set;}
 
-        public string Remarks { get; set;}
+        public string Remarks { get; set;} = "";
     }
 }

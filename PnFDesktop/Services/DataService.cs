@@ -1144,17 +1144,35 @@ namespace PnFDesktop.Services
         public async Task<bool> UpdatePortfolioAsync(Portfolio portfolio)
         {
             bool result = false;
-            try
+            bool saved = false;
+            int trys = 0;
+            while (!saved && trys < 5)
             {
-                using (var db = new PnFDataContext())
+
+                try
                 {
-                    db.Portfolios.Update(portfolio);
-                    result = (await db.SaveChangesAsync() > 0);
+                    using (var db = new PnFDataContext())
+                    {
+                        db.Portfolios.Update(portfolio);
+                        result = (await db.SaveChangesAsync() > 0);
+                        saved = true;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageLog.LogMessage(this, LogType.Error, $"An error occurred updating portfolio '{portfolio.Name}'", ex);
+                catch (DbUpdateConcurrencyException updateEx)
+                {
+                    foreach (var entry in updateEx.Entries)
+                    {
+                        var proposedValues = entry.CurrentValues;
+                        var databaseValues = entry.GetDatabaseValues();
+                        proposedValues["Version"] = databaseValues["Version"];
+                        entry.OriginalValues.SetValues(proposedValues);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageLog.LogMessage(this, LogType.Error, $"An error occurred updating portfolio '{portfolio.Name}'", ex);
+                    break;
+                }
             }
             return result;
         }

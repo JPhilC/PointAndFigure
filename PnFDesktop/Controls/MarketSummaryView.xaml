@@ -36,9 +36,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="5"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="170"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="4.5*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Grid.Column="0" Text="Exchange"/>
         <ComboBox Grid.Row="0" Grid.Column="2" 

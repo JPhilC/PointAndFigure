@@ -63,7 +63,10 @@ namespace PnFData
 
         private void Load()
         {
-            string configFile = Path.Combine(Environment.CurrentDirectory, "Authentication.Config");
+            string exeFullName = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            // Get the exe's directory
+            string exeFolder = System.IO.Path.GetDirectoryName(exeFullName);
+            string configFile = Path.Combine(exeFolder, "Authentication.Config");
             this.Config = JsonConvert.DeserializeObject<AuthenticationConfig>(File.ReadAllText(configFile));
         }
     }

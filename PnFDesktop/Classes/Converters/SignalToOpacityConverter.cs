@@ -20,6 +20,7 @@ namespace PnFDesktop.Classes
         /// <returns></returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value == null) { return Binding.DoNothing ;}
             double lowerLimit = 30d;
             double upperLimit = 70d;
             double incomingValue = (double)value;
