@@ -84,7 +84,7 @@ WHERE q.[Day] >= @fromDate AND q.[Day] <= @CutOffDate
 
 DECLARE @IsRising AS INT			= 0x0001; --       // Going up
 DECLARE @IsFalling AS INT			= 0x0002; --       // Going down
-DECLARE @DoubleTop AS INT			= 0x0004; --       // Double Bottom
+DECLARE @DoubleTop AS INT			= 0x0004; --       // Double Top
 DECLARE @DoubleBottom AS INT		= 0x0008; --       // Double Bottom
 DECLARE @TripleTop AS INT			= 0x0010; --       // Triple Top
 DECLARE @TripleBottom AS INT		= 0x0020; --       // Triple Bottom

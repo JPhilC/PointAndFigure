@@ -46,6 +46,10 @@ namespace PnFData.Model
         SwitchedToRising = 0x20000,
         [Description("Switched to falling")]
         SwitchedToFalling = 0x40000,
+        [Description("Closed above 8 day EMA")]
+        ClosedAboveEma8d = 0x80000,
+        [Description("Dropped below 8 day EMA")]
+        DroppedBelowEma8d = 0x100000,
         [Description("All Signals")]
         AllShareSignals = NewDoubleTop|NewDoubleBottom|NewTripleTop|NewTripleBottom|NewBullSupportBreach|High52Week|Low52Week|MomentumGonePositive|MomentumGoneNegative|SwitchedToRising|SwitchedToFalling
     }
@@ -66,9 +70,13 @@ namespace PnFData.Model
 
         public double? Ema30 {get;set;}
 
+        public double? Ema8d { get; set; }
+
         public bool? ClosedAboveEma10 {get; set;}
 
         public bool? ClosedAboveEma30 {get; set;}
+
+        public bool? ClosedAboveEma8d { get; set; }
 
         public bool? Rising {get;set;}
 
